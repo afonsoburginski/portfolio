@@ -1,0 +1,8 @@
+--primary: #8257e5;
+--primary-darker: #28203e;
+--primary-hover: #9466ff;
+--primary-border: #6833e4;
+--primary-shape: #734bd1;
+--primary-light: #996dff;
+
+104, 51, 228, 1.
