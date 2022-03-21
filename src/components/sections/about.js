@@ -126,7 +126,16 @@ const About = () => {
     sr.reveal(revealContainer.current, srConfig());
   }, []);
 
-  const skills = ['JavaScript (ES6+)', 'Dart', 'React JS', 'Flutter', 'Node.js', 'Firebase', 'API Rest', 'Netlify'];
+  const skills = [
+    'JavaScript (ES6+)',
+    'Dart',
+    'React JS',
+    'Flutter',
+    'Node.js',
+    'Firebase',
+    'API Rest',
+    'Google Cloud Platform',
+  ];
 
   return (
     <StyledAboutSection id="about" ref={revealContainer}>
@@ -136,24 +145,23 @@ const About = () => {
         <StyledText>
           <div>
             <p>
-              Hello! My name is Afonso, I'm a technology enthusiast, and I love to create things for the internet.
-              My interest in web development started in 2019 when I decided to try editing custom WordPress themes
-              - and from that I learned a lot about HTML &amp; CSS!
+              Hello! My name is Afonso, I'm a technology enthusiast, and I love to create things for
+              the internet. My interest in web development started in 2019 when I decided to try
+              editing custom WordPress themes - and from that I learned a lot about HTML &amp; CSS!
             </p>
 
             <p>
-              Fast-forward to today, my main focus these days has been to improve my
-              skills as a mobile developer with the <a href="https://flutter.dev/">Flutter</a> language,
-              focusing on the use of the newest code techniques to always keep me up to date with the news.
+              Fast-forward to today, my main focus these days has been to improve my skills as a
+              mobile developer with the <a href="https://flutter.dev/">Flutter</a> language,
+              focusing on the use of the newest code techniques to always keep me up to date with
+              the news.
             </p>
 
             <p>
               Recently, I'm also working on a movie and series streaming app called{' '}
-              <a href="https://www.github.com/afonsoburgiski">
-                Vortex
-              </a>{' '}
-              An application that aims to democratize access to entertainment in Brazil through
-              an application focused on its target audience.
+              <a href="https://www.github.com/afonsoburgiski">Vortex</a> An application that aims to
+              democratize access to entertainment in Brazil through an application focused on its
+              target audience.
             </p>
 
             <p>Here are a few technologies I’ve been working with recently:</p>
