@@ -17,7 +17,6 @@ const StyledHeroSection = styled.section`
   }
 
   h1 {
-
     margin: 80px 0px 30px 4px;
     color: var(--green);
     font-family: var(--font-mono);
@@ -65,13 +64,18 @@ const Hero = () => {
   const four = (
     <>
       <p>
-      Software Engineer and Android and Web Developer.
-      I am specialized and certified by google {''}
-        <a href="https://www.coursera.org/google-career-certificates/" target="_blank" rel="noreferrer">
-        certified by google
+        Frontend Engineer, Android and Web Developer. I am specialized and certified by google {''}
+        <a
+          href="https://www.coursera.org/google-career-certificates/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          certified by google
         </a>
-        , as a developer, and I have experience in the area, both with individual and team work.<br></br><br></br>
-        I am available to solve your problems and design solutions for your business, always keeping to the deadlines and requirements requested for each project.
+        , as a developer, and I have experience in the area, both with individual and team work.
+        <br></br>
+        <br></br>I am available to solve your problems and design solutions for your business,
+        always keeping to the deadlines and requirements requested for each project.
       </p>
     </>
   );
@@ -80,7 +84,8 @@ const Hero = () => {
       className="email-link"
       href="https://www.newline.co/courses/build-a-spotify-connected-app"
       target="_blank"
-      rel="noreferrer">
+      rel="noreferrer"
+    >
       Get In Touch!
     </a>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useStaticQuery, graphql } from 'gatsby';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { getImage } from 'gatsby-plugin-image';
 import styled from 'styled-components';
 import { srConfig } from '@config';
 import sr from '@utils/sr';
@@ -212,10 +213,13 @@ const Projects = () => {
 
   const projectInner = node => {
     const { frontmatter, html } = node;
-    const { github, external, title, tech } = frontmatter;
+    const { github, external, title, cover, tech } = frontmatter;
+    const image = getImage(cover);
 
     return (
       <div className="project-inner">
+        <img src={`${image}`} alt="frrf" />
+
         <header>
           <div className="project-top">
             <div className="folder">
@@ -233,7 +237,8 @@ const Projects = () => {
                   aria-label="External Link"
                   className="external"
                   target="_blank"
-                  rel="noreferrer">
+                  rel="noreferrer"
+                >
                   <Icon name="External" />
                 </a>
               )}
@@ -286,13 +291,15 @@ const Projects = () => {
                   key={i}
                   classNames="fadeup"
                   timeout={i >= GRID_LIMIT ? (i - GRID_LIMIT) * 300 : 300}
-                  exit={false}>
+                  exit={false}
+                >
                   <StyledProject
                     key={i}
                     ref={el => (revealProjects.current[i] = el)}
                     style={{
                       transitionDelay: `${i >= GRID_LIMIT ? (i - GRID_LIMIT) * 100 : 0}ms`,
-                    }}>
+                    }}
+                  >
                     {projectInner(node)}
                   </StyledProject>
                 </CSSTransition>
