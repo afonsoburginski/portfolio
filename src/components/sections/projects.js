@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useStaticQuery, graphql } from 'gatsby';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { getImage } from 'gatsby-plugin-image';
+/* import { getImage } from 'gatsby-plugin-image'; */
 import styled from 'styled-components';
 import { srConfig } from '@config';
 import sr from '@utils/sr';
@@ -213,12 +213,21 @@ const Projects = () => {
 
   const projectInner = node => {
     const { frontmatter, html } = node;
-    const { github, external, title, cover, tech } = frontmatter;
-    const image = getImage(cover);
+    const { github, external, title, tech } = frontmatter;
+    /* const image = getImage(cover); */
 
     return (
       <div className="project-inner">
-        <img src={`${image}`} alt="frrf" />
+        {/* <div className="project-image">
+          <a href={external ? external : github ? github : '#'}>
+            <img src="{iamge}" image={image} alt={title} className="img" />
+            <GatsbyImage image={image} alt={title}
+            
+            className="img" />
+          </a>
+        </div> */}
+
+        {/* <img src={image} alt="frrf" /> */}
 
         <header>
           <div className="project-top">

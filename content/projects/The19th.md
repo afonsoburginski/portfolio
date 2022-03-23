@@ -1,7 +1,8 @@
 ---
 date: '2020-08-02'
 title: 'Test'
-github: ''
+cover: './test.png'
+github: 'https://github.com/afonsoburginski/'
 external: 'https://19thnews.org/'
 tech:
   - WordPress

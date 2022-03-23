@@ -1,8 +1,9 @@
 ---
 date: '2020-03-27'
 title: 'Test'
-github: ''
-external: 'https://medium.com/stories-from-upstatement/integrating-algolia-search-with-wordpress-multisite-e2dea3ed449c'
+cover: './test.png'
+github: 'https://github.com/afonsoburginski/'
+external: 'https://starry.com/blog/product/whats-new-screentime-just-got-better-for-parents'
 tech:
   - Algolia
   - WordPress

@@ -1,8 +1,8 @@
 ---
 date: '2016-11-01'
 title: 'Test'
-cover: './halcyon.png'
-github: 'https://github.com/bchiang7/halcyon-site'
+cover: './test.png'
+github: 'https://github.com/afonsoburginski/'
 external: 'https://starry.com/blog/product/whats-new-screentime-just-got-better-for-parents'
 android: 'https://play.google.com/store/apps/details?id=com.starry.management&hl=en_US'
 tech:
