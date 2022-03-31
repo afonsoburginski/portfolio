@@ -16,7 +16,7 @@
   </a>
 </p>
 
-![banner](https://raw.githubusercontent.com/bchiang7/v4/main/src/images/banner.png)
+![demo](https://raw.githubusercontent.com/bchiang7/v4/main/src/images/banner.png)
 ![about](https://raw.githubusercontent.com/bchiang7/v4/main/src/images/about.png)
 
 ## 🚨 Forking this repo (please read!)
