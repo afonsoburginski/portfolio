@@ -11,4 +11,4 @@ tech:
   - Firebase
 ---
 
-An independent [Video Stream App](https://marketplace.visualstudio.com/items?itemName=brittanychiang.halcyon-vscode), with the objective of ensuring accessible entertainment for the Brazilian public. Watch your favorite movies and series in Portuguese and Full HD.
+An independent [Video Stream App](https://github.com/afonsoburginski/vortex), with the objective of ensuring accessible entertainment for the Brazilian public. Watch your favorite movies and series in Portuguese and Full HD.
