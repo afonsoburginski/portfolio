@@ -8,7 +8,7 @@ tech:
   - TypeScript
   - Algolia
 company: 'Upstatement'
-showInProjects: false
+showInProjects: true
 ---
 
 A site for a revolutionary healthcare company, including an Algolia instant search integration

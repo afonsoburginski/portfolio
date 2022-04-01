@@ -1,14 +1,16 @@
 ---
-date: '1'
+date: '2022-03-03'
 title: 'Vortex Play'
-cover: './vortex.png'
+cover: ''
 github: 'https://github.com/afonsoburginski/vortex/'
-external: 'https://www.figma.com/file/z4K4B3ITpLPWjCvymeZQqP/Vortex-Design?node-id=0%3A1'
+external: 'https://github.com/afonsoburginski/'
 tech:
   - Dart
   - Flutter
   - Api Rest
   - Firebase
+company: 'Upstatement'
+showInProjects: true
 ---
 
 An independent [Video Stream App](https://marketplace.visualstudio.com/items?itemName=brittanychiang.halcyon-vscode), with the objective of ensuring accessible entertainment for the Brazilian public. Watch your favorite movies and series in Portuguese and Full HD.
