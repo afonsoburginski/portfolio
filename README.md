@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio - Afonso Burginski
 
-## Getting Started
+Portfolio pessoal desenvolvido com as mais modernas tecnologias web.
 
-First, run the development server:
+## 🚀 Tecnologias
+
+- **[Next.js 15](https://nextjs.org/)** - Framework React com App Router
+- **[React 19](https://react.dev/)** - Biblioteca JavaScript para interfaces
+- **[TypeScript](https://www.typescriptlang.org/)** - Superset JavaScript com tipagem estática
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Framework CSS utility-first
+- **[Aceternity UI](https://ui.aceternity.com/)** - Componentes UI modernos e animados
+- **[Framer Motion](https://www.framer.com/motion/)** - Biblioteca de animações
+- **[Turbopack](https://turbo.build/pack)** - Bundler de próxima geração
+
+## 📦 Instalação
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+# Instalar dependências
+bun install
+
+# Rodar em desenvolvimento
 bun dev
+
+# Build para produção
+bun build
+
+# Rodar em produção
+bun start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🏗️ Estrutura do Projeto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+portfolio/
+├── app/                    # App Router do Next.js
+│   ├── globals.css        # Estilos globais e variáveis CSS
+│   ├── layout.tsx         # Layout raiz da aplicação
+│   └── page.tsx           # Página inicial
+├── components/            # Componentes React reutilizáveis
+├── lib/                   # Utilitários e funções auxiliares
+│   └── utils.ts          # Função cn() para merge de classes
+├── public/               # Arquivos estáticos
+└── next.config.ts       # Configuração do Next.js
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎨 Sistema de Cores
 
-## Learn More
+O projeto utiliza um sistema de cores baseado em variáveis CSS que suporta dark mode automático:
 
-To learn more about Next.js, take a look at the following resources:
+- `--background` / `--foreground` - Cores de fundo e texto
+- `--primary` / `--secondary` - Cores principais
+- `--muted` / `--accent` - Cores complementares
+- `--destructive` - Cores para ações destrutivas
+- `--border` / `--input` / `--ring` - Cores de UI
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ⚡ Otimizações
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Turbopack** - Compilação extremamente rápida
+- **Optimização de Imagens** - Suporte para AVIF e WebP
+- **Optimização de Pacotes** - Tree-shaking do Framer Motion
+- **Font Optimization** - Carregamento otimizado da fonte Inter
 
-## Deploy on Vercel
+## 📱 Contato
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **GitHub**: [afonsoburginski](https://github.com/afonsoburginski)
+- **LinkedIn**: [afonsoburginski](https://www.linkedin.com/in/afonsoburginski/)
+- **Instagram**: [@afonso_burginski](https://www.instagram.com/afonso_burginski)
+- **Website**: [afonsodev.com](https://www.afonsodev.com/)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 Licença
+
+Este projeto é de código aberto para fins educacionais.
