@@ -6,21 +6,21 @@ import Image from "next/image";
 // 3 columns layout - left & right equal size, center slightly taller
 // Portrait cards (height > width)
 const col1 = [
-  { id: 1, image: "https://framerusercontent.com/images/GkhJfmw17Q5eehve51WR25Ijjnk.png", height: 420 },
-  { id: 2, image: "https://framerusercontent.com/images/bed888CTflXNK3KFX1R7VhRMtE.png", height: 420 },
-  { id: 3, image: "https://framerusercontent.com/images/RYRvZnstUexQMOl8zRyrvDfDT0.png", height: 420 },
+  { id: 1, image: "/projects/stormzplus.png", height: 320, href: "/case-study/stormzplus" },
+  { id: 2, image: "https://framerusercontent.com/images/bed888CTflXNK3KFX1R7VhRMtE.png", height: 320 },
+  { id: 3, image: "https://framerusercontent.com/images/RYRvZnstUexQMOl8zRyrvDfDT0.png", height: 320 },
 ];
 
 const col2 = [
-  { id: 4, image: "https://framerusercontent.com/images/En1SV0rP485Zf5WOrpnHl3Nz658.png", height: 480 },
-  { id: 5, image: "https://framerusercontent.com/images/roWFLkzHAotwSx5UxGPxpxMeA.jpg", height: 480 },
-  { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 480 },
+  { id: 4, image: "/image.png", height: 360, href: "https://www.orcanorte.com.br/" },
+  { id: 5, image: "https://framerusercontent.com/images/roWFLkzHAotwSx5UxGPxpxMeA.jpg", height: 360 },
+  { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 360 },
 ];
 
 const col3 = [
-  { id: 7, image: "https://framerusercontent.com/images/QqqmFNIdzb0HbOiMSHvqZXkwT7w.png", height: 420 },
-  { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 420 },
-  { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 420 },
+  { id: 7, image: "/image.png", height: 320, href: "https://gem.jhonrob.com.br/" },
+  { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 320 },
+  { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 320 },
 ];
 
 const columns = [col1, col2, col3];
@@ -38,15 +38,13 @@ export const ProjectsSection = () => {
               {column.map((project, index) => (
                 <motion.a
                   key={project.id}
-                  href="https://www.behance.net/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={project.href ?? "https://www.behance.net/"}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: colIndex * 0.1 + index * 0.1 }}
                   className="group relative overflow-hidden rounded-[4px] cursor-pointer block"
-                  style={{ height: project.height }}
+                  style={{ height: `clamp(${colIndex === 1 ? '493.75px' : '462.72px'}, ${colIndex === 1 ? '52vh' : '48vh'}, ${colIndex === 1 ? '560px' : '520px'})` }}
                 >
                   {/* Image */}
                   <Image
@@ -60,7 +58,7 @@ export const ProjectsSection = () => {
 
                   {/* Bottom CTA bar */}
                   <div className="absolute left-2 right-2 bottom-2 z-30">
-                    <div className="w-full flex items-center justify-center gap-2 text-white text-[11px] font-medium backdrop-blur-md bg-white/20 border !border-white shadow-lg hover:bg-white/30 transition-all duration-300 px-4 py-2 rounded-full">
+                    <div className="w-full flex items-center justify-center gap-2 text-white text-base font-normal font-sans backdrop-blur-md bg-white/20 border !border-white shadow-lg hover:bg-white/30 transition-all duration-300 px-5 py-3 rounded-full">
                       <span>View Casestudy</span>
                       <ArrowUpRight size={14} />
                     </div>

@@ -1,143 +1,295 @@
 "use client";
 
 import { motion } from "motion/react";
+import { TypographyH2, TypographyP } from "@/components/ui/typography";
 import { getCalApi } from "@calcom/embed-react";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+import Image from "next/image";
+import { 
+  Sparkles,
+  Smartphone,
+  Globe,
+  Server,
+  Code,
+  Shield,
+  Lock,
+  Key,
+  Database as Db,
+  GitBranch,
+  Rocket,
+  Cloud,
+  CloudLightning,
+  Zap,
+  Cpu,
+  Gauge,
+  Bell,
+  Link,
+  Flag,
+  Activity,
+  BarChart3,
+} from "lucide-react";
+import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiTypescript, SiSupabase, SiPostgresql, SiDocker, SiGraphql, SiAmazons3, SiCloudflare } from "react-icons/si";
 
 const tags = [
-  "Product Design",
-  "Brand Identity Design",
-  "Branding",
-  "Packaging Design",
-  "Mockup Design",
+  "Mobile App Development",
+  "Web App Development",
+  "Backend & APIs",
+  "Full‑Stack Engineering",
+  "Technical Consulting",
 ];
 
 const services = [
   {
-    title: "Brand Identity",
-    desc:
-      "Crafting unique, memorable brand identities that resonate with your audience — from logos to visual systems — ensuring every touchpoint reflects your brand's essence.",
+    title: "Mobile Apps",
+    desc: "Cross‑platform React Native apps with native performance and polished UX: offline‑first data, deep links, push notifications, secure auth, and smooth 60fps interactions. Release automation, crash analytics, and feature flags included for fast, safe iteration.",
+    icon: Smartphone
   },
   {
-    title: "Brand Design",
-    desc:
-      "Designing sleek, impactful packaging that not only looks stunning but also connects with your ideal customers — turning first impressions into lasting brand loyalty.",
+    title: "Web Applications", 
+    desc: "Modern Next.js experiences with SSR/ISR, accessibility by default, and Core Web Vitals in the green. Scalable component systems, robust routing/data‑fetching, and SEO‑ready foundations that load fast and convert.",
+    icon: Globe
   },
   {
-    title: "Package Design",
-    desc:
-      "Bringing your brand to life through high‑fidelity product mockups, giving you a clear, realistic preview of how your packaging and visuals will stand out in the real world.",
+    title: "Backend APIs",
+    desc: "Robust REST services in Node.js & Go with clean architecture, input validation, RBAC, caching, and rate limiting. Observability (logs/metrics/traces), automated tests, and predictable performance backed by PostgreSQL.",
+    icon: Server
   },
   {
-    title: "Mockup Design",
-    desc:
-      "Tailored design mockups that align perfectly with your brand's aesthetic — because every detail matters when showcasing your product's true potential.",
+    title: "Full‑Stack Solutions",
+    desc: "End‑to‑end delivery—from product discovery and data modeling to deployment. Supabase + PostgreSQL, Dockerized pipelines, CI/CD, and zero‑downtime releases. Documentation and handoff that teams can build on.",
+    icon: Code
   },
 ];
 
 const bottomTags = [
-  "Brand Migration",
-  "Package Design",
-  "Branding",
-  "Slide Decks",
-  "Copywriting",
-  "Brand Graphics",
-  "Brand Visibility",
-  "Icons",
-  "Brand Integrations",
-  "Optimization",
-  "Landing Pages",
-  "Social Media",
+  // Core stacks
+  { name: "React Native", icon: SiReact },
+  { name: "Next.js", icon: SiNextdotjs }, 
+  { name: "Node.js", icon: SiNodedotjs },
+  { name: "Golang", icon: SiGo },
+  { name: "TypeScript", icon: SiTypescript },
+  { name: "Supabase", icon: SiSupabase },
+  { name: "PostgreSQL", icon: SiPostgresql },
+  { name: "Docker", icon: SiDocker },
+  { name: "GraphQL", icon: SiGraphql },
+  // Capabilities
+  { name: "Edge Functions", icon: CloudLightning },
+  { name: "Serverless", icon: Cloud },
+  { name: "Real‑time", icon: Zap },
+  { name: "Offline‑first", icon: Db },
+  { name: "WebSockets", icon: Link },
+  { name: "Push Notifications", icon: Bell },
+  { name: "Deep Links", icon: Link },
+  { name: "OAuth / JWT", icon: Key },
+  { name: "RBAC Security", icon: Shield },
+  { name: "Caching", icon: Cpu },
+  { name: "Rate Limiting", icon: Gauge },
+  { name: "Observability", icon: Activity },
+  { name: "Analytics", icon: BarChart3 },
+  { name: "Feature Flags", icon: Flag },
+  { name: "CI/CD", icon: GitBranch },
+  { name: "App Store Releases", icon: Rocket },
+  // Storage & delivery
+  { name: "Cloudflare R2", icon: SiCloudflare },
+  { name: "AWS S3", icon: SiAmazons3 },
+  { name: "CDN / Edge Cache", icon: Cloud },
+  // Themes
+  { name: "Mobile Development", icon: Smartphone },
+  { name: "Web Development", icon: Globe },
+  { name: "Full‑Stack", icon: Code },
+  { name: "REST APIs", icon: Server },
 ];
+
+// Split into two alternating rows to reduce visible repetition
+const row1 = bottomTags.filter((_, i) => i % 2 === 0);
+const row2 = bottomTags.filter((_, i) => i % 2 !== 0);
 
 export function ServicesShowcase() {
   return (
-    <section id="services-showcase" className="relative py-20 px-4 md:px-8">
+    <section id="services" className="relative py-20 px-4 md:px-8">
       <div className="max-w-[1600px] mx-auto">
-        {/* Top area */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Left - text */}
+        {/* Top Container */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
+          {/* Left Container */}
           <div>
-            <div className="inline-flex items-center gap-2 text-xs text-gray-400 mb-4">
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/10">•</span>
-              <span>Design services</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Services</h2>
-            <p className="text-gray-400 max-w-xl">
-              Helping businesses standout with brand identity packaging that captivates and converts effectively.
-            </p>
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-[#0d0d0d] rounded-[20px] shadow-[16px_24px_20px_8px_rgba(0,0,0,0.4)]">
+                <div className="w-4 h-4 bg-white rounded-[10px] flex items-center justify-center">
+                  <div className="w-2 h-2 bg-[#0d0d0d] rounded-[10px] flex items-center justify-center">
+                    <div className="w-1 h-1 bg-white rounded-[10px]" />
+                  </div>
+                </div>
+                <span className="text-white text-sm font-medium">Development services</span>
+              </div>
+            </motion.div>
 
-            <div className="flex flex-wrap gap-2 mt-6">
-              {tags.map((t) => (
-                <span
-                  key={t}
-                  className="px-3 py-1 rounded-full text-xs text-gray-300 bg-white/5 border border-white/10"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
+            {/* Title */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-[56px] md:text-[80px] lg:text-[96px] font-normal text-white mb-6 leading-[1.03] tracking-[-0.02em] font-satoshi">
+                Services
+              </h2>
+            </motion.div>
 
-            <div className="flex flex-wrap gap-3 mt-6">
-              <button
+            {/* Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <p className="text-white/70 text-lg leading-relaxed font-sans max-w-xl">
+                Transforming ideas into powerful digital solutions with modern technologies and best practices for mobile and web development.
+              </p>
+            </motion.div>
+
+            {/* Skills Tags */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <div className="flex flex-wrap gap-3">
+                {tags.map((tag, index) => (
+                  <span
+                    key={tag}
+                    className="px-4 py-2 bg-[#0d0d0d] rounded-lg text-white text-sm font-sans"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Divider */}
+            <div className="h-px bg-white/10 mb-8" />
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <HoverBorderGradient
+                as="button"
                 onClick={async () => {
                   const cal = await getCalApi();
-                  cal("modal", { calLink: "rick/get-rick-rolled" });
+                  cal("modal", { calLink: "afonso-burginski-fyh9nv/30min" });
                 }}
-                className="px-5 py-2 rounded-lg backdrop-blur-md bg-white/[0.15] text-white border border-white shadow-lg hover:bg-white/25 transition"
+                containerClassName="rounded-xl"
+                className="backdrop-blur-md bg-white/20 text-white font-medium text-base font-sans px-7 py-3"
+                duration={1}
+                clockwise={true}
               >
                 Book a Free Call
-              </button>
-              <a
-                href="#projects"
-                className="px-5 py-2 rounded-lg backdrop-blur-md bg-white/[0.15] text-white border border-white shadow-lg hover:bg-white/25 transition"
+              </HoverBorderGradient>
+              
+              <HoverBorderGradient
+                as="button"
+                onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                containerClassName="rounded-xl"
+                className="backdrop-blur-sm bg-black/40 text-white font-medium text-base font-sans px-7 py-3"
+                duration={1}
+                clockwise={false}
               >
                 See Projects
-              </a>
-            </div>
+              </HoverBorderGradient>
+            </motion.div>
           </div>
 
-          {/* Right - hero image placeholder */}
+          {/* Right - Hero Image */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.08),_transparent_60%)]"
+            className="relative aspect-[16/9] rounded-2xl overflow-hidden group"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/0" />
+            <Image
+              src="https://framerusercontent.com/images/p6Im6dfknHAI0ig4NqDcO4WNpc.jpg"
+              alt="design pic"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover transition-all duration-500 transform-gpu will-change-transform filter grayscale group-hover:grayscale-0 group-hover:scale-[1.06]"
+              priority
+            />
           </motion.div>
         </div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          {services.map((s, i) => (
+        {/* Services Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {services.map((service, index) => (
             <motion.div
-              key={s.title}
-              initial={{ opacity: 0, y: 12 }}
+              key={service.title}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.07 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/20 shadow-lg p-6 hover:bg-white/[0.05] transition-all"
+              className="p-6 bg-[#0d0d0d] rounded-[20px] shadow-[16px_24px_20px_8px_rgba(0,0,0,0.4)]"
             >
-              <div className="flex items-center gap-3 text-white font-semibold">
-                <span className="inline-flex w-4 h-4 items-center justify-center rounded-sm bg-white/10">▢</span>
-                {s.title}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-6 h-6 bg-white/10 rounded-sm flex items-center justify-center">
+                  <service.icon className="w-4 h-4 text-white" />
+                </div>
+                <h4 className="text-white font-semibold text-2xl font-satoshi">{service.title}</h4>
               </div>
-              <div className="mt-4 h-px bg-white/10" />
-              <p className="mt-4 text-sm text-gray-400 leading-relaxed">{s.desc}</p>
+              <div className="h-px bg-white/10 mb-4" />
+              <p className="text-white/70 text-base leading-relaxed font-sans">
+                {service.desc}
+              </p>
             </motion.div>
           ))}
         </div>
 
-        {/* Bottom tags */}
-        <div className="flex flex-wrap gap-3 mt-8">
-          {bottomTags.map((t) => (
-            <span
-              key={t}
-              className="px-4 py-2 rounded-full text-xs text-gray-300 bg-white/5 border border-white/10"
-            >
-              {t}
-            </span>
-          ))}
+        {/* More Services - Scrolling Tags */}
+        <div className="space-y-2">
+          {/* First Row */}
+          <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12.5%,black_87.5%,transparent)]">
+            <ul className="flex gap-3 py-2 w-max animate-scroll">
+              {[...row1, ...row1, ...row1].map((tag, idx) => (
+                <li key={tag.name + idx} className="h-[51px] flex items-center">
+                  <div className="flex items-center gap-3 px-5 py-2 bg-[#0d0d0d] rounded-full">
+                    <div className="w-4 h-4 bg-white/10 rounded-sm flex items-center justify-center">
+                      <tag.icon className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-white text-sm font-sans">{tag.name}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Second Row */}
+          <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12.5%,black_87.5%,transparent)]">
+            <ul className="flex gap-3 py-2 w-max animate-scroll-reverse">
+              {[...row2, ...row2, ...row2].map((tag, idx) => (
+                <li key={tag.name + idx} className="h-[51px] flex items-center">
+                  <div className="flex items-center gap-3 px-5 py-2 bg-[#0d0d0d] rounded-full">
+                    <div className="w-4 h-4 bg-white/10 rounded-sm flex items-center justify-center">
+                      <tag.icon className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-white text-sm font-sans">{tag.name}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

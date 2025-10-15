@@ -13,6 +13,7 @@ export const InfiniteLogos = ({
   items: {
     name: string;
     logo?: string;
+    icon?: React.ComponentType<{ className?: string }>;
   }[];
   direction?: "left" | "right";
   speed?: "fast" | "normal" | "slow";
@@ -98,7 +99,8 @@ export const InfiniteLogos = ({
             className="flex items-center gap-2 text-gray-400 text-base tracking-wide opacity-70"
             key={item.name + idx}
           >
-            {item.logo && <span className="text-lg">{item.logo}</span>}
+            {item.icon && <item.icon className="w-5 h-5 text-gray-400" />}
+            {item.logo && !item.icon && <span className="text-lg">{item.logo}</span>}
             <span className="whitespace-nowrap font-normal">{item.name}</span>
           </li>
         ))}

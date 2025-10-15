@@ -148,6 +148,12 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .font-satoshi {
+    font-family: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  }
+  .font-montserrat {
+    font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  }
 }
 
 /* Aceternity UI Effects */
@@ -176,13 +182,30 @@ body {
 }
 
 @keyframes scroll {
-  to {
-    transform: translate(calc(-20% - 0.5rem));
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-33.333% - 1rem));
+  }
+}
+
+@keyframes scroll-reverse {
+  0% {
+    transform: translateX(calc(-33.333% - 1rem));
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 
 .animate-scroll {
-  animation: scroll var(--animation-duration, 40s)
+  animation: scroll var(--animation-duration, 30s)
+    var(--animation-direction, forwards) linear infinite;
+}
+
+.animate-scroll-reverse {
+  animation: scroll-reverse var(--animation-duration, 30s)
     var(--animation-direction, forwards) linear infinite;
 }
 
@@ -285,4 +308,14 @@ html {
 }
 ::-webkit-scrollbar-corner {
   background: #0a0a0a;
+}
+
+/* Prevent scrollbar flash when Cal.com modal opens */
+body {
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar during modal transitions */
+.cal-modal-loading body {
+  overflow: hidden;
 }
