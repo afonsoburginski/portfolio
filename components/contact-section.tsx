@@ -10,7 +10,7 @@ export function ContactSection() {
 
   return (
     <section id="contact" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
-
+      {/* Spotlight background - slightly overlaps previous section */}
       <div className="absolute -top-16 md:-top-8 left-0 right-0 h-[160%] w-full pointer-events-none">
         <Spotlight
           gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(210, 30%, 90%, .15) 0, hsla(210, 20%, 70%, .08) 50%, hsla(210, 15%, 60%, 0) 80%)"
