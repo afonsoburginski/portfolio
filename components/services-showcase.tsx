@@ -1,18 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
-import { TypographyH2, TypographyP } from "@/components/ui/typography";
 import { getCalApi } from "@calcom/embed-react";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import Image from "next/image";
 import { 
-  Sparkles,
   Smartphone,
   Globe,
   Server,
   Code,
   Shield,
-  Lock,
   Key,
   Database as Db,
   GitBranch,
@@ -164,7 +161,7 @@ export function ServicesShowcase() {
               className="mb-8"
             >
               <div className="flex flex-wrap gap-3">
-                {tags.map((tag, index) => (
+                {tags.map((tag) => (
                   <span
                     key={tag}
                     className="px-4 py-2 bg-[#0d0d0d] rounded-lg text-white text-sm font-sans"

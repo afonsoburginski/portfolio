@@ -68,7 +68,7 @@ export const Hero = () => {
             duration={1}
             clockwise={true}
           >
-            Let's Build Together
+            Let&apos;s Build Together
           </HoverBorderGradient>
           
           <HoverBorderGradient

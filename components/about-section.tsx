@@ -78,7 +78,7 @@ export function AboutSection() {
               viewport={{ once: true }}
             >
               <p className="text-white/70 text-lg leading-relaxed font-sans">
-                I'm Afonso Burginski, a Senior Mobile Developer with 6+ years of experience. I specialize in React Native and Next.js, building scalable mobile apps and web applications. Currently focused on mobile development while maintaining expertise in full-stack solutions.
+                I&apos;m Afonso Burginski, a Senior Mobile Developer with 6+ years of experience. I specialize in React Native and Next.js, building scalable mobile apps and web applications. Currently focused on mobile development while maintaining expertise in full-stack solutions.
               </p>
             </motion.div>
 

@@ -1,6 +1,4 @@
 "use client";
-import { motion } from "motion/react";
-import { Code2 } from "lucide-react";
 import { getCalApi } from "@calcom/embed-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
