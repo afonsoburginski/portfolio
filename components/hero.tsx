@@ -93,6 +93,7 @@ export const Hero = () => {
           <InfiniteLogos
             items={[
               { name: "GEM JHONROB", icon: Building2 },
+              { name: "EasyDriver", icon: Smartphone },
               { name: "Stormz+", icon: Zap },
               { name: "Orcanorte", icon: Globe },
               { name: "FFmpeg Transcoder", icon: Code },

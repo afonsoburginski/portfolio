@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 // Portrait cards (height > width)
 const col1 = [
   { id: 4, image: "/projects/orcanorte.png", height: 320, href: "/case-study/orcanorte" },
-  { id: 2, image: "https://framerusercontent.com/images/bed888CTflXNK3KFX1R7VhRMtE.png", height: 320 },
+  { id: 2, image: "/projects/easydriver-admin.png", height: 320, href: "/case-study/easydriver" },
   { id: 3, image: "https://framerusercontent.com/images/RYRvZnstUexQMOl8zRyrvDfDT0.png", height: 320 },
 ];
 
