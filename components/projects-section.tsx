@@ -6,19 +6,19 @@ import Image from "next/image";
 // 3 columns layout - left & right equal size, center slightly taller
 // Portrait cards (height > width)
 const col1 = [
-  { id: 1, image: "/projects/stormzplus.png", height: 320, href: "/case-study/stormzplus" },
+  { id: 4, image: "/projects/orcanorte.png", height: 320, href: "/case-study/orcanorte" },
   { id: 2, image: "https://framerusercontent.com/images/bed888CTflXNK3KFX1R7VhRMtE.png", height: 320 },
   { id: 3, image: "https://framerusercontent.com/images/RYRvZnstUexQMOl8zRyrvDfDT0.png", height: 320 },
 ];
 
 const col2 = [
-  { id: 4, image: "/image.png", height: 360, href: "https://www.orcanorte.com.br/" },
-  { id: 5, image: "https://framerusercontent.com/images/roWFLkzHAotwSx5UxGPxpxMeA.jpg", height: 360 },
+  { id: 1, image: "/projects/stormzplus.png", height: 360, href: "/case-study/stormzplus" },
+  { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
   { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 360 },
 ];
 
 const col3 = [
-  { id: 7, image: "/image.png", height: 320, href: "https://gem.jhonrob.com.br/" },
+  { id: 7, image: "/projects/gem-jhonrob-1.png", height: 320, href: "/case-study/gem-jhonrob" },
   { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 320 },
   { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 320 },
 ];

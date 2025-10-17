@@ -1,0 +1,99 @@
+[1mdiff --git a/lib/case-studies/index.ts b/lib/case-studies/index.ts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..74846e2[m
+[1m--- /dev/null[m
+[1m+++ b/lib/case-studies/index.ts[m
+[36m@@ -0,0 +1,14 @@[m
+[32m+[m[32mimport { CaseStudy } from "./types";[m
+[32m+[m[32mimport { stormzplus } from "./stormzplus";[m
+[32m+[m[32mimport { nextjsFfmpegTranscoder } from "./nextjs-ffmpeg-transcoder";[m
+[32m+[m[32mimport { orcanorte } from "./orcanorte";[m
+[32m+[m
+[32m+[m[32mexport const CASE_STUDIES: Record<string, CaseStudy> = {[m
+[32m+[m[32m  stormzplus,[m
+[32m+[m[32m  "nextjs-ffmpeg-transcoder": nextjsFfmpegTranscoder,[m
+[32m+[m[32m  orcanorte,[m
+[32m+[m[32m  // Additional case studies will be added here as separate files[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mexport { type CaseStudy } from "./types";[m
+[32m+[m
+[1mdiff --git a/lib/case-studies/nextjs-ffmpeg-transcoder.ts b/lib/case-studies/nextjs-ffmpeg-transcoder.ts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..c28037f[m
+[1m--- /dev/null[m
+[1m+++ b/lib/case-studies/nextjs-ffmpeg-transcoder.ts[m
+[36m@@ -0,0 +1,122 @@[m
+[32m+[m[32mimport { CaseStudy } from "./types";[m
+[32m+[m
+[32m+[m[32mexport const nextjsFfmpegTranscoder: CaseStudy = {[m
+[32m+[m[32m  title: "FFmpeg Video Transcoder – Open Source HLS Pipeline",[m
+[32m+[m[32m  description:[m
+[32m+[m[32m    "Open‑source, production‑grade video ingestion and HLS transcoding system. Unlimited uploads via Go server, local FFmpeg processing, Cloudflare R2 storage, and a modern Next.js admin dashboard. Extracted from Stormzplus and released ready‑to‑use for real projects.",[m
+[32m+[m[32m  image: "/projects/nextjs-ffmpeg-transcoder-2.png",[m
+[32m+[m[32m  role: "Creator & Maintainer",[m
+[32m+[m[32m  timeline: "2024–2025",[m
+[32m+[m[32m  stack:[m
+[32m+[m[32m    "Next.js 15 (App Router), React 19, TypeScript, Go 1.22+, FFmpeg/FFprobe + NVIDIA NVENC (CUDA), Cloudflare R2 (S3), Zustand, TanStack React Query, Radix UI, TailwindCSS 4, Lucide Icons, Sonner",[m
+[32m+[m[32m  githubUrl: "https://github.com/afonsoburginski/nextjs-ffmpeg-transcoder",[m
+[32m+[m[32m  story:[m
+[32m+[m[32m    "While building Stormzplus, I hit the Node.js ~2GB upload limit and wrote a Go upload server + FFmpeg HLS encoder. After proving the pipeline in production, I open‑sourced it as a ready‑to‑use toolkit so teams can ship video platforms without wrestling with file‑size limits or complex media plumbing.",[m
+[32m+[m[32m  objectives: [[m
+[32m+[m[32m    "Eliminate the Node.js 2GB file upload limitation using a dedicated Go server with streaming I/O.",[m
+[32m+[m[32m    "Provide a complete, working FFmpeg pipeline for HLS generation with multiple bitrates and audio tracks.",[m
+[32m+[m[32m    "Use NVIDIA NVENC hardware acceleration to dramatically speed up encoding while reducing CPU load.",[m
+[32m+[m[32m    "Demonstrate modern patterns: Zustand for upload queue, React Query for data, Radix UI for accessibility.",[m
+[32m+[m[32m    "Publish to Cloudflare R2 with CDN‑ready URLs and far‑future caching semantics.",[m
+[32m+[m[32m    "Ship as an educational open‑source project with clear docs, setup scripts, and contributing guidelines.",[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  challenges: [[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "Breaking the 2GB barrier with Go",[m
+[32m+[m[32m      detail:[m
+[32m+[m[32m        "Node.js has a V8 heap constraint that caps file uploads at ~2GB. I built a standalone Go HTTP server that uses streaming I/O with a 64KB buffer, real‑time progress updates every 500ms, and constant memory usage regardless of file size. The server exposes /upload, /progress, and /health endpoints with full CORS support for seamless integration with Next.js.",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "Production‑ready FFmpeg HLS pipeline",[m
+[32m+[m[32m      detail:[m
+[32m+[m[32m        "The encoder runs FFmpeg locally to generate HLS (master playlist + variant streams). I orchestrate multi‑bitrate video (H.264), separate audio tracks, and thumbnails in a single pass. Each job creates a UUID that names both the temp directory and the R2 folder, ensuring deterministic paths and idempotent uploads.",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "GPU prerequisites & NVENC availability",[m
+[32m+[m[32m      detail:[m
+[32m+[m[32m        "Ensure NVIDIA drivers + CUDA/NVENC stack are available and that FFmpeg is built with nvcodec. The pipeline auto-detects GPU and prefers `h264_nvenc`/`hevc_nvenc` when present, falling back to CPU if unavailable.",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "Real‑time upload queue with Zustand",[m
+[32m+[m[32m      detail:[m
+[32m+[m[32m        "I designed an upload store that manages job lifecycle: queued → uploading → encoding → publishing → ready. The store polls the Go server every second for progress, updates the UI with upload speed/MB, and triggers Next.js API routes for post‑upload processing. All state is centralized, making it trivial to add features like pause/resume.",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "Developer experience and Windows support",[m
+[32m+[m[32m      detail:[m
+[32m+[m[32m        "I included build.bat for Windows users (who often struggle with Go builds), a detailed SETUP.md with troubleshooting, and a CONTRIBUTING.md that explains architectural decisions. The goal was to make it easy for anyone to clone, run, and understand the full stack in under 10 minutes.",[m
+[32m+[m[32m    },[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  highlights: [[m
+[32m+[m[32m    "Unlimited file uploads via Go server with streaming I/O—tested with 10GB+ files.",[m
+[32m+[m[32m    "Complete FFmpeg HLS pipeline: multi‑bitrate video, audio tracks, thumbnails, and master playlists.",[m
+[32m+[m[32m    "GPU‑accelerated encoding using NVIDIA NVENC (`h264_nvenc`/`hevc_nvenc`) with configurable presets and AQ/lookahead.",[m
+[32m+[m[32m    "Cloudflare R2 integration with S3‑compatible API and CDN‑ready public URLs.",[m
+[32m+[m[32m    "Real‑time progress tracking: upload speed, MB transferred, encoding status, and publishing stage.",[m
+[32m+[m[32m    "Modern UI: collections grid, media table with context menus, chapters editor, and job status indicators.",[m
+[32m+[m[32m    "Cross‑platform: Windows batch scripts, Linux/Mac shell support, and Bun/npm compatibility.",[m
+[32m+[m[32m    "Open‑source (MIT): clean code, documented decisions, and contribution‑friendly structure.",[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  outcomes: [[m
+[32m+[m[32m    "Open‑sourced on GitHub with comprehensive README and setup guide.",[m
+[32m+[m[32m    "Proven in production: powers the Stormzplus streaming platform.",[m
+[32m+[m[32m    "Educational resource for developers building video platforms.",[m
+[32m+[m[32m    "Zero file size limitations: handles files of any size with constant memory usage.",[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  revenueNote:[m
+[32m+[m[32m    "This is a free, open‑source project (MIT license) built to help the developer community. The architecture is battle‑tested in production and designed to scale from hobby projects to commercial platforms.",[m
+[32m+[m[32m  sections: [[m
+[32m+[m[32m    {[m
+[32m+[m[32m      title: "The Product",[m
+[32m+[m[32m      body: [[m
+[32m+[m[32m        "Everything starts with collections—containers for related videos that keep your library organized. The dashboard shows quick action cards (Upload, Manage, Stream) and a grid of existing collections with stats: video count and total size.",[m
+[32m+[m[32m        "Click into any collection to see the media table: every video's status (queued/uploading/encoding/ready), duration, file size, view count. Progress bars update in real time during ingest and encode. Click 'Add more videos' to keep expanding your catalog wit

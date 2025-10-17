@@ -2,6 +2,7 @@
 import { getCalApi } from "@calcom/embed-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const Header = () => {
@@ -32,7 +33,7 @@ export const Header = () => {
           ? 'backdrop-blur-md bg-black/40 border border-white/10 shadow-lg rounded-2xl' 
           : ''
       }`}>
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Image
             src="/logo.png"
             alt="Afonso Burginski Logo"
@@ -41,7 +42,7 @@ export const Header = () => {
             className="rounded-lg"
           />
           <span className="text-white font-normal text-sm font-satoshi">Afonsodev.com</span>
-        </div>
+        </Link>
 
         {!isCaseStudy && (
           <div className="hidden md:flex items-center gap-8 text-base font-sans ml-auto mr-4">
