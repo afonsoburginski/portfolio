@@ -2,6 +2,7 @@
 import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 // 3 columns layout - left & right equal size, center slightly taller
 // Portrait cards (height > width)
@@ -26,6 +27,23 @@ const col3 = [
 const columns = [col1, col2, col3];
 
 export const ProjectsSection = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Calculate blur amount based on scroll position
+  // When at top (scrollY = 0), blur is maximum (20px)
+  // As user scrolls down, blur decreases much faster
+  const blurAmount = Math.max(0, 20 - (scrollY / 10)); // Changed from 15 to 10 for even faster transition
+  const opacity = Math.min(1, Math.max(0.3, 1 - (blurAmount / 20)));
+
   return (
     <section id="projects" className="relative pt-32 pb-12 px-6">
       <div className="max-w-[1600px] mx-auto">
@@ -33,7 +51,7 @@ export const ProjectsSection = () => {
           {columns.map((column, colIndex) => (
             <div
               key={colIndex}
-              className={`flex flex-col gap-2.5 flex-1 ${colIndex === 1 ? '-mt-24' : ''}`}
+              className={`flex flex-col gap-2.5 flex-1 ${colIndex === 1 ? '-mt-22' : ''}`}
             >
               {column.map((project, index) => (
                 <motion.a
@@ -44,7 +62,13 @@ export const ProjectsSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: colIndex * 0.1 + index * 0.1 }}
                   className="group relative overflow-hidden rounded-[4px] cursor-pointer block"
-                  style={{ height: `clamp(${colIndex === 1 ? '493.75px' : '462.72px'}, ${colIndex === 1 ? '52vh' : '48vh'}, ${colIndex === 1 ? '560px' : '520px'})` }}
+                  style={{ 
+                    height: `clamp(${colIndex === 1 ? '512px' : '462.72px'}, ${colIndex === 1 ? '55vh' : '48vh'}, ${colIndex === 1 ? '585px' : '520px'})`,
+                    transform: colIndex === 1 ? 'scale(1.05)' : 'scale(1)',
+                    filter: `blur(${blurAmount}px)`,
+                    opacity: opacity,
+                    transition: 'filter 0.3s ease-out, opacity 0.3s ease-out'
+                  }}
                 >
                   {/* Image */}
                   <Image

@@ -53,6 +53,12 @@ export const orcanorte: CaseStudy = {
   sections: [
     {
       title: "Architecture",
+      subsections: [
+        "Frontend",
+        "Authentication",
+        "Client State",
+        "UI Framework"
+      ],
       body: [
         "App Router (Next.js 14) with SSR/ISR where needed; React 18 + strict TypeScript.",
         "Auth/authorization with NextAuth and Prisma (PostgreSQL), per‑store roles and auditing.",
@@ -62,6 +68,12 @@ export const orcanorte: CaseStudy = {
     },
     {
       title: "Product",
+      subsections: [
+        "Explore & Search",
+        "Comparison",
+        "Cart & Lists",
+        "Vendor Pages"
+      ],
       body: [
         "Explore: search, filters by category/price/relevance, and multiple sort orders.",
         "Compare: select multiple items with visual price/spec diffs.",
@@ -71,6 +83,12 @@ export const orcanorte: CaseStudy = {
     },
     {
       title: "Plans & Boosting",
+      subsections: [
+        "Subscription Tiers",
+        "No Commissions",
+        "Automatic Ranking",
+        "Plan Metrics"
+      ],
       body: [
         "Basic/Plus/Premium subscriptions with no sales commission; automatic boosting in searches.",
         "Per‑plan metrics: views, quotes, conversions, and marketing campaigns.",

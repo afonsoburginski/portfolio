@@ -28,14 +28,19 @@ import {
 import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiTypescript, SiSupabase, SiPostgresql, SiDocker, SiGraphql, SiAmazons3, SiCloudflare } from "react-icons/si";
 
 const tags = [
-  "Mobile App Development",
+  "AI Project Consulting",
+  "Mobile App Development", 
   "Web App Development",
-  "Backend & APIs",
   "Full‑Stack Engineering",
   "Technical Consulting",
 ];
 
 const services = [
+  {
+    title: "AI-Generated Project Consulting",
+    desc: "Specialized consulting for projects created with V0, Bolt.new, Lovable, and similar AI tools. I optimize performance, enhance functionality, implement best practices, and guide your AI-generated prototype to production-ready standards with enterprise-grade reliability.",
+    icon: Rocket
+  },
   {
     title: "Mobile Apps",
     desc: "Cross‑platform React Native apps with native performance and polished UX: offline‑first data, deep links, push notifications, secure auth, and smooth 60fps interactions. Release automation, crash analytics, and feature flags included for fast, safe iteration.",
@@ -45,11 +50,6 @@ const services = [
     title: "Web Applications", 
     desc: "Modern Next.js experiences with SSR/ISR, accessibility by default, and Core Web Vitals in the green. Scalable component systems, robust routing/data‑fetching, and SEO‑ready foundations that load fast and convert.",
     icon: Globe
-  },
-  {
-    title: "Backend APIs",
-    desc: "Robust REST services in Node.js & Go with clean architecture, input validation, RBAC, caching, and rate limiting. Observability (logs/metrics/traces), automated tests, and predictable performance backed by PostgreSQL.",
-    icon: Server
   },
   {
     title: "Full‑Stack Solutions",
@@ -104,7 +104,14 @@ const row2 = bottomTags.filter((_, i) => i % 2 !== 0);
 export function ServicesShowcase() {
   return (
     <section id="services" className="relative py-20 px-4 md:px-8">
-      <div className="max-w-[1600px] mx-auto">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+        style={{
+          backgroundImage: "url('/services-background.jpg')"
+        }}
+      />
+      <div className="max-w-[1600px] mx-auto relative z-10">
         {/* Top Container */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
           {/* Left Container */}
@@ -216,14 +223,14 @@ export function ServicesShowcase() {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="relative aspect-[16/9] rounded-2xl overflow-hidden group"
+            className="relative aspect-[4/3] rounded-2xl overflow-hidden group"
           >
             <Image
-              src="https://framerusercontent.com/images/p6Im6dfknHAI0ig4NqDcO4WNpc.jpg"
-              alt="design pic"
+              src="/services-background.png"
+              alt="services background"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-all duration-500 transform-gpu will-change-transform filter grayscale group-hover:grayscale-0 group-hover:scale-[1.06]"
+              className="object-contain transition-all duration-500 transform-gpu will-change-transform filter grayscale group-hover:grayscale-0 group-hover:scale-[1.06]"
               priority
             />
           </motion.div>

@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useMemo } from "react";
 import { ExternalLink, Github } from "lucide-react";
 import { CASE_STUDIES, type CaseStudy } from "@/lib/case-studies";
 
@@ -28,44 +28,106 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
       .trim()
       .replace(/\s+/g, "-");
 
-  // Build TOC from actual content order
-  const toc: { id: string; label: string }[] = [];
-  
-  if (data.story) toc.push({ id: "story", label: "Vision & MVP" });
-  if (data.sections) {
-    data.sections.forEach((s) => {
-      toc.push({ id: slugify(s.title), label: s.title });
-    });
-  }
-  if (data.outcomes && data.outcomes.length) toc.push({ id: "results", label: "Results" });
+  // Build TOC with hierarchy - cada projeto tem seções específicas
+  const toc = useMemo(() => {
+    const items: { id: string; label: string; level: number }[] = [];
+
+    // Sempre incluir seções básicas
+    if (data.story) items.push({ id: "story", label: "Vision & MVP", level: 0 });
+    items.push({ id: "stack", label: "Stack", level: 0 });
+    items.push({ id: "objectives", label: "Objectives", level: 0 });
+
+    // Challenges só como tópico principal, sem subtópicos
+    if (data.challenges && data.challenges.length) {
+      items.push({ id: "challenges", label: "Challenges & Solutions", level: 0 });
+    }
+
+    items.push({ id: "highlights", label: "Key Highlights", level: 0 });
+
+    // Seções específicas de cada projeto com seus próprios subtópicos
+    if (data.sections) {
+      data.sections.forEach((s) => {
+        const sectionId = slugify(s.title);
+        items.push({ id: sectionId, label: s.title, level: 0 });
+        
+        // Adicionar subsections se existirem
+        if (s.subsections && s.subsections.length > 0) {
+          s.subsections.forEach((subsection) => {
+            items.push({ 
+              id: `${sectionId}-${slugify(subsection)}`, 
+              label: subsection, 
+              level: 1 
+            });
+          });
+        }
+      });
+    }
+
+    if (data.outcomes && data.outcomes.length) items.push({ id: "results", label: "Results", level: 0 });
+
+    return items;
+  }, [data, slug]);
 
   const [activeId, setActiveId] = useState<string>(toc[0]?.id || "");
 
   useEffect(() => {
-    const ids = toc.map((t) => t.id);
-    const elements = ids
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => Boolean(el));
+    const handleScroll = () => {
+      const ids = toc.map((t) => t.id);
+      const elements = ids
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => Boolean(el));
 
-    if (!elements.length) return;
+      if (!elements.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: "-35% 0px -55% 0px", // focus around viewport center
-        threshold: [0, 0.25, 0.5, 0.75, 1],
+      // Get current scroll position
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // If we're at the bottom of the page, activate the last item
+      if (scrollY + windowHeight >= documentHeight - 100) {
+        setActiveId(ids[ids.length - 1]);
+        return;
       }
-    );
 
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+      // Find the section that's currently in view
+      // A section is "active" when its top is above 30% of viewport
+      let currentActiveId = ids[0];
+
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const element = elements[i];
+        const rect = element.getBoundingClientRect();
+        const elementTop = rect.top;
+
+        // Section is active if its top is above 30% of viewport
+        if (elementTop <= windowHeight * 0.3) {
+          currentActiveId = element.id;
+          break;
+        }
+      }
+
+      setActiveId(currentActiveId);
+    };
+
+    // Run once on mount
+    handleScroll();
+
+    // Add scroll listener with throttle
+    let rafId: number | null = null;
+    const scrollListener = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        handleScroll();
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', scrollListener, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', scrollListener);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [slug]);
 
   return (
@@ -78,7 +140,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
             <aside className="hidden lg:block">
               <div className="sticky top-28">
                 <p className="text-white/50 text-xs mb-3 font-sans uppercase tracking-wider">On this page</p>
-                <nav className="text-white/70 text-sm font-sans space-y-2">
+                <nav className="text-white/70 text-sm font-sans space-y-1">
                   {toc.map((item) => (
                     <a
                       key={item.id}
@@ -89,7 +151,13 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
                         target?.scrollIntoView({ behavior: "smooth", block: "start" });
                         setActiveId(item.id);
                       }}
-                      className={`block transition-colors ${activeId === item.id ? "text-white font-medium" : "text-white/60 hover:text-white"}`}
+                      className={`block py-1 transition-colors duration-200 ${
+                        item.level === 1 ? "pl-4 text-[13px]" : ""
+                      } ${
+                        activeId === item.id
+                          ? "text-white font-medium"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
                       aria-current={activeId === item.id ? "true" : undefined}
                     >
                       {item.label}
@@ -149,7 +217,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
 
             {/* Hero Images */}
             <div className="space-y-6 mb-12">
-              <div className="group relative rounded-lg overflow-hidden aspect-[16/11] bg-black/40 max-w-[1200px] mx-auto">
+              <div className="group relative rounded-lg overflow-hidden aspect-[16/9] bg-black/40 max-w-[1200px] mx-auto">
                 <Image
                   src={data.image}
                   alt={`${data.title} screenshot`}
@@ -161,7 +229,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
               </div>
               
               {data.image2 && (
-                <div className="group relative rounded-lg overflow-hidden aspect-[16/11] bg-black/40 max-w-[1200px] mx-auto">
+                <div className="group relative rounded-lg overflow-hidden aspect-[16/9] bg-black/40 max-w-[1200px] mx-auto">
                   <Image
                     src={data.image2}
                     alt={`${data.title} screenshot 2`}
@@ -215,8 +283,11 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
               <div className="mb-16 scroll-mt-32" id="challenges">
                 <h2 className="text-white font-satoshi text-[28px] mb-6 font-normal">Challenges & Solutions</h2>
                 <div className="space-y-6">
-                  {data.challenges.map((c) => (
-                    <div key={c.title} className="rounded-lg bg-[#0d0d0d] p-5 border border-white/5">
+                  {data.challenges.map((c, idx) => (
+                    <div
+                      key={c.title}
+                      className="rounded-lg bg-[#0d0d0d] p-5 border border-white/5"
+                    >
                       <p className="text-white font-sans mb-2">{c.title}</p>
                       <p className="text-white/70 font-sans text-[15px] leading-relaxed">{c.detail}</p>
                     </div>
@@ -241,27 +312,42 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
             {/* Sections with direct anchors */}
             {data.sections && data.sections.length > 0 && (
               <div className="mb-16">
-                {data.sections.map((s) => (
-                  <div key={s.title} className="mb-12 scroll-mt-32" id={slugify(s.title)}>
-                    <h2 className="text-white font-satoshi text-[28px] mb-6 font-normal">{s.title}</h2>
-                    <div className="space-y-4">
-                      {s.body.map((p, idx) => (
-                        <p key={idx} className="text-white/75 font-sans text-[21px] leading-[1.58] tracking-[-0.003em] font-light">{p}</p>
-                      ))}
-                    </div>
-                    {s.image && (
-                      <div className="group relative rounded-lg overflow-hidden aspect-[16/11] bg-black/40 mt-8 max-w-[1200px] mx-auto">
-                        <Image
-                          src={s.image}
-                          alt={`${s.title} screenshot`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 1200px"
-                          className="object-cover transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-110"
-                        />
+                {data.sections.map((s) => {
+                  const sectionId = slugify(s.title);
+                  return (
+                    <div key={s.title} className="mb-12 scroll-mt-32" id={sectionId}>
+                      <h2 className="text-white font-satoshi text-[28px] mb-6 font-normal">{s.title}</h2>
+                      <div className="space-y-4">
+                        {s.body.map((p, idx) => (
+                          <p key={idx} className="text-white/75 font-sans text-[21px] leading-[1.58] tracking-[-0.003em] font-light">{p}</p>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      {/* Subsections */}
+                      {s.subsections && s.subsections.length > 0 && (
+                        <div className="mt-8 space-y-6">
+                          {s.subsections.map((subsection) => (
+                            <div key={subsection} id={`${sectionId}-${slugify(subsection)}`} className="scroll-mt-32">
+                              <h3 className="text-white font-satoshi text-[20px] mb-3 font-normal">{subsection}</h3>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {s.image && (
+                        <div className="group relative rounded-lg overflow-hidden aspect-[16/9] bg-black/40 mt-8 max-w-[1200px] mx-auto">
+                          <Image
+                            src={s.image}
+                            alt={`${s.title} screenshot`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 1200px"
+                            className="object-cover transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-110"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 

@@ -53,6 +53,13 @@ export const stormzplus: CaseStudy = {
   sections: [
     {
       title: "Architecture Overview",
+      subsections: [
+        "Web App",
+        "Auth & Database",
+        "Payments",
+        "Video Pipeline",
+        "Observability"
+      ],
       body: [
         "Web app: Next.js 15 (App Router, RSC), React 19, TailwindCSS, Framer Motion.",
         "Auth & data: Supabase Auth + PostgreSQL accessed via Drizzle ORM.",
@@ -63,6 +70,11 @@ export const stormzplus: CaseStudy = {
     },
     {
       title: "Admin Dashboard",
+      subsections: [
+        "Content Management",
+        "Customer Management",
+        "Episode Ingestion"
+      ],
       body: [
         "Full content CMS: create/update/delete titles, seasons, episodes, genres, and featured spots.",
         "Customer & subscription management: inspect accounts, handle plan changes, resolve invoice/payment issues.",
@@ -71,6 +83,12 @@ export const stormzplus: CaseStudy = {
     },
     {
       title: "Video Pipeline (Go + FFmpeg NVENC)",
+      subsections: [
+        "Job Processing",
+        "GPU Acceleration",
+        "HLS Generation",
+        "Cache Strategy"
+      ],
       body: [
         "Each ingest job creates a UUID used for both the R2 folder and DB record, ensuring deterministic paths.",
         "FFmpeg is invoked with NVENC to leverage GPU lanes and accelerate ladder generation (multiple bitrates/resolutions).",
@@ -80,6 +98,11 @@ export const stormzplus: CaseStudy = {
     },
     {
       title: "Lessons Learned",
+      subsections: [
+        "Idempotency",
+        "Write Batching",
+        "CDN Design"
+      ],
       body: [
         "Idempotency and job queuing are critical for robust media pipelines.",
         "Batching playback writes drastically reduces DB load without losing fidelity.",
@@ -88,6 +111,11 @@ export const stormzplus: CaseStudy = {
     },
     {
       title: "Next Steps",
+      subsections: [
+        "Recommendations",
+        "Seek Previews",
+        "Publisher Accounts"
+      ],
       body: [
         "Recommendations using viewing vectors and simple embeddings.",
         "Chapter thumbnails (VTT sprites) and improved seek previews.",

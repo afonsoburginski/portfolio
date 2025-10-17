@@ -9,7 +9,7 @@ import { getCalApi } from "@calcom/embed-react";
 export function ContactSection() {
 
   return (
-    <section id="contact" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
+    <section id="social" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
       {/* Spotlight background - slightly overlaps previous section */}
       <div className="absolute -top-16 md:-top-8 left-0 right-0 h-[160%] w-full pointer-events-none">
         <Spotlight
@@ -44,7 +44,7 @@ export function ContactSection() {
             </div>
           </motion.div>
                   <h3 className="text-white font-satoshi text-[36px] font-normal leading-snug">
-                    Ready to build something amazing together? Let&apos;s turn your ideas into powerful mobile and web solutions!
+                    Let's build something amazing together. I'm ready to turn your ideas into powerful mobile and web solutions.
                   </h3>
           <HoverBorderGradient
             as="button"

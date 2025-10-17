@@ -4,7 +4,7 @@ import { getCalApi } from "@calcom/embed-react";
 import { InfiniteLogos } from "./ui/infinite-logos";
 import { HoverBorderGradient } from "./ui/hover-border-gradient";
 import { Spotlight } from "./ui/spotlight-new";
-import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiSupabase } from "react-icons/si";
+import { Building2, Smartphone, Globe, Code, Zap } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -35,7 +35,7 @@ export const Hero = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[56px] md:text-[80px] lg:text-[96px] font-normal text-white mb-4 leading-[1.03] tracking-[-0.02em] font-satoshi"
         >
-          Mobile Apps that
+          Mobile and Web Apps that
           <br />
           users love Indeed
         </motion.h1>
@@ -88,15 +88,17 @@ export const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="w-full max-w-4xl mx-auto mt-8"
+          className="w-full max-w-4xl mx-auto mt-16 mb-16"
         >
           <InfiniteLogos
             items={[
-              { name: "React Native", icon: SiReact },
-              { name: "Next.js", icon: SiNextdotjs },
-              { name: "Node.js", icon: SiNodedotjs },
-              { name: "Golang", icon: SiGo },
-              { name: "Supabase", icon: SiSupabase },
+              { name: "GEM JHONROB", icon: Building2 },
+              { name: "Stormz+", icon: Zap },
+              { name: "Orcanorte", icon: Globe },
+              { name: "FFmpeg Transcoder", icon: Code },
+              { name: "Hospital Systems", icon: Smartphone },
+              { name: "Mobile Apps", icon: Smartphone },
+              { name: "Custom Solutions", icon: Code },
             ]}
             direction="left"
             speed="fast"

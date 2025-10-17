@@ -68,7 +68,7 @@ export const Header = () => {
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-gray-300 hover:text-white transition-colors"
             >
-              Contact
+              Socials
             </button>
           </div>
         )}

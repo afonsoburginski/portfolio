@@ -68,25 +68,43 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
   sections: [
     {
       title: "The Product",
+      subsections: [
+        "Collections",
+        "Media Table",
+        "Video Details"
+      ],
+      image: "/projects/nextjs-ffmpeg-transcoder-1.png",
       body: [
         "Everything starts with collections—containers for related videos that keep your library organized. The dashboard shows quick action cards (Upload, Manage, Stream) and a grid of existing collections with stats: video count and total size.",
         "Click into any collection to see the media table: every video's status (queued/uploading/encoding/ready), duration, file size, view count. Progress bars update in real time during ingest and encode. Click 'Add more videos' to keep expanding your catalog without leaving the page.",
         "Clicking a video opens the full dialog: an HLS player with quality selector, video metadata (title, duration, size, views), copyable HLS/CDN URLs, thumbnail upload, and quick actions (download, delete, manage subtitles). Everything you need in one place.",
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-1.png",
     },
     {
       title: "How It Works",
+      subsections: [
+        "Upload Flow",
+        "Encoding Process",
+        "R2 Publishing",
+        "State Management"
+      ],
+      image: "/projects/nextjs-ffmpeg-transcoder-2.png",
       body: [
         "The stack is deliberately simple: Next.js 15 (App Router) handles admin UI and API orchestration. A Go HTTP server runs on port 8081 for unlimited uploads with streaming I/O. FFmpeg/FFprobe process videos locally. Cloudflare R2 stores the final HLS with CDN edge caching. Zustand manages upload queue state; React Query handles collections/videos data.",
         "Drop a file → the UI creates a job (UUID) and sends it to the Go server via multipart POST. The server streams to temp with a 64KB buffer, reporting progress every 500ms. Once complete, it returns the temp path and triggers the Next.js encode route.",
         "FFmpeg runs locally: with NVENC (h264_nvenc/hevc_nvenc) if a compatible NVIDIA GPU is detected, otherwise falls back to libx264. It generates HLS (master playlist + multi-bitrate variants), audio tracks, and thumbnails—all keyed by UUID.",
         "Assets upload to Cloudflare R2 in parallel with cache headers tuned for edge hits. The final HLS URL uses NEXT_PUBLIC_CDN_BASE_URL. Temp files clean up automatically; the store updates the job to 'ready' and the UI reflects it instantly.",
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-2.png",
     },
     {
       title: "GPU Acceleration",
+      subsections: [
+        "Streaming I/O",
+        "NVENC Offloading",
+        "Quality Presets",
+        "Flexibility"
+      ],
+      image: "/projects/nextjs-ffmpeg-transcoder-3.png",
       body: [
         "Node.js caps uploads at ~2GB due to V8 heap limits. Go's streaming I/O uses constant memory (~64KB buffer) regardless of file size—tested with 10GB+ files. The server is stateless: progress lives in-memory and GCs when jobs finish. Deployment is a single binary (Windows: stormz-upload-server.exe).",
         "NVENC offloads encoding to the GPU, dramatically reducing CPU load and encode time. When a compatible NVIDIA GPU is present, the encoder automatically switches to h264_nvenc or hevc_nvenc. If unavailable, it falls back to libx264—same output, just slower.",
@@ -94,10 +112,16 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
         "Example command: ffmpeg -hwaccel cuda -i input.mp4 -c:v h264_nvenc -rc vbr_hq -b:v 3000k -maxrate 3210k -bufsize 4500k -rc-lookahead 20 -spatial-aq 1 -aq-strength 8 -hls_time 4 -hls_playlist_type vod -hls_segment_filename out_%03d.ts index.m3u8",
         "This design keeps the system flexible: run it on a gaming rig with RTX GPU or a cloud VM with CPU-only—no code changes needed.",
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-3.png",
     },
     {
       title: "Why It Matters",
+      subsections: [
+        "Upload Limits",
+        "Complete Pipeline",
+        "Production Patterns",
+        "Modularity",
+        "Getting Started"
+      ],
       body: [
         "Eliminates the Node.js upload ceiling: handle files of any size without memory blowups or crashes. Streaming I/O is critical—buffering entire files into memory doesn't scale.",
         "Provides a complete, working HLS pipeline with GPU acceleration and CDN-ready outputs—no guesswork on FFmpeg flags or R2 setup. UUIDs for job/folder names ensure deterministic paths and prevent race conditions.",
@@ -108,6 +132,13 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
     },
     {
       title: "Get Started",
+      subsections: [
+        "Installation",
+        "Environment Setup",
+        "Build Server",
+        "Start Services",
+        "Test Flow"
+      ],
       body: [
         "Clone: git clone https://github.com/afonsoburginski/nextjs-ffmpeg-transcoder",
         "Setup env: cp .env.example .env.local and fill R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and NEXT_PUBLIC_CDN_BASE_URL.",

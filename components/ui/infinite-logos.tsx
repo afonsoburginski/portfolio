@@ -23,20 +23,20 @@ export const InfiniteLogos = ({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLUListElement>(null);
 
+  const [start, setStart] = useState(false);
+
   useEffect(() => {
     addAnimation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  const [start, setStart] = useState(false);
-  
   function addAnimation() {
     if (containerRef.current && scrollerRef.current) {
       const scrollerContent = Array.from(scrollerRef.current.children);
 
-      // Duplicate items multiple times for truly infinite seamless loop
-      // We create 4 copies to ensure smooth infinite scrolling
-      for (let i = 0; i < 4; i++) {
+      // Duplicate items 3 times for seamless infinite loop
+      // This matches the pattern used in services-showcase for consistent smooth scrolling
+      for (let i = 0; i < 3; i++) {
         scrollerContent.forEach((item) => {
           const duplicatedItem = item.cloneNode(true);
           if (scrollerRef.current) {
@@ -97,12 +97,12 @@ export const InfiniteLogos = ({
       >
         {items.map((item, idx) => (
           <li
-            className="flex items-center gap-2 text-gray-400 text-base tracking-wide opacity-70"
-            key={item.name + idx}
+            className="flex items-center gap-4 text-white/60 text-xl tracking-wide opacity-90"
+            key={`${item.name}-original-${idx}`}
           >
-            {item.icon && <item.icon className="w-5 h-5 text-gray-400" />}
-            {item.logo && !item.icon && <span className="text-lg">{item.logo}</span>}
-            <span className="whitespace-nowrap font-normal">{item.name}</span>
+            {item.icon && <item.icon className="w-7 h-7 text-white/50" />}
+            {item.logo && !item.icon && <span className="text-2xl">{item.logo}</span>}
+            <span className="whitespace-nowrap font-medium font-satoshi">{item.name}</span>
           </li>
         ))}
       </ul>

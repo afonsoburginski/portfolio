@@ -1,9 +1,9 @@
 import { CaseStudy } from "./types";
 
 export const gemJhonrob: CaseStudy = {
-  title: "GEM Jhon Rob – Enterprise ERP System",
+  title: "GEM Jhonrob – Enterprise ERP System",
   description:
-    "A comprehensive, full‑stack ERP system built for Jhon Rob industrial operations. Features production order management, Kanban task workflows, expedition tracking, real‑time collaboration, and a complete audit system. The platform handles complex manufacturing processes with enterprise‑grade reliability and performance.",
+    "A comprehensive, full‑stack ERP system built for Jhonrob industrial operations. Features production order management, Kanban task workflows, expedition tracking, real‑time collaboration, and a complete audit system. The platform handles complex manufacturing processes with enterprise‑grade reliability and performance.",
   image: "/projects/gem-jhonrob-1.png",
   image2: "/projects/gem-jhonrob-2.png",
   role: "Full‑stack Engineer & Technical Lead",
@@ -12,7 +12,7 @@ export const gemJhonrob: CaseStudy = {
     "Next.js 15, React 19, TypeScript, Prisma ORM, Supabase (Auth/DB/Realtime), PostgreSQL, TanStack Query, Zustand, TailwindCSS, Framer Motion, Tauri (Desktop), Docker",
   liveUrl: "https://gem.jhonrob.com.br/",
   story:
-    "I architected and built GEM as a mission‑critical ERP to digitize and optimize Jhon Rob's manufacturing operations. The system replaces legacy spreadsheet‑based workflows with a modern, real‑time platform that connects production planning, task management, expedition logistics, and team collaboration—all while maintaining sub‑second response times and 99.9% uptime.",
+    "I architected and built GEM as a mission‑critical ERP to digitize and optimize Jhonrob's manufacturing operations. The system replaces legacy spreadsheet‑based workflows with a modern, real‑time platform that connects production planning, task management, expedition logistics, and team collaboration—all while maintaining sub‑second response times and 99.9% uptime.",
   objectives: [
     "Design a unified platform to manage production orders, tasks, expedition logistics, and team workflows in one cohesive system.",
     "Integrate seamlessly with existing Java/Spring Boot backend APIs (api.jhonrob.com.br) for production order data.",
@@ -63,6 +63,15 @@ export const gemJhonrob: CaseStudy = {
   sections: [
     {
       title: "System Architecture",
+      subsections: [
+        "Frontend Stack",
+        "State Management",
+        "Backend & Database",
+        "Real-time Sync",
+        "External APIs",
+        "Desktop Application",
+        "Infrastructure"
+      ],
       body: [
         "Frontend: Next.js 15 (App Router, RSC, Turbopack), React 19, TypeScript, TailwindCSS, Framer Motion for animations.",
         "State Management: Zustand for global state, TanStack Query for server cache with automatic refetch and stale‑while‑revalidate.",
@@ -75,6 +84,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Production Order Management",
+      subsections: [
+        "Real-time Search",
+        "Order Details",
+        "External Sync",
+        "Batch Operations",
+        "Reporting & Export"
+      ],
       body: [
         "Real‑time search across 10,000+ production orders (OFs) with debounced queries and indexed lookups.",
         "Detailed order view showing items, shipments, deadlines, products, and linked tasks.",
@@ -85,6 +101,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Kanban Task System",
+      subsections: [
+        "Drag & Drop",
+        "Real-time Updates",
+        "Advanced Filtering",
+        "Task Details Dialog",
+        "Soft Delete & Recovery"
+      ],
       body: [
         "Drag‑and‑drop task management with dnd‑kit supporting keyboard navigation and touch gestures.",
         "Real‑time multi‑user updates: see changes from other users within 200ms without refresh.",
@@ -96,6 +119,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Expedition & Logistics Module",
+      subsections: [
+        "Shipment Tracking",
+        "Embarque Management",
+        "Construction Deliveries",
+        "Batch Updates",
+        "Location Search"
+      ],
       body: [
         "Track shipments (expedições) with status updates, delivery dates, and linked production orders.",
         "Itens de embarque management with real‑time API sync to external systems.",
@@ -106,6 +136,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Audit & Compliance System",
+      subsections: [
+        "Automatic Detection",
+        "Immutable Records",
+        "Permission Control",
+        "Timeline View",
+        "Async Logging"
+      ],
       body: [
         "Centralized audit service (task-audit-service.ts) detecting 20+ event types automatically.",
         "Logs every field change with before/after values, user info, and timestamps.",
@@ -117,6 +154,15 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Performance Engineering",
+      subsections: [
+        "Multi-layer Caching",
+        "Cache Invalidation",
+        "Query Optimization",
+        "Warmup Scripts",
+        "Server Components",
+        "Code Splitting",
+        "F5 Safety"
+      ],
       body: [
         "Multi‑layer caching: Zustand (global state), TanStack Query (server cache, 15s TTL), in‑memory Map (comments, 15s TTL).",
         "Intelligent cache invalidation via Supabase Realtime—changes trigger automatic refetch.",
@@ -129,6 +175,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Desktop Application (Tauri)",
+      subsections: [
+        "Native Builds",
+        "Auto-updater",
+        "Notifications",
+        "Offline Mode",
+        "System Integration"
+      ],
       body: [
         "Native Windows/Mac/Linux builds with ~50MB installer size (vs 200MB+ Electron).",
         "Auto‑updater with signed releases using RSA private keys for security.",
@@ -139,6 +192,14 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Lessons Learned",
+      subsections: [
+        "Real-time is Critical",
+        "Smart Caching",
+        "Async Logging",
+        "Granular Permissions",
+        "Desktop Performance",
+        "Optimization Impact"
+      ],
       body: [
         "Real‑time sync is non‑negotiable for collaborative systems—Supabase Realtime was a game‑changer.",
         "Intelligent caching with aggressive invalidation is the key to both speed and correctness.",
@@ -150,6 +211,13 @@ export const gemJhonrob: CaseStudy = {
     },
     {
       title: "Future Enhancements",
+      subsections: [
+        "Machine Learning",
+        "Mobile App",
+        "GraphQL API",
+        "Analytics Dashboard",
+        "Webhooks"
+      ],
       body: [
         "Machine learning for task deadline predictions based on historical data.",
         "Mobile app (React Native) for field workers and delivery tracking.",
