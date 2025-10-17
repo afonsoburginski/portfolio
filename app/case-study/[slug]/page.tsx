@@ -7,7 +7,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { use, useEffect, useState, useMemo } from "react";
 import { ExternalLink, Github } from "lucide-react";
-import { CASE_STUDIES, type CaseStudy } from "@/lib/case-studies";
+import { CASE_STUDIES } from "@/lib/case-studies";
 
 // Case studies are now imported from lib/case-studies/
 // Each project has its own file to prevent interference between case studies
@@ -16,11 +16,6 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
   const { slug } = use(params);
   const data = CASE_STUDIES[slug];
   
-  if (!data) {
-    console.error(`Case study not found for slug: ${slug}`);
-    return notFound();
-  }
-
   const slugify = (text: string) =>
     text
       .toLowerCase()
@@ -30,6 +25,8 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
 
   // Build TOC with hierarchy - cada projeto tem seções específicas
   const toc = useMemo(() => {
+    if (!data) return [];
+    
     const items: { id: string; label: string; level: number }[] = [];
 
     // Sempre incluir seções básicas
@@ -66,7 +63,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
     if (data.outcomes && data.outcomes.length) items.push({ id: "results", label: "Results", level: 0 });
 
     return items;
-  }, [data, slug]);
+  }, [data]);
 
   const [activeId, setActiveId] = useState<string>(toc[0]?.id || "");
 
@@ -128,7 +125,12 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
       window.removeEventListener('scroll', scrollListener);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [slug]);
+  }, [toc]);
+
+  if (!data) {
+    console.error(`Case study not found for slug: ${slug}`);
+    return notFound();
+  }
 
   return (
     <div className="relative min-h-screen bg-black overflow-visible">
@@ -283,7 +285,7 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
               <div className="mb-16 scroll-mt-32" id="challenges">
                 <h2 className="text-white font-satoshi text-[28px] mb-6 font-normal">Challenges & Solutions</h2>
                 <div className="space-y-6">
-                  {data.challenges.map((c, idx) => (
+                  {data.challenges.map((c) => (
                     <div
                       key={c.title}
                       className="rounded-lg bg-[#0d0d0d] p-5 border border-white/5"

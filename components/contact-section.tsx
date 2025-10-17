@@ -44,7 +44,7 @@ export function ContactSection() {
             </div>
           </motion.div>
                   <h3 className="text-white font-satoshi text-[36px] font-normal leading-snug">
-                    Let's build something amazing together. I'm ready to turn your ideas into powerful mobile and web solutions.
+                    Let&apos;s build something amazing together. I&apos;m ready to turn your ideas into powerful mobile and web solutions.
                   </h3>
           <HoverBorderGradient
             as="button"
