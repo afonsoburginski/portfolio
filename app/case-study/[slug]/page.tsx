@@ -219,25 +219,25 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
 
             {/* Hero Images */}
             <div className="space-y-6 mb-12">
-              <div className="group relative rounded-lg overflow-hidden aspect-[4/3] bg-black/40 max-w-[1200px] mx-auto">
+              <div className="group relative rounded-lg overflow-hidden aspect-[3/4] md:aspect-[4/3] bg-black/40 max-w-[1200px] mx-auto">
                 <Image
                   src={data.image}
                   alt={`${data.title} screenshot`}
                   fill
                   sizes="(max-width: 768px) 100vw, 1200px"
-                  className="object-contain transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-105"
+                  className="object-contain transition-all duration-500 md:filter md:grayscale md:group-hover:grayscale-0 group-hover:scale-105"
                   priority
                 />
               </div>
               
               {data.image2 && (
-                <div className="group relative rounded-lg overflow-hidden aspect-[4/3] bg-black/40 max-w-[1200px] mx-auto">
+                <div className="group relative rounded-lg overflow-hidden aspect-[3/4] md:aspect-[4/3] bg-black/40 max-w-[1200px] mx-auto">
                   <Image
                     src={data.image2}
                     alt={`${data.title} screenshot 2`}
                     fill
                     sizes="(max-width: 768px) 100vw, 1200px"
-                    className="object-contain transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-105"
+                    className="object-contain transition-all duration-500 md:filter md:grayscale md:group-hover:grayscale-0 group-hover:scale-105"
                   />
                 </div>
               )}
@@ -337,19 +337,19 @@ export default function CaseStudyPage({ params }: { params: Promise<{ slug: stri
                       )}
                       
                       {s.image && (
-                        <div className="group relative rounded-lg overflow-hidden aspect-[4/3] bg-black/40 mt-8 max-w-[1200px] mx-auto">
+                        <div className="group relative rounded-lg overflow-hidden aspect-[3/4] md:aspect-[4/3] bg-black/40 mt-8 max-w-[1200px] mx-auto">
                           <Image
                             src={s.image}
                             alt={`${s.title} screenshot`}
                             fill
                             sizes="(max-width: 768px) 100vw, 1200px"
-                            className="object-contain transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-105"
+                            className="object-contain transition-all duration-500 md:filter md:grayscale md:group-hover:grayscale-0 group-hover:scale-105"
                           />
                         </div>
                       )}
                       
                       {s.video && (
-                        <div className="group relative rounded-lg overflow-hidden aspect-[4/3] bg-black/40 mt-8 max-w-[1200px] mx-auto">
+                        <div className="group relative rounded-lg overflow-hidden aspect-[3/4] md:aspect-[4/3] bg-black/40 mt-8 max-w-[1200px] mx-auto">
                           <video
                             src={s.video}
                             controls
