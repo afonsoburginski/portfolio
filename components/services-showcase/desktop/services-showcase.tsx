@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import Image from "next/image";
 import { 
   Smartphone,
@@ -101,7 +101,7 @@ const bottomTags = [
 const row1 = bottomTags.filter((_, i) => i % 2 === 0);
 const row2 = bottomTags.filter((_, i) => i % 2 !== 0);
 
-export function ServicesShowcase() {
+export function ServicesShowcaseDesktop() {
   return (
     <section id="services" className="relative py-20 px-4 md:px-8">
       {/* Background Image */}
@@ -299,5 +299,4 @@ export function ServicesShowcase() {
     </section>
   );
 }
-
 

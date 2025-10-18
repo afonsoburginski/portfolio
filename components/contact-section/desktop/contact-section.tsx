@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Spotlight } from "@/components/ui/spotlight-new";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+import { Spotlight } from "../../ui/spotlight-new";
+import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import { SiLinkedin, SiGithub, SiInstagram } from "react-icons/si";
 import { getCalApi } from "@calcom/embed-react";
 
-export function ContactSection() {
+export function ContactSectionDesktop() {
 
   return (
     <section id="social" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">

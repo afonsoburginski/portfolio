@@ -9,13 +9,13 @@ import { useEffect, useState } from "react";
 const col1 = [
   { id: 4, image: "/projects/orcanorte.png", height: 320, href: "/case-study/orcanorte" },
   { id: 2, image: "/projects/easydriver-admin.png", height: 320, href: "/case-study/easydriver" },
-  { id: 3, image: "https://framerusercontent.com/images/RYRvZnstUexQMOl8zRyrvDfDT0.png", height: 320 },
+  { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 320 },
 ];
 
 const col2 = [
+  { id: 10, image: "/projects/stormzplus-app.png", height: 360, href: "/case-study/stormzplus-mobile" },
   { id: 1, image: "/projects/stormzplus.png", height: 360, href: "/case-study/stormzplus" },
   { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
-  { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 360 },
 ];
 
 const col3 = [
@@ -26,7 +26,7 @@ const col3 = [
 
 const columns = [col1, col2, col3];
 
-export const ProjectsSection = () => {
+export const ProjectsSectionDesktop = () => {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -96,3 +96,4 @@ export const ProjectsSection = () => {
     </section>
   );
 };
+

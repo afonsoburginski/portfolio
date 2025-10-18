@@ -83,7 +83,7 @@ const experiences = [
   }
 ];
 
-export function AboutSection() {
+export function AboutSectionDesktop() {
   return (
     <section id="about-me" className="relative py-20 px-4 md:px-8">
       <div className="w-full">
@@ -291,3 +291,4 @@ export function AboutSection() {
     </section>
   );
 }
+

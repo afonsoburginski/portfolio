@@ -6,7 +6,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../../ui/accordion";
 
 const faqs = [
   {
@@ -41,7 +41,7 @@ const faqs = [
   },
 ];
 
-export function FaqSection() {
+export function FaqSectionDesktop() {
   return (
     <section id="faq" className="relative py-20 px-4 md:px-8">
       <div className="max-w-[1600px] mx-auto">
@@ -102,3 +102,4 @@ export function FaqSection() {
     </section>
   );
 }
+

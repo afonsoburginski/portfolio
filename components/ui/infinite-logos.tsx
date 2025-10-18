@@ -34,9 +34,9 @@ export const InfiniteLogos = ({
     if (containerRef.current && scrollerRef.current) {
       const scrollerContent = Array.from(scrollerRef.current.children);
 
-      // Duplicate items 3 times for seamless infinite loop
-      // This matches the pattern used in services-showcase for consistent smooth scrolling
-      for (let i = 0; i < 3; i++) {
+      // Duplicate items 2 times (original + 2 clones = 3 total copies)
+      // This matches the pattern used in services-showcase (3 copies total) for consistent smooth scrolling
+      for (let i = 0; i < 2; i++) {
         scrollerContent.forEach((item) => {
           const duplicatedItem = item.cloneNode(true);
           if (scrollerRef.current) {
@@ -72,7 +72,7 @@ export const InfiniteLogos = ({
       if (speed === "fast") {
         containerRef.current.style.setProperty("--animation-duration", "20s");
       } else if (speed === "normal") {
-        containerRef.current.style.setProperty("--animation-duration", "40s");
+        containerRef.current.style.setProperty("--animation-duration", "30s");
       } else {
         containerRef.current.style.setProperty("--animation-duration", "80s");
       }

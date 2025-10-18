@@ -1,13 +1,13 @@
 "use client";
 
-export function Footer() {
+export function FooterMobile() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="relative border-t border-white/10 bg-black">
-      <div className="w-full px-6 md:px-10 py-10">
-        <div className="w-full max-w-[1600px] mx-auto flex justify-between items-center text-xs md:text-sm text-gray-300">
-          {/* Left - Email */}
+      <div className="w-full px-4 py-8">
+        <div className="w-full flex flex-col gap-4 items-center text-center text-xs text-gray-300">
+          {/* Email */}
           <div>
             <a 
               href="mailto:afonsoburginski@gmail.com" 
@@ -17,7 +17,7 @@ export function Footer() {
             </a>
           </div>
 
-          {/* Right - Copyright */}
+          {/* Copyright */}
           <div>
             <p>All rights reserved, ©{currentYear}</p>
           </div>

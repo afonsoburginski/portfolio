@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export const Header = () => {
+export const HeaderDesktop = () => {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const isCaseStudy = pathname?.startsWith('/case-study/');

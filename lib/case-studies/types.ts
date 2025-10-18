@@ -16,6 +16,6 @@ export type CaseStudy = {
   challenges?: { title: string; detail: string }[];
   outcomes?: string[];
   revenueNote?: string;
-  sections?: { title: string; body: string[]; image?: string; subsections?: string[] }[];
+  sections?: { title: string; body: string[]; image?: string; video?: string; subsections?: string[] }[];
 };
 

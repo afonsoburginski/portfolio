@@ -1,12 +1,12 @@
 "use client";
 import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
-import { InfiniteLogos } from "./ui/infinite-logos";
-import { HoverBorderGradient } from "./ui/hover-border-gradient";
-import { Spotlight } from "./ui/spotlight-new";
+import { InfiniteLogos } from "../../ui/infinite-logos";
+import { HoverBorderGradient } from "../../ui/hover-border-gradient";
+import { Spotlight } from "../../ui/spotlight-new";
 import { Building2, Smartphone, Globe, Code, Zap } from "lucide-react";
 
-export const Hero = () => {
+export const HeroDesktop = () => {
   return (
     <section className="relative flex flex-col items-center px-6 pt-32 pb-6 overflow-hidden bg-black/[0.96]">
       {/* Spotlight effect */}
@@ -102,7 +102,7 @@ export const Hero = () => {
               { name: "Custom Solutions", icon: Code },
             ]}
             direction="left"
-            speed="fast"
+            speed="normal"
           />
         </motion.div>
       </div>
