@@ -15,11 +15,11 @@ const col1 = [
 const col2 = [
   { id: 10, image: "/projects/stormzplus-app.png", height: 360, href: "/case-study/stormzplus-mobile" },
   { id: 1, image: "/projects/stormzplus.png", height: 360, href: "/case-study/stormzplus" },
-  { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
 ];
 
 const col3 = [
   { id: 7, image: "/projects/gem-jhonrob-1.png", height: 320, href: "/case-study/gem-jhonrob" },
+  { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
   { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 320 },
   { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 320 },
 ];
@@ -53,7 +53,7 @@ export const ProjectsSectionDesktop = () => {
               key={colIndex}
               className={`flex flex-col gap-2.5 flex-1 ${colIndex === 1 ? '-mt-22' : ''}`}
             >
-              {column.map((project, index) => (
+              {column.filter(project => ![6, 8, 9].includes(project.id)).map((project, index) => (
                 <motion.a
                   key={project.id}
                   href={project.href ?? "https://www.behance.net/"}
