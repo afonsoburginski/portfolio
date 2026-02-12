@@ -8,23 +8,12 @@ import {
   Globe,
   Server,
   Code,
-  Shield,
-  Key,
   Database as Db,
   GitBranch,
   Rocket,
-  Cloud,
-  CloudLightning,
   Zap,
-  Cpu,
-  Gauge,
-  Bell,
-  Link,
-  Flag,
-  Activity,
-  BarChart3,
 } from "lucide-react";
-import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiTypescript, SiSupabase, SiPostgresql, SiDocker, SiGraphql, SiAmazons3, SiCloudflare } from "react-icons/si";
+import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiExpo, SiTypescript, SiNodedotjs, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
 
 const tags = [
   "AI Project Consulting",
@@ -57,42 +46,25 @@ const services = [
 ];
 
 const bottomTags = [
-  // Core stacks
+  // Mobile
   { name: "React Native", icon: SiReact },
-  { name: "Next.js", icon: SiNextdotjs }, 
-  { name: "Node.js", icon: SiNodedotjs },
-  { name: "Golang", icon: SiGo },
+  { name: "iOS", icon: SiApple },
+  { name: "Android", icon: SiAndroid },
+  { name: "Kotlin", icon: SiKotlin },
+  { name: "Swift", icon: SiSwift },
+  { name: "Expo", icon: SiExpo },
+  // Backend
   { name: "TypeScript", icon: SiTypescript },
-  { name: "Supabase", icon: SiSupabase },
+  { name: "Node.js", icon: SiNodedotjs },
   { name: "PostgreSQL", icon: SiPostgresql },
+  { name: "Supabase", icon: SiSupabase },
   { name: "Docker", icon: SiDocker },
-  { name: "GraphQL", icon: SiGraphql },
-  // Capabilities
-  { name: "Edge Functions", icon: CloudLightning },
-  { name: "Serverless", icon: Cloud },
+  { name: "REST APIs", icon: Server },
+  // Key capabilities
   { name: "Real‑time", icon: Zap },
   { name: "Offline‑first", icon: Db },
-  { name: "WebSockets", icon: Link },
-  { name: "Push Notifications", icon: Bell },
-  { name: "Deep Links", icon: Link },
-  { name: "OAuth / JWT", icon: Key },
-  { name: "RBAC Security", icon: Shield },
-  { name: "Caching", icon: Cpu },
-  { name: "Rate Limiting", icon: Gauge },
-  { name: "Observability", icon: Activity },
-  { name: "Analytics", icon: BarChart3 },
-  { name: "Feature Flags", icon: Flag },
   { name: "CI/CD", icon: GitBranch },
-  { name: "App Store Releases", icon: Rocket },
-  // Storage & delivery
-  { name: "Cloudflare R2", icon: SiCloudflare },
-  { name: "AWS S3", icon: SiAmazons3 },
-  { name: "CDN / Edge Cache", icon: Cloud },
-  // Themes
-  { name: "Mobile Development", icon: Smartphone },
-  { name: "Web Development", icon: Globe },
-  { name: "Full‑Stack", icon: Code },
-  { name: "REST APIs", icon: Server },
+  { name: "App Store & Play Store", icon: Rocket },
 ];
 
 // Split into two alternating rows to reduce visible repetition

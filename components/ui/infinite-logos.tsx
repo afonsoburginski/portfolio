@@ -100,7 +100,7 @@ export const InfiniteLogos = ({
             className="flex items-center gap-4 text-white/60 text-xl tracking-wide opacity-90"
             key={`${item.name}-original-${idx}`}
           >
-            {item.icon && <item.icon className="w-7 h-7 text-white/50" />}
+            {item.icon && <item.icon className="w-4 h-4 text-white/50" />}
             {item.logo && !item.icon && <span className="text-2xl">{item.logo}</span>}
             <span className="whitespace-nowrap font-medium font-satoshi">{item.name}</span>
           </li>

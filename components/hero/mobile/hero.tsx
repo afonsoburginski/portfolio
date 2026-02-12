@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
 import { InfiniteLogos } from "../../ui/infinite-logos";
 import { Spotlight } from "../../ui/spotlight-new";
-import { Building2, Smartphone, Globe, Code, Zap } from "lucide-react";
+import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiTypescript, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
 
 export const HeroMobile = () => {
   return (
@@ -83,12 +83,15 @@ export const HeroMobile = () => {
         >
           <InfiniteLogos
             items={[
-              { name: "GEM JHONROB", icon: Building2 },
-              { name: "EasyDriver", icon: Smartphone },
-              { name: "Stormz+", icon: Zap },
-              { name: "Orcanorte", icon: Globe },
-              { name: "FFmpeg Transcoder", icon: Code },
-              { name: "Hospital Systems", icon: Smartphone },
+              { name: "React Native", icon: SiReact },
+              { name: "iOS", icon: SiApple },
+              { name: "Android", icon: SiAndroid },
+              { name: "Kotlin", icon: SiKotlin },
+              { name: "Swift", icon: SiSwift },
+              { name: "TypeScript", icon: SiTypescript },
+              { name: "PostgreSQL", icon: SiPostgresql },
+              { name: "Supabase", icon: SiSupabase },
+              { name: "Docker", icon: SiDocker },
             ]}
             direction="left"
             speed="normal"
