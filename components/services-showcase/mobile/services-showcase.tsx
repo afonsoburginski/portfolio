@@ -5,7 +5,6 @@ import { getCalApi } from "@calcom/embed-react";
 import Image from "next/image";
 import { 
   Smartphone,
-  Globe,
   Server,
   Code,
   Database as Db,
@@ -16,32 +15,32 @@ import {
 import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiExpo, SiTypescript, SiNodedotjs, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
 
 const tags = [
-  "AI Project Consulting",
-  "Mobile Development", 
-  "Web Development",
-  "Full‑Stack",
+  "Mobile Development",
+  "React Native & Native",
+  "App Store & Play Store",
+  "Backend when needed",
 ];
 
 const services = [
   {
-    title: "AI Project Consulting",
-    desc: "Specialized consulting for projects created with V0, Bolt.new, and similar AI tools. I optimize performance and guide your prototype to production-ready standards.",
+    title: "Mobile Architecture & Consulting",
+    desc: "Consulting on app architecture, performance, and release strategy. EAS Build, Fastlane, store delivery. Senior mobile perspective.",
     icon: Rocket
   },
   {
     title: "Mobile Apps",
-    desc: "Cross‑platform React Native apps with native performance: offline‑first data, push notifications, secure auth, and smooth 60fps interactions.",
+    desc: "React Native apps with native performance: offline‑first, push notifications, secure auth, 60fps. EAS Build and Fastlane for App Store and Play Store.",
     icon: Smartphone
   },
   {
-    title: "Web Applications", 
-    desc: "Modern Next.js experiences with SSR/ISR and Core Web Vitals in the green. Scalable components and SEO‑ready foundations.",
-    icon: Globe
+    title: "Native Modules & Integrations",
+    desc: "Custom Swift (PiP, AirPlay) and Kotlin when React Native isn't enough. Native bridges, one codebase, no quality compromise.",
+    icon: Code
   },
   {
-    title: "Full‑Stack Solutions",
-    desc: "End‑to‑end delivery—from discovery to deployment. Supabase + PostgreSQL, CI/CD, and zero‑downtime releases.",
-    icon: Code
+    title: "Backend & APIs for Mobile",
+    desc: "When the product needs it: Supabase + PostgreSQL, APIs, auth, real-time. CI/CD and releases—backend in service of the app.",
+    icon: Server
   },
 ];
 

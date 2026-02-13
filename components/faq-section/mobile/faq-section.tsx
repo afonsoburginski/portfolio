@@ -11,33 +11,33 @@ import {
 const faqs = [
   {
     id: "faq-1",
-    question: "What is the typical project delivery timeline?",
-    answer: "Timeline varies based on project complexity and scope. I provide detailed estimates after understanding your requirements. Most projects involve collaborative planning with clear milestones and regular updates so you're always aware of progress.",
+    question: "What makes you different as a mobile engineer?",
+    answer: "6+ years, apps on App Store and Google Play. React Native plus native—Swift (PiP, AirPlay), Kotlin and Kotlin Multiplatform. Full cycle: architecture, performance, release (EAS, Fastlane), store submission. When the product needed backend or end-to-end, I've shipped that too—database, APIs, app in the store.",
   },
   {
     id: "faq-2",
-    question: "Do you work on projects of any size?",
-    answer: "Yes. I work with early-stage startups, MVPs, established companies, and enterprise-level systems. Each project is unique and I adapt my approach to fit your specific needs, timeline, and budget.",
+    question: "What's your experience with React Native and native?",
+    answer: "Production apps on both stores; native modules in Swift (PiP, AirPlay) and Kotlin; Kotlin Multiplatform. Offline-first, real-time, HLS streaming, full release pipelines. I own the mobile lifecycle from architecture to store submission.",
   },
   {
     id: "faq-3",
-    question: "What's your experience with mobile development?",
-    answer: "I have 6+ years of professional experience building cross-platform mobile applications with React Native for iOS and Android. I focus on creating performant, user-friendly apps that follow platform best practices and deliver real business value.",
+    question: "Mobile only or full-stack?",
+    answer: "Mobile is my specialty—where I have the most depth. I'm also strong in fullstack: React, Next.js, Supabase, PostgreSQL, APIs, real-time. I've shipped whole products end-to-end. You get a senior mobile engineer who can own the full stack—no handoffs, no gaps.",
   },
   {
     id: "faq-4",
-    question: "How does your development process work?",
-    answer: "I start with a consultation to understand your goals and requirements. Then I create a detailed plan with clear deliverables and timelines. Work happens in iterative sprints with regular communication, allowing for feedback and adjustments throughout the project.",
+    question: "What teams and products have you worked with?",
+    answer: "Startups to enterprise: hospital systems, streaming apps in production, ERPs with real-time Kanban and chat, factory tooling (Kotlin Multiplatform). I adapt to agile and async; I care about maintainability and quality.",
   },
   {
     id: "faq-5",
-    question: "What happens after project launch?",
-    answer: "I offer post-launch support including bug fixes, performance optimization, and new feature development. I can work as a dedicated developer for your team or in a consulting capacity based on your needs.",
+    question: "How do you approach architecture and quality?",
+    answer: "Scalable components, clear state, performance (virtualized lists, memoization). Documented decisions, handoff teams can build on. CI/CD, store compliance, and iteration without breaking production.",
   },
   {
     id: "faq-6",
-    question: "What's the typical cost for a project?",
-    answer: "Pricing depends on scope, complexity, and timeline. I offer flexible models: fixed-price projects, dedicated team augmentation, or hourly consulting. Let's discuss your needs and I'll provide a custom proposal.",
+    question: "How can we start a conversation?",
+    answer: "Book a call above or reach out on LinkedIn or email. Open to full-time, long-term contract, or project-based. Tell me what you're building and what you need—I'd be glad to talk.",
   },
 ];
 
@@ -66,7 +66,7 @@ export function FaqSectionMobile() {
             FAQ
           </h2>
           <p className="text-white/70 text-sm leading-relaxed font-sans">
-            Common questions about my services and process.
+            Questions about my background, how I work, and how I can add value to your team or product.
           </p>
         </motion.div>
 

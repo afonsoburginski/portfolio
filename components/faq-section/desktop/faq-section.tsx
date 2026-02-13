@@ -11,33 +11,33 @@ import {
 const faqs = [
   {
     id: "faq-1",
-    question: "What is the typical project delivery timeline?",
-    answer: "Timeline varies based on project complexity and scope. I provide detailed estimates after understanding your requirements. Most projects involve collaborative planning with clear milestones and regular updates so you're always aware of progress.",
+    question: "What makes you different as a mobile engineer?",
+    answer: "6+ years with apps in production on the App Store and Google Play. React Native plus custom native code—Swift for PiP, AirPlay, advanced playback; Kotlin and Kotlin Multiplatform for shared logic and tooling. I own the full cycle: architecture and state management, performance (virtualized lists, memoization), release pipelines (EAS Build, Fastlane), and store submission. When the product needed backend or end-to-end ownership, I've built and shipped that too—from database and APIs to the app in the store.",
   },
   {
     id: "faq-2",
-    question: "Do you work on projects of any size?",
-    answer: "Yes. I work with early-stage startups, MVPs, established companies, and enterprise-level systems. Each project is unique and I adapt my approach to fit your specific needs, timeline, and budget.",
+    question: "What's your hands-on experience with React Native and native code?",
+    answer: "Production apps on both stores; custom native modules in Swift (PiP, AirPlay, advanced playback) and Kotlin; Kotlin Multiplatform for shared tooling. I've worked with offline-first flows, real-time (LiveKit, Supabase), HLS streaming, and full release pipelines. I own the full mobile lifecycle—from architecture decisions to store submission.",
   },
   {
     id: "faq-3",
-    question: "What's your experience with mobile development?",
-    answer: "I have 6+ years of professional experience building cross-platform mobile applications with React Native for iOS and Android. I focus on creating performant, user-friendly apps that follow platform best practices and deliver real business value.",
+    question: "Do you only do mobile or full-stack?",
+    answer: "Mobile is my specialty—that's where I have the most depth and where I bring the most value. I'm also strong in fullstack: frontend (React, Next.js) and backend (Supabase, PostgreSQL, REST APIs, real-time) are part of my daily work. I've shipped entire products end-to-end, from database and APIs to the app in the store. So you get a senior mobile engineer who can own the whole stack when the product needs it—no handoffs, no gaps.",
   },
   {
     id: "faq-4",
-    question: "How does your development process work?",
-    answer: "I start with a consultation to understand your goals and requirements. Then I create a detailed plan with clear deliverables and timelines. Work happens in iterative sprints with regular communication, allowing for feedback and adjustments throughout the project.",
+    question: "What kind of teams and products have you worked with?",
+    answer: "From startup MVPs to enterprise: hospital management systems, subscription streaming (iOS & Android in production), internal ERPs with real-time Kanban and chat, factory tooling (Kotlin Multiplatform, CAD export). I adapt to agile, milestones, and async—and I care about long-term maintainability, not just shipping features.",
   },
   {
     id: "faq-5",
-    question: "What happens after project launch?",
-    answer: "I offer post-launch support including bug fixes, performance optimization, and new feature development. I can work as a dedicated developer for your team or in a consulting capacity based on your needs.",
+    question: "How do you approach architecture and quality?",
+    answer: "I focus on scalable component design, clear state management, and performance (virtualized lists, memoization, sensible re-renders). I prefer documented decisions and handoff that teams can build on. Release quality matters: CI/CD, store compliance, and iteration without breaking production.",
   },
   {
     id: "faq-6",
-    question: "What's the typical cost for a project?",
-    answer: "Pricing depends on scope, complexity, and timeline. I offer flexible models: fixed-price projects, dedicated team augmentation, or hourly consulting. Let's discuss your needs and I'll provide a custom proposal.",
+    question: "How can we start a conversation?",
+    answer: "Book a call via the button above or reach out on LinkedIn or email. I'm open to full-time, long-term contract, or project-based work. Tell me what you're building and what you need—I'd be glad to talk.",
   },
 ];
 
@@ -66,7 +66,7 @@ export function FaqSectionDesktop() {
             FAQ
           </h2>
           <p className="text-white/70 text-lg leading-relaxed font-sans max-w-2xl">
-            Common questions about my services, process, and how I can help bring your project to life.</p>
+            Questions about my background, how I work, and how I can add value to your team or product.</p>
         </motion.div>
 
         {/* FAQ Grid */}

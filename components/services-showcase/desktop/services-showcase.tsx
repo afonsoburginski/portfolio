@@ -6,7 +6,6 @@ import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import Image from "next/image";
 import { 
   Smartphone,
-  Globe,
   Server,
   Code,
   Database as Db,
@@ -17,17 +16,17 @@ import {
 import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiExpo, SiTypescript, SiNodedotjs, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
 
 const tags = [
-  "AI Project Consulting",
-  "Mobile App Development", 
-  "Web App Development",
-  "Full‑Stack Engineering",
+  "Mobile App Development",
+  "React Native & Native (Swift · Kotlin)",
+  "App Store & Play Store",
+  "Backend when the product needs it",
   "Technical Consulting",
 ];
 
 const services = [
   {
-    title: "AI-Generated Project Consulting",
-    desc: "Specialized consulting for projects created with V0, Bolt.new, Lovable, and similar AI tools. I optimize performance, enhance functionality, implement best practices, and guide your AI-generated prototype to production-ready standards with enterprise-grade reliability.",
+    title: "Mobile Architecture & Consulting",
+    desc: "Technical consulting on app architecture, performance, and release strategy. From stack and state management decisions to store delivery—EAS Build, Fastlane, scalable component design. Senior mobile perspective without the generic agency pitch.",
     icon: Rocket
   },
   {
@@ -36,14 +35,14 @@ const services = [
     icon: Smartphone
   },
   {
-    title: "Web Applications", 
-    desc: "Modern Next.js experiences with SSR/ISR, accessibility by default, and Core Web Vitals in the green. Scalable component systems, robust routing/data‑fetching, and SEO‑ready foundations that load fast and convert.",
-    icon: Globe
+    title: "Native Modules & Integrations",
+    desc: "When React Native isn't enough: custom Swift (PiP, AirPlay, advanced playback) and Kotlin modules. Native bridges, hardware acceleration, and platform-specific UX—one codebase without compromising quality.",
+    icon: Code
   },
   {
-    title: "Full‑Stack Solutions",
-    desc: "End‑to‑end delivery—from product discovery and data modeling to deployment. Supabase + PostgreSQL, Dockerized pipelines, CI/CD, and zero‑downtime releases. Documentation and handoff that teams can build on.",
-    icon: Code
+    title: "Backend & APIs for Mobile",
+    desc: "When the product needs full ownership: Supabase + PostgreSQL, REST APIs, auth, real-time. Dockerized pipelines, CI/CD, zero‑downtime releases. Built so the app and the system ship together—not generic full‑stack, backend in service of the app.",
+    icon: Server
   },
 ];
 
