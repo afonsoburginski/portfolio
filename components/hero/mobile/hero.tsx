@@ -34,9 +34,7 @@ export const HeroMobile = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-[32px] font-normal text-white mb-4 leading-[1.1] tracking-[-0.02em] font-satoshi px-2"
         >
-          Mobile and Web Apps
-          <br />
-          that users love Indeed
+          Apps that users love indeed
         </motion.h1>
 
         <motion.div

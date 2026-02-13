@@ -2,18 +2,17 @@
 
 import { motion } from "motion/react";
 import { Trophy, Zap, Star, Code, Shield, TrendingUp } from "lucide-react";
-import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiTypescript, SiSupabase, SiPostgresql, SiDocker } from "react-icons/si";
+import { SiReact, SiExpo, SiNextdotjs, SiNodedotjs, SiKotlin, SiSupabase, SiPostgresql } from "react-icons/si";
 import Image from "next/image";
 
 const skills = [
   { name: "React Native", icon: SiReact },
+  { name: "Expo", icon: SiExpo },
   { name: "Next.js", icon: SiNextdotjs },
   { name: "Node.js", icon: SiNodedotjs },
-  { name: "Golang", icon: SiGo },
-  { name: "TypeScript", icon: SiTypescript },
+  { name: "Kotlin", icon: SiKotlin },
   { name: "Supabase", icon: SiSupabase },
   { name: "PostgreSQL", icon: SiPostgresql },
-  { name: "Docker", icon: SiDocker },
 ];
 
 const experiences = [
@@ -24,25 +23,25 @@ const experiences = [
     icon: Star
   },
   {
-    role: "Senior Mobile Developer", 
+    role: "Senior Mobile Engineer",
     company: "afonsodev.com",
     period: "Jan 2020 - Present",
     icon: Trophy
   },
   {
-    role: "Mobile Developer",
-    company: "Centro America Tecnologia", 
+    role: "Mobile Engineer",
+    company: "Centro America Tecnologia",
     period: "Sep 2022 - Apr 2023",
     icon: Code
   },
   {
-    role: "Full Stack Engineer",
+    role: "Mobile Developer",
     company: "TopSapp",
     period: "Jan 2021 - Sep 2022",
     icon: Zap
   },
   {
-    role: "System Programmer",
+    role: "Systems Developer",
     company: "Ecocentauro",
     period: "Jan 2019 - Oct 2020",
     icon: Shield
@@ -84,7 +83,7 @@ export function AboutSectionMobile() {
             Meet Afonso
           </h2>
           <p className="text-white/70 text-sm leading-relaxed font-sans">
-            Senior Mobile Developer with 6+ years of experience. Specialized in React Native and Next.js, building scalable apps for startups and enterprises.
+            Senior Mobile Engineer with 6+ years shipping apps to the App Store and Google Play. I specialize in React Native and native (Kotlin, Swift)—performance, native modules, and release quality. Backend (Supabase, PostgreSQL) when the product needs full ownership.
           </p>
         </motion.div>
 

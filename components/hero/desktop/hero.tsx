@@ -35,9 +35,7 @@ export const HeroDesktop = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[56px] md:text-[80px] lg:text-[96px] font-normal text-white mb-4 leading-[1.03] tracking-[-0.02em] font-satoshi"
         >
-          Mobile and Web Apps that
-          <br />
-          users love Indeed
+          Apps that users love indeed
         </motion.h1>
 
         <motion.div

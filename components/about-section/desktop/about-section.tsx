@@ -2,27 +2,27 @@
 
 import { motion } from "motion/react";
 import { Trophy, Zap, Star, Code, Shield, TrendingUp, FileCode } from "lucide-react";
-import { SiReact, SiNextdotjs, SiNodedotjs, SiGo, SiTypescript, SiSupabase, SiPostgresql, SiDocker, SiGithub, SiFigma, SiVercel } from "react-icons/si";
+import { SiReact, SiExpo, SiNextdotjs, SiNodedotjs, SiKotlin, SiSupabase, SiPostgresql, SiGithub, SiFigma, SiVercel, SiDocker, SiAmazonwebservices, SiCloudflare } from "react-icons/si";
 import Image from "next/image";
 
 const skills = [
   { name: "React Native", icon: SiReact },
+  { name: "Expo", icon: SiExpo },
   { name: "Next.js", icon: SiNextdotjs },
   { name: "Node.js", icon: SiNodedotjs },
-  { name: "Golang", icon: SiGo },
-  { name: "TypeScript", icon: SiTypescript },
+  { name: "Kotlin", icon: SiKotlin },
   { name: "Supabase", icon: SiSupabase },
   { name: "PostgreSQL", icon: SiPostgresql },
-  { name: "Docker", icon: SiDocker },
 ];
 
 const tools = [
   { name: "VSCode", icon: FileCode },
   { name: "Figma", icon: SiFigma },
-  { name: "Git", icon: SiGithub },
-  { name: "GitHub", icon: SiGithub },
+  { name: "Git & GitHub", icon: SiGithub },
   { name: "Docker", icon: SiDocker },
-  { name: "Vercel", icon: SiVercel }
+  { name: "Vercel", icon: SiVercel },
+  { name: "AWS", icon: SiAmazonwebservices },
+  { name: "Cloudflare", icon: SiCloudflare }
 ];
 
 const experiences = [
@@ -30,55 +30,55 @@ const experiences = [
     role: "Full Stack Engineer",
     company: "JHONROB Silos e Secadores",
     period: "Nov 2023 - Present",
-    description: "Current full-time position. Built the GEM ERP system - a comprehensive enterprise solution for production management, Kanban workflows, and expedition tracking.",
+    description: "Built and scaled internal sales solution in Next.js — 80% reduction in commercial proposal errors, ~14% increase in monthly profit. Kotlin Multiplatform and native tooling (GEM Exportador — CAD export with real-time WebSocket queue, Android modules for factory operators). Led GEM ERP (Next.js + Supabase): real-time Kanban, corporate chat, dashboards. TypeScript, Next.js, Node.js, Prisma, PostgreSQL (Docker).",
     highlights: [
-      { text: "GEM ERP System", icon: Star },
       { text: "80% error reduction", icon: TrendingUp },
-      { text: "Enterprise solution", icon: Shield }
+      { text: "Kotlin Multiplatform", icon: Code },
+      { text: "GEM ERP", icon: Star }
     ]
   },
   {
-    role: "Senior Mobile Developer", 
+    role: "Senior Mobile Engineer",
     company: "afonsodev.com",
     period: "Jan 2020 - Present",
-    description: "Independent software consultant delivering enterprise-grade mobile and web applications for multiple companies using React Native and Next.js.",
+    description: "Apps in production on App Store and Google Play. React Native (New Architecture), native modules in Swift (PiP, AirPlay) and Kotlin, streaming (HLS, LiveKit Watch Party), offline-first, EAS Build/Fastlane. When the product required it, also built backend and web (Next.js, Supabase) for the same projects — end-to-end ownership, not generalist.",
     highlights: [
-      { text: "Enterprise clients", icon: Trophy },
-      { text: "React Native & Next.js", icon: Code },
-      { text: "Custom solutions", icon: Zap }
+      { text: "App Store & Play Store", icon: Trophy },
+      { text: "React Native + native", icon: Star },
+      { text: "Backend when needed", icon: Zap }
+    ]
+  },
+  {
+    role: "Mobile Engineer",
+    company: "Centro America Tecnologia",
+    period: "Sep 2022 - Apr 2023",
+    description: "React Native app for hospital management: biometric auth, real-time dashboards, offline-first forms for medical records and scheduling. Performance focus — virtualized lists, memoization, efficient API usage.",
+    highlights: [
+      { text: "React Native", icon: Code },
+      { text: "Offline-first", icon: Zap },
+      { text: "Hospital system", icon: Shield }
     ]
   },
   {
     role: "Mobile Developer",
-    company: "Centro America Tecnologia", 
-    period: "Sep 2022 - Apr 2023",
-    description: "Contract work developing mobile applications and high-fidelity interfaces for Hospital Management system. Full development lifecycle participation.",
-    highlights: [
-      { text: "Hospital Management", icon: Code },
-      { text: "Mobile development", icon: TrendingUp },
-      { text: "React Native", icon: Star }
-    ]
-  },
-  {
-    role: "Full Stack Engineer",
     company: "TopSapp - Gestão de Provedores",
     period: "Jan 2021 - Sep 2022",
-    description: "Full-time position developing high fidelity interfaces with Next.js, rebuilding legacy systems, and implementing CI/CD automation with agile methodologies.",
+    description: "High-fidelity interfaces with Next.js and React for ISP management (customers, billing, support). Legacy system rebuild in TypeScript and REST API; backend in Laravel. CI/CD with Git/GitLab (Git Flow), agile (Scrum/Kanban).",
     highlights: [
-      { text: "Legacy system rebuild", icon: Code },
-      { text: "CI/CD automation", icon: Zap },
-      { text: "Scrum & Kanban", icon: Shield }
+      { text: "Next.js & React", icon: Code },
+      { text: "CI/CD", icon: Zap },
+      { text: "Legacy rebuild", icon: TrendingUp }
     ]
   },
   {
-    role: "System Programmer",
+    role: "Systems Developer",
     company: "Ecocentauro Sistemas Inteligentes",
     period: "Jan 2019 - Oct 2020",
-    description: "Full-time role managing PostgreSQL and Access databases, developing system scripts, and creating layouts for reports and forms in desktop applications.",
+    description: "PostgreSQL databases, schema design, query optimization. Report layouts for financial and operational reporting.",
     highlights: [
-      { text: "PostgreSQL & Access", icon: Shield },
+      { text: "PostgreSQL", icon: Shield },
       { text: "Database modeling", icon: Code },
-      { text: "Desktop systems", icon: Trophy }
+      { text: "Reporting", icon: TrendingUp }
     ]
   }
 ];
@@ -119,7 +119,7 @@ export function AboutSectionDesktop() {
               Meet Afonso
             </h2>
             <p className="text-white/70 text-lg leading-relaxed font-sans max-w-3xl mx-auto">
-              I&apos;m a Senior Mobile Developer with 6+ years of professional experience. Specialized in React Native and Next.js, I build scalable, high-performance mobile apps and web applications that solve real problems for startups and enterprises.
+              Senior Mobile Engineer with 6+ years shipping production apps to the App Store and Google Play. I specialize in React Native and native development (Kotlin, Swift)—architecture, performance, custom native modules, and release pipelines. When the product demands full ownership, I design and build the backend (Supabase, PostgreSQL) so the app is delivered end-to-end.
             </p>
           </motion.div>
 
@@ -263,7 +263,7 @@ export function AboutSectionDesktop() {
               className="space-y-4"
             >
               <div>
-                <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-6 text-opacity-60 text-white/60">Tools & Platforms</h3>
+                <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-6 text-opacity-60 text-white/60 text-right">Tools & Platforms</h3>
                 <div className="space-y-2.5">
                   {tools.map((tool, index) => {
                     const IconComponent = tool.icon;
