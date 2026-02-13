@@ -47,7 +47,7 @@ export const HeroDesktop = () => {
           className="text-white/70 max-w-[600px] mx-auto mb-6"
         >
           <p className="text-base md:text-lg leading-relaxed tracking-wide font-sans">
-            Transforming ideas into powerful mobile experiences with React Native and Next.js. 6+ years building scalable apps that users love.
+            React Native and native code (Kotlin, Swift) for iOS and Android. 6+ years shipping apps to the App Store and Google Play — from cross-platform to custom native modules.
           </p>
         </motion.div>
 
