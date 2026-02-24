@@ -66,7 +66,7 @@ export const HeaderMobile = () => {
       {menuOpen && (
         <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl">
           <div className="flex flex-col items-center justify-center h-full gap-8 px-6">
-            {!isCaseStudy && (
+            {!isCaseStudy && pathname !== "/dashboard" && (
               <>
                 <button
                   onClick={() => handleNavClick('about-me')}
@@ -92,6 +92,25 @@ export const HeaderMobile = () => {
                 >
                   Socials
                 </button>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-white text-2xl font-satoshi hover:text-white/70 transition-colors"
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
+            {pathname === "/dashboard" && (
+              <>
+                <Link
+                  href="/"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-white text-2xl font-satoshi hover:text-white/70 transition-colors"
+                >
+                  Portfolio
+                </Link>
+                <span className="text-white text-2xl font-satoshi font-medium">Dashboard</span>
               </>
             )}
             

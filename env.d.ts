@@ -5,6 +5,9 @@ declare namespace NodeJS {
     NEXT_PUBLIC_GA_ID?: string;
     RESEND_API_KEY?: string;
     CONTACT_EMAIL?: string;
+    NEXT_PUBLIC_SUPABASE_URL?: string;
+    SUPABASE_SERVICE_ROLE_KEY?: string;
+    DASHBOARD_ADMIN_SECRET?: string;
   }
 }
 

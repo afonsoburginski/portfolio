@@ -1,0 +1,788 @@
+"use client";
+
+import { use, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/components/dashboard/auth-provider";
+import { LoginOverlay } from "@/components/dashboard/login-overlay";
+import {
+  getRequestById,
+  getRequestTasks,
+  updateRequestAsAdmin,
+  createRequestTask,
+  updateRequestTask,
+  deleteRequestTask,
+  isAdminEmail,
+} from "@/lib/dashboard-data";
+import type { Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  ArrowLeft,
+  Loader2,
+  Plus,
+  Trash2,
+  Check,
+  CalendarDays,
+  DollarSign,
+  Clock,
+  AlignLeft,
+  User2,
+  Tag,
+  ShieldCheck,
+  Send,
+  Pencil,
+  X,
+  ChevronRight,
+  ListChecks,
+  CircleDot,
+} from "lucide-react";
+import { ProgressCircle } from "@/components/dashboard/circle";
+import { PriorityIcon } from "@/components/dashboard/priority-icon";
+
+/* ─── constants ─────────────────────────────────────────────────────────── */
+
+const STATUS_LABELS: Record<RequestStatus, string> = {
+  submitted:   "Enviada",
+  reviewing:   "Em análise",
+  quoted:      "Orçada",
+  approved:    "Aprovada",
+  rejected:    "Rejeitada",
+  in_progress: "Em progresso",
+  delivered:   "Entregue",
+  cancelled:   "Cancelada",
+};
+
+const STATUS_COLOR: Record<RequestStatus, string> = {
+  submitted:   "bg-blue-500 text-white",
+  reviewing:   "bg-amber-500 text-white",
+  quoted:      "bg-purple-500 text-white",
+  approved:    "bg-green-500 text-white",
+  rejected:    "bg-red-500 text-white",
+  in_progress: "bg-orange-500 text-white",
+  delivered:   "bg-emerald-500 text-white",
+  cancelled:   "bg-neutral-500 text-white",
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  feature:     "Nova funcionalidade",
+  bug_fix:     "Correção de bug",
+  integration: "Integração",
+  consulting:  "Consultoria técnica",
+};
+
+const PRIORITY_LABELS: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
+const PRIORITY_COLOR:  Record<number, string>  = {
+  1: "text-slate-400",
+  2: "text-yellow-500",
+  3: "text-red-500",
+};
+
+
+/* ─── field cell — usado nas linhas de 2 colunas ────────────────────────── */
+function FieldCell({
+  icon: Icon,
+  customIcon,
+  label,
+  children,
+}: {
+  icon?: React.ElementType;
+  customIcon?: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-0 px-4 py-3 hover:bg-muted/30 transition-colors cursor-default">
+      <span className="flex w-28 shrink-0 items-center gap-2 text-sm text-muted-foreground select-none">
+        {customIcon ?? (Icon ? <Icon className="size-4 shrink-0" /> : null)}
+        {label}
+      </span>
+      <div className="flex min-w-0 flex-1 items-center">{children}</div>
+    </div>
+  );
+}
+
+/* ─── custom field row ──────────────────────────────────────────────────── */
+function CFRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[220px_1fr] items-center border-b border-border/60 last:border-0 hover:bg-muted/30 cursor-default">
+      <span className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground select-none border-r border-border/60">
+        <Icon className="size-4 shrink-0" />
+        {label}
+      </span>
+      <div className="px-4 py-3 text-sm">{children}</div>
+    </div>
+  );
+}
+
+/* ─── inline text edit ──────────────────────────────────────────────────── */
+function InlineText({
+  value,
+  onChange,
+  placeholder = "—",
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft,   setDraft]   = useState(value);
+  const ref = useRef<HTMLInputElement>(null);
+
+  function commit() { onChange(draft); setEditing(false); }
+
+  if (editing)
+    return (
+      <input
+        ref={ref}
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter")  commit();
+          if (e.key === "Escape") { setDraft(value); setEditing(false); }
+        }}
+        className={`w-full border-0 bg-transparent p-0 text-sm outline-none focus:ring-0 ${className}`}
+      />
+    );
+
+  return (
+    <button
+      type="button"
+      onClick={() => { setDraft(value); setEditing(true); }}
+      className={`text-left text-sm ${value ? "text-foreground" : "text-muted-foreground/50"} hover:text-primary transition-colors ${className}`}
+    >
+      {value || placeholder}
+    </button>
+  );
+}
+
+/* ─── inline date edit ──────────────────────────────────────────────────── */
+function InlineDate({
+  value,
+  onChange,
+  placeholder = "Definir data",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+
+  const fmt = (d: string) =>
+    d
+      ? new Date(d + "T12:00:00").toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : null;
+
+  return (
+    <div className="relative flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => ref.current?.showPicker?.()}
+        className={`text-sm ${value ? "text-foreground hover:text-primary" : "text-muted-foreground/50 hover:text-primary"} transition-colors`}
+      >
+        {fmt(value) ?? placeholder}
+      </button>
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+        >
+          <X className="size-3" />
+        </button>
+      )}
+      <input
+        ref={ref}
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 h-0 w-0 opacity-0 [color-scheme:dark]"
+        tabIndex={-1}
+      />
+    </div>
+  );
+}
+
+/* ─── page ──────────────────────────────────────────────────────────────── */
+export default function AdminRequestPlanningPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id }                         = use(params);
+  const { user, loading: authLoading } = useAuth();
+  const [request, setRequest]          = useState<Request | null>(null);
+  const [tasks,   setTasks]            = useState<RequestTask[]>([]);
+  const [loading, setLoading]          = useState(true);
+  const [saving,  setSaving]           = useState(false);
+  const [sidebarOpen, setSidebarOpen]  = useState(true);
+
+  const [form, setForm] = useState({
+    title:             "",
+    description:       "",
+    priority:          2 as 1 | 2 | 3,
+    budget:            "",
+    payment_deadline:  "",
+    delivery_deadline: "",
+    admin_notes:       "",
+  });
+  const [status, setStatus] = useState<RequestStatus>("submitted");
+
+  const [newTitle,   setNewTitle]   = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [adding,     setAdding]     = useState(false);
+  const [editingId,  setEditingId]  = useState<string | null>(null);
+  const [editDraft,  setEditDraft]  = useState("");
+  const [editDue,    setEditDue]    = useState("");
+  const [editType,   setEditType]   = useState<RequestType>("feature");
+  const [editPriority, setEditPriority] = useState<1 | 2 | 3>(2);
+
+  const isAdmin = isAdminEmail(user?.email);
+
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    Promise.all([getRequestById(id), getRequestTasks(id)])
+      .then(([req, list]) => {
+        if (req) {
+          setRequest(req);
+          setForm({
+            title:             req.title,
+            description:       req.description,
+            priority:          req.priority,
+            budget:            req.budget ?? "",
+            payment_deadline:  req.payment_deadline ?? "",
+            delivery_deadline: req.delivery_deadline ?? "",
+            admin_notes:       req.admin_notes ?? "",
+          });
+          setStatus(req.status);
+        }
+        setTasks(list ?? []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [user, isAdmin, id]);
+
+  async function save() {
+    if (!request) return;
+    setSaving(true);
+    try {
+      const updated = await updateRequestAsAdmin(request.id, { ...form, status });
+      setRequest(updated);
+    } catch (e) { console.error(e); }
+    finally { setSaving(false); }
+  }
+
+  async function addTask() {
+    if (!request || !newTitle.trim()) return;
+    setAdding(true);
+    try {
+      const t = await createRequestTask({
+        request_id: request.id,
+        title:      newTitle.trim(),
+        position:   tasks.length,
+        due_date:   newDueDate || null,
+        type:       "feature",
+        priority:   2,
+      });
+      setTasks((p) => [...p, t]);
+      setNewTitle("");
+      setNewDueDate("");
+    } catch (e) { console.error(e); }
+    finally { setAdding(false); }
+  }
+
+  async function patchTask(taskId: string, patch: Partial<RequestTask>) {
+    const updated = await updateRequestTask(taskId, patch);
+    setTasks((p) => p.map((t) => (t.id === taskId ? updated : t)));
+    setEditingId(null);
+  }
+
+  async function removeTask(taskId: string) {
+    await deleteRequestTask(taskId);
+    setTasks((p) => p.filter((t) => t.id !== taskId));
+  }
+
+  /* guards */
+  if (authLoading)
+    return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>;
+  if (!user) return <LoginOverlay />;
+  if (!isAdmin)
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
+        <ShieldCheck className="size-10 text-muted-foreground/30" />
+        <p className="text-sm text-muted-foreground">Acesso restrito a administradores.</p>
+      </div>
+    );
+  if (loading || !request)
+    return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>;
+
+  const profile    = request.profiles as { full_name?: string; email?: string } | undefined;
+  const clientName = profile?.full_name ?? profile?.email ?? "—";
+  const doneTasks  = tasks.filter((t) => t.status === "done").length;
+
+  const fmtDate = (d: string | null) =>
+    d ? new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : null;
+
+  const daysLeft = (d: string | null) => {
+    if (!d) return null;
+    return Math.ceil((new Date(d + "T12:00:00").getTime() - Date.now()) / 86400000);
+  };
+
+  return (
+    <div className="flex min-h-0 flex-1 -m-6 -mt-4">
+
+      {/* ═══ MAIN ══════════════════════════════════════════════════════════ */}
+      <main className="flex-1 overflow-auto bg-background">
+        <div className="mx-auto max-w-4xl px-10 py-8">
+
+          {/* back / breadcrumb */}
+          <div className="mb-5 flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="-ml-2 h-7 gap-1.5 text-muted-foreground" asChild>
+              <Link href="/dashboard/admin">
+                <ArrowLeft className="size-3.5" /> Admin
+              </Link>
+            </Button>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="truncate text-sm text-muted-foreground">{request.title}</span>
+          </div>
+
+          {/* ── HEADER: título ── */}
+          <div className="mb-7">
+            <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <CircleDot className="size-3.5" />
+              <span>Solicitação</span>
+              <span className="text-muted-foreground/40">·</span>
+              <ListChecks className="size-3.5" />
+              <span>{doneTasks}/{tasks.length} etapas concluídas</span>
+            </div>
+            <textarea
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onBlur={save}
+              rows={1}
+              placeholder="Título da solicitação"
+              className="w-full resize-none bg-transparent text-[1.75rem] font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 focus:ring-0"
+              style={{ fieldSizing: "content" } as React.CSSProperties}
+            />
+          </div>
+
+          {/* ── FIELD ROWS — 2 colunas igual ClickUp ── */}
+          <div className="mb-7 rounded-xl border border-border/60 bg-card">
+            {/* linha 1: Status | Cliente */}
+            <div className="grid grid-cols-2 divide-x divide-border/60 border-b border-border/60">
+              <FieldCell
+                customIcon={
+                  <ProgressCircle
+                    pct={tasks.length === 0 ? 0 : Math.round((doneTasks / tasks.length) * 100)}
+                    size={16}
+                  />
+                }
+                label="Status"
+              >
+                <Select value={status} onValueChange={(v) => { setStatus(v as RequestStatus); setTimeout(save, 0); }}>
+                  <SelectTrigger className="h-7 w-auto gap-1.5 border-0 bg-transparent px-0 shadow-none focus:ring-0 hover:opacity-80">
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_COLOR[status]}`}>
+                      {STATUS_LABELS[status]}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(STATUS_LABELS) as RequestStatus[]).map((s) => (
+                      <SelectItem key={s} value={s}>
+                        <span className={`rounded px-1.5 py-0.5 text-xs font-semibold ${STATUS_COLOR[s]}`}>
+                          {STATUS_LABELS[s]}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldCell>
+              <FieldCell icon={User2} label="Cliente">
+                <span className="flex items-center gap-2 text-sm">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary uppercase">
+                    {clientName.charAt(0)}
+                  </span>
+                  <span className="truncate">{clientName}</span>
+                </span>
+              </FieldCell>
+            </div>
+
+            {/* linha 2: Datas | Prioridade */}
+            <div className="grid grid-cols-2 divide-x divide-border/60 border-b border-border/60">
+              <FieldCell icon={CalendarDays} label="Datas">
+                <div className="flex items-center gap-1.5 text-sm flex-wrap">
+                  <InlineDate
+                    value={form.payment_deadline}
+                    onChange={(v) => setForm((f) => ({ ...f, payment_deadline: v }))}
+                    placeholder="Início"
+                  />
+                  <span className="text-muted-foreground/40">→</span>
+                  <InlineDate
+                    value={form.delivery_deadline}
+                    onChange={(v) => setForm((f) => ({ ...f, delivery_deadline: v }))}
+                    placeholder="Entrega"
+                  />
+                  {form.delivery_deadline && (
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      ({daysLeft(form.delivery_deadline)}d)
+                    </span>
+                  )}
+                </div>
+              </FieldCell>
+              <FieldCell icon={Tag} label="Prioridade">
+                <Select
+                  value={String(form.priority)}
+                  onValueChange={(v) => setForm((f) => ({ ...f, priority: Number(v) as 1|2|3 }))}
+                >
+                  <SelectTrigger className="h-7 w-auto gap-1 border-0 bg-transparent px-0 shadow-none focus:ring-0 hover:opacity-80">
+                    <span className={`flex items-center gap-1.5 text-sm font-medium ${PRIORITY_COLOR[form.priority]}`}>
+                      <PriorityIcon priority={form.priority} size={14} className="shrink-0" />
+                      {PRIORITY_LABELS[form.priority]}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {([1, 2, 3] as const).map((p) => (
+                      <SelectItem key={p} value={String(p)}>
+                        <span className={`flex items-center gap-1.5 ${PRIORITY_COLOR[p]}`}>
+                          <PriorityIcon priority={p} size={14} className="shrink-0" />
+                          {PRIORITY_LABELS[p]}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldCell>
+            </div>
+
+            {/* linha 3: Tipo (linha única, sem coluna par) */}
+            <div className="grid grid-cols-2 divide-x divide-border/60">
+              <FieldCell icon={Tag} label="Tipo">
+                <span className="text-sm text-neutral-100 dark:text-neutral-200">{TYPE_LABELS[request.type]}</span>
+              </FieldCell>
+              <div /> {/* célula vazia para manter alinhamento */}
+            </div>
+          </div>
+
+          {/* ── CUSTOM FIELDS ── */}
+          <div className="mb-7">
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Custom Fields</h3>
+            <div className="overflow-hidden rounded-xl border border-border">
+
+              <CFRow icon={DollarSign} label="Orçamento">
+                <InlineText
+                  value={form.budget}
+                  onChange={(v) => { setForm((f) => ({ ...f, budget: v })); }}
+                  placeholder="ex: R$ 5.000"
+                />
+              </CFRow>
+
+              <CFRow icon={CalendarDays} label="Prazo de pagamento">
+                <InlineDate
+                  value={form.payment_deadline}
+                  onChange={(v) => setForm((f) => ({ ...f, payment_deadline: v }))}
+                  placeholder="Definir prazo"
+                />
+              </CFRow>
+
+              <CFRow icon={Clock} label="Prazo de entrega">
+                <div className="flex items-center gap-3">
+                  <InlineDate
+                    value={form.delivery_deadline}
+                    onChange={(v) => setForm((f) => ({ ...f, delivery_deadline: v }))}
+                    placeholder="Definir prazo"
+                  />
+                  {form.delivery_deadline && (() => {
+                    const d = daysLeft(form.delivery_deadline);
+                    if (d === null) return null;
+                    const cls = d < 0 ? "text-red-500" : d <= 3 ? "text-amber-500" : "text-muted-foreground";
+                    return (
+                      <span className={`text-xs font-medium ${cls}`}>
+                        {d < 0 ? `${Math.abs(d)}d de atraso` : d === 0 ? "Hoje" : `${d}d restantes`}
+                      </span>
+                    );
+                  })()}
+                </div>
+              </CFRow>
+
+              <CFRow icon={AlignLeft} label="Notas para o cliente">
+                <textarea
+                  value={form.admin_notes}
+                  onChange={(e) => setForm((f) => ({ ...f, admin_notes: e.target.value }))}
+                  onBlur={save}
+                  placeholder="Mensagem enviada junto com o orçamento..."
+                  rows={3}
+                  className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-0"
+                />
+              </CFRow>
+
+            </div>
+          </div>
+
+          {/* ── SPEC ── */}
+          <div className="mb-7">
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Spec / Esboço do projeto</h3>
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              onBlur={save}
+              placeholder="Descreva o escopo, entregas, critérios de aceite..."
+              rows={9}
+              className="resize-y text-sm font-mono"
+            />
+          </div>
+
+          {/* client response */}
+          {request.client_notes && (
+            <div className="mb-7 rounded-xl border border-border bg-muted/20 p-5">
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <User2 className="size-3.5" /> Resposta do cliente
+              </p>
+              <p className="text-sm">{request.client_notes}</p>
+            </div>
+          )}
+
+          {/* actions */}
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-5">
+            <Button
+              size="sm"
+              onClick={save}
+              disabled={saving}
+              className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {saving ? <Loader2 className="size-3 animate-spin" /> : <Send className="size-3" />}
+              Enviar orçamento
+            </Button>
+            <Button size="sm" variant="outline" onClick={save} disabled={saving}>
+              {saving ? <Loader2 className="size-3 animate-spin" /> : "Salvar alterações"}
+            </Button>
+          </div>
+
+        </div>
+      </main>
+
+      {/* ═══ RIGHT SIDEBAR: etapas ═════════════════════════════════════════ */}
+      <aside
+        className={`flex shrink-0 flex-col border-l border-border bg-background transition-all duration-200 ${
+          sidebarOpen ? "w-80" : "w-10"
+        }`}
+      >
+        {/* toggle */}
+        <button
+          type="button"
+          onClick={() => setSidebarOpen((o) => !o)}
+          className="flex h-12 w-full shrink-0 items-center border-b border-border px-3 hover:bg-muted/40 transition-colors"
+          title={sidebarOpen ? "Fechar" : "Etapas"}
+        >
+          <ChevronRight
+            className={`size-4 text-muted-foreground transition-transform duration-200 ${sidebarOpen ? "rotate-180" : ""}`}
+          />
+          {sidebarOpen && (
+            <div className="ml-2 flex flex-1 items-center justify-between overflow-hidden">
+              <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Etapas
+              </span>
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                {doneTasks}/{tasks.length}
+              </span>
+            </div>
+          )}
+        </button>
+
+        {sidebarOpen && (
+          <>
+            {/* list */}
+            <ul className="flex-1 overflow-y-auto p-2 space-y-0.5">
+              {tasks.length === 0 && (
+                <li className="py-10 text-center text-xs text-muted-foreground">
+                  Nenhuma etapa ainda.
+                </li>
+              )}
+
+              {tasks.map((task) => {
+                const due     = fmtDate(task.due_date);
+                const dl      = daysLeft(task.due_date);
+                const overdue = dl !== null && dl < 0;
+                const soon    = dl !== null && dl >= 0 && dl <= 3;
+
+                return (
+                  <li key={task.id} className="group rounded-md p-1.5 hover:bg-muted/40">
+                    {editingId === task.id ? (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1">
+                          <input
+                            autoFocus
+                            value={editDraft}
+                            onChange={(e) => setEditDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter")  patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority });
+                              if (e.key === "Escape") setEditingId(null);
+                            }}
+                            className="flex-1 rounded border border-border bg-muted/30 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
+                          />
+                          <button type="button" onClick={() => patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority })} className="text-muted-foreground hover:text-primary p-0.5">
+                            <Check className="size-3.5" />
+                          </button>
+                          <button type="button" onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground p-0.5">
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Select value={editType} onValueChange={(v) => setEditType(v as RequestType)}>
+                            <SelectTrigger className="h-7 w-auto gap-1 border border-border bg-muted/30 px-2 text-xs">
+                              {TYPE_LABELS[editType]}
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(Object.keys(TYPE_LABELS) as RequestType[]).map((t) => (
+                                <SelectItem key={t} value={t}>{TYPE_LABELS[t]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={String(editPriority)} onValueChange={(v) => setEditPriority(Number(v) as 1 | 2 | 3)}>
+                            <SelectTrigger className="h-7 w-auto gap-1 border border-border bg-muted/30 px-2 text-xs">
+                              <span className={`flex items-center gap-1 ${PRIORITY_COLOR[editPriority]}`}>
+                                <PriorityIcon priority={editPriority} size={12} className="shrink-0" />
+                                {PRIORITY_LABELS[editPriority]}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {([1, 2, 3] as const).map((p) => (
+                                <SelectItem key={p} value={String(p)}>
+                                  <span className={`flex items-center gap-1 ${PRIORITY_COLOR[p]}`}>
+                                    <PriorityIcon priority={p} size={12} className="shrink-0" />
+                                    {PRIORITY_LABELS[p]}
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <input
+                          type="date"
+                          value={editDue}
+                          onChange={(e) => setEditDue(e.target.value)}
+                          className="w-full rounded border border-border bg-muted/30 px-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2">
+                        {/* checkbox */}
+                        <button
+                          type="button"
+                          onClick={() => patchTask(task.id, { status: task.status === "done" ? "todo" : "done" })}
+                          className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            task.status === "done"
+                              ? "border-primary bg-primary"
+                              : "border-muted-foreground/40 hover:border-primary"
+                          }`}
+                        >
+                          {task.status === "done" && <Check className="size-2.5 text-primary-foreground" strokeWidth={3} />}
+                        </button>
+
+                        {/* content */}
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs leading-5 ${task.status === "done" ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                            {task.title}
+                          </p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span className="rounded bg-muted/60 px-1.5 py-0.5 text-[10px] text-neutral-100 dark:text-neutral-200">
+                              {TYPE_LABELS[task.type ?? "feature"] ?? task.type}
+                            </span>
+                            <span className={`flex items-center gap-1 text-[10px] ${PRIORITY_COLOR[task.priority ?? 2]}`}>
+                              <Button type="button" variant="ghost" size="icon" className="size-6 shrink-0 text-neutral-100 dark:text-neutral-200">
+                                <PriorityIcon priority={task.priority ?? 2} size={10} />
+                              </Button>
+                              {PRIORITY_LABELS[task.priority ?? 2]}
+                            </span>
+                            {due && (
+                              <p className={`flex items-center gap-1 text-[10px] ${
+                                overdue ? "text-red-500" : soon ? "text-amber-500" : "text-muted-foreground"
+                              }`}>
+                                <CalendarDays className="size-2.5" />
+                                {due}
+                                {dl !== null && (
+                                  <span>
+                                    {overdue ? `(${Math.abs(dl)}d atraso)` : dl === 0 ? "(hoje)" : `(${dl}d)`}
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* hover actions */}
+                        <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => { setEditDraft(task.title); setEditDue(task.due_date ?? ""); setEditType(task.type); setEditPriority(task.priority); setEditingId(task.id); }}
+                            className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="size-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeTask(task.id)}
+                            className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* add task */}
+            <div className="space-y-2 border-t border-border p-3">
+              <input
+                placeholder="Nova etapa..."
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addTask()}
+                className="w-full rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs outline-none placeholder:text-muted-foreground/60 focus:ring-1 focus:ring-primary"
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="flex-1 rounded-md border border-border bg-muted/30 px-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
+                />
+                <button
+                  type="button"
+                  onClick={addTask}
+                  disabled={adding || !newTitle.trim()}
+                  className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
+                >
+                  {adding ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                  Adicionar
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </aside>
+    </div>
+  );
+}
