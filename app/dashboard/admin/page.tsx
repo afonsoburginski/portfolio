@@ -334,8 +334,6 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                             const isDone   = task.status === "done";
                             const isInProg = task.status === "in_progress";
                             const tdl = isDone ? null : daysLeft(task.due_date);
-                            const taskDelayDone = isDone && task.due_date && task.updated_at
-                              ? delayAtCompletion(task.due_date, task.updated_at) : null;
                             const tOverdue = !isDone && tdl !== null && tdl < 0;
                             const tSoon = !isDone && tdl !== null && tdl >= 0 && tdl <= 3;
 
@@ -377,9 +375,9 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                                 }`}>
                                   {task.due_date ? fmt(task.due_date) : ""}
                                   {isDone && task.due_date
-                                    ? (taskDelayDone !== null && taskDelayDone > 0 ? ` (concluído +${taskDelayDone}d)` : " (concluído)")
+                                    ? " (concluído)"
                                     : !isDone && tdl !== null && task.due_date && (
-                                        tOverdue ? ` (${Math.abs(tdl)}d)` : tdl === 0 ? " (hoje)" : ""
+                                        tOverdue ? ` (${Math.abs(tdl)}d atraso)` : tdl === 0 ? " (hoje)" : ""
                                       )}
                                 </span>
 

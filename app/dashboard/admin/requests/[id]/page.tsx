@@ -848,12 +848,7 @@ export default function AdminRequestPlanningPage({
               {tasks.map((task) => {
                 const due = fmtDate(task.due_date);
                 const isDone = task.status === "done";
-                const dl = isDone
-                  ? null
-                  : daysLeft(task.due_date);
-                const delayWhenDone = isDone && task.due_date && task.updated_at
-                  ? delayAtCompletion(task.due_date, task.updated_at)
-                  : null;
+                const dl = isDone ? null : daysLeft(task.due_date);
                 const overdue = !isDone && dl !== null && dl < 0;
                 const soon = !isDone && dl !== null && dl >= 0 && dl <= 3;
 
@@ -948,18 +943,14 @@ export default function AdminRequestPlanningPage({
                             </span>
                             {due && (
                               <p className={`flex items-center gap-1 text-[10px] ${
-                                isDone ? "text-muted-foreground" : overdue ? "text-red-500" : soon ? "text-amber-500" : "text-muted-foreground"
-                              }`}>
+                                isDone ? "text-muted-foreground" : soon ? "text-amber-500" : "text-muted-foreground"
+                              } ${overdue ? "text-red-500" : ""}`}>
                                 <CalendarDays className="size-2.5" />
                                 {due}
                                 {isDone ? (
-                                  delayWhenDone !== null && delayWhenDone > 0 ? (
-                                    <span>(concluído com {delayWhenDone}d de atraso)</span>
-                                  ) : (
-                                    <span>(concluído)</span>
-                                  )
+                                  <span>(concluído)</span>
                                 ) : dl !== null && (
-                                  <span>
+                                  <span className={overdue ? "text-red-500 font-medium" : undefined}>
                                     {overdue ? `(${Math.abs(dl)}d atraso)` : dl === 0 ? "(hoje)" : `(${dl}d)`}
                                   </span>
                                 )}
