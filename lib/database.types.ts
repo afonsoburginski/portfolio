@@ -4,6 +4,7 @@ export type RequestType =
   | 'integration'
   | 'maintenance'
   | 'redesign'
+  | 'full_system'
   | 'other';
 export type RequestStatus =
   | 'submitted'

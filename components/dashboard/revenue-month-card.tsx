@@ -17,6 +17,7 @@ const TYPE_LABELS: Record<RequestType, string> = {
   integration: "Integração",
   maintenance: "Manutenção",
   redesign:    "Redesign",
+  full_system: "Sistema / SaaS",
   other:       "Outro",
 };
 
@@ -26,6 +27,7 @@ const TYPE_COLORS: Record<string, string> = {
   integration: "hsl(217 91% 60%)",
   maintenance: "hsl(25 95% 53%)",
   redesign:    "hsl(330 81% 60%)",
+  full_system: "hsl(262 83% 58%)",
   other:       "hsl(0 0% 55%)",
 };
 

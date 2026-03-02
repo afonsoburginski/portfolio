@@ -29,6 +29,7 @@ const PROPOSITOS = [
   { value: "integration", label: "Integração" },
   { value: "maintenance", label: "Manutenção" },
   { value: "redesign",    label: "Redesign / UI" },
+  { value: "full_system", label: "Sistema completo / SaaS" },
   { value: "other",       label: "Outro" },
 ];
 

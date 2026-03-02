@@ -105,6 +105,7 @@ const TYPE_LABELS: Record<string, string> = {
   integration: "Integração",
   maintenance: "Manutenção",
   redesign:    "Redesign / UI",
+  full_system: "Sistema completo / SaaS",
   other:       "Outro",
 };
 

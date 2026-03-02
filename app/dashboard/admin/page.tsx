@@ -78,7 +78,7 @@ const STATUS_TEXT: Record<RequestStatus, string> = {
 
 const TYPE_LABELS: Record<string, string> = {
   feature: "Nova funcionalidade", bug_fix: "Correção de bug", integration: "Integração",
-  maintenance: "Manutenção", redesign: "Redesign / UI", other: "Outro"
+  maintenance: "Manutenção", redesign: "Redesign / UI", full_system: "Sistema completo / SaaS", other: "Outro"
 };
 
 /* status order for groups */
