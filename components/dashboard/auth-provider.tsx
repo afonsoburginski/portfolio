@@ -81,7 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           provider: "google",
           token: credential,
         });
-        if (error) console.error("[Google Sign-In]", error);
+        if (error) { console.error("[Google Sign-In]", error); return; }
+        window.location.href = "/dashboard";
       },
       auto_select: false,
       cancel_on_tap_outside: true,
