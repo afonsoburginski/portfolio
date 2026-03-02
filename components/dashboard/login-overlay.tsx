@@ -3,6 +3,13 @@
 import Image from "next/image";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SiGithub, SiGoogle } from "react-icons/si";
 import { Loader2 } from "lucide-react";
 
@@ -14,64 +21,58 @@ export function LoginOverlay({ loading }: LoginOverlayProps) {
   const { signInWithGoogle, signInWithGitHub } = useAuth();
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6">
-      {/* Subtle dot grid */}
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-
-      <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-xs">
-        {/* Brand */}
-        <div className="flex flex-col items-center gap-5 text-center">
-          <Image
-            src="/logo.png"
-            alt="Afonsodev"
-            width={56}
-            height={56}
-            className="rounded-2xl"
-          />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Client Portal</h1>
-            <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
-              Sign in to submit requests, track your project, and review quotes.
-            </p>
+    <Dialog open defaultOpen>
+      <DialogContent
+        className="sm:max-w-[360px] gap-6 border-border/60 bg-card dark:bg-zinc-900 dark:border-zinc-700/60"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="text-center sm:text-center">
+          <div className="mx-auto mb-2">
+            <Image
+              src="/logo.png"
+              alt="Afonsodev"
+              width={48}
+              height={48}
+              className="rounded-xl"
+            />
           </div>
-        </div>
+          <DialogTitle className="text-xl">Entrar no portal</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Acesse para enviar pedidos, acompanhar orçamentos e entregas.
+          </DialogDescription>
+        </DialogHeader>
 
         {loading ? (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Authenticating...</p>
+          <div className="flex flex-col items-center gap-2 py-4">
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Autenticando…</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2.5 w-full">
+          <div className="flex flex-col gap-2">
             <Button
               onClick={signInWithGoogle}
               variant="outline"
-              className="w-full gap-2.5 h-11"
+              className="w-full gap-2 h-10"
             >
               <SiGoogle className="size-4" />
-              Continue with Google
+              Continuar com Google
             </Button>
             <Button
               onClick={signInWithGitHub}
               variant="outline"
-              className="w-full gap-2.5 h-11"
+              className="w-full gap-2 h-10"
             >
               <SiGithub className="size-4" />
-              Continue with GitHub
+              Continuar com GitHub
             </Button>
           </div>
         )}
 
-        <p className="text-[11px] text-muted-foreground/50 text-center leading-relaxed">
-          By signing in, you agree to share your email for project management purposes.
+        <p className="text-[11px] text-muted-foreground/60 text-center">
+          Ao entrar, você concorda em usar seu e-mail para gestão do projeto.
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
