@@ -11,9 +11,10 @@ import {
 import { NewRequestDialog } from "@/components/dashboard/new-request-dialog";
 import {
   PlusCircle, Loader2, ChevronRight, FileText,
-  CheckCircle2, AlertCircle, Rocket,
+  CheckCircle2, AlertCircle, Rocket, LayoutList, GanttChartSquare,
 } from "lucide-react";
 import { ClientRequestContextMenu } from "@/components/dashboard/client-request-context-menu";
+import { AdminGanttView } from "@/components/dashboard/admin-gantt-view";
 import { getCalApi } from "@calcom/embed-react";
 import { createBrowserSupabase } from "@/lib/supabase-browser";
 
@@ -52,11 +53,14 @@ function StatusPill({ status }: { status: RequestStatus }) {
   );
 }
 
+type ViewMode = "table" | "gantt";
+
 export function RequestsOverview() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [newRequestOpen, setNewRequestOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
   const isAdmin = isAdminEmail(user?.email);
 
   const refresh = () => getMyRequests().then(setRequests).catch(console.error);
@@ -198,7 +202,7 @@ export function RequestsOverview() {
         ))}
       </div>
 
-      {/* Requests table */}
+      {/* Requests table / gantt */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
@@ -211,8 +215,37 @@ export function RequestsOverview() {
                   : `${requests.length} solicitações · clique com botão direito para ações rápidas`}
             </p>
           </div>
+          {!loading && requests.length > 0 && (
+            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  viewMode === "table"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <LayoutList className="size-3.5" />
+                Tabela
+              </button>
+              <button
+                onClick={() => setViewMode("gantt")}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  viewMode === "gantt"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <GanttChartSquare className="size-3.5" />
+                Gantt
+              </button>
+            </div>
+          )}
         </div>
 
+        {viewMode === "gantt" && !loading ? (
+          <AdminGanttView requests={requests} />
+        ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -300,6 +333,7 @@ export function RequestsOverview() {
             </Table>
           )}
         </div>
+        )}
       </div>
     </div>
   );

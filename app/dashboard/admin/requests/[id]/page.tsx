@@ -16,6 +16,7 @@ import {
   changeRequestClient,
 } from "@/lib/dashboard-data";
 import type { Profile, Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
+import { RequestChat } from "@/components/dashboard/request-chat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -272,6 +273,12 @@ export default function AdminRequestPlanningPage({
   const [changingClient, setChangingClient] = useState(false);
   const [sidebarOpen, setSidebarOpen]  = useState(true);
 
+  /* Em mobile inicia colapsada para priorizar o conteúdo; usuário expande se quiser */
+  useEffect(() => {
+    const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile) setSidebarOpen(false);
+  }, []);
+
   const [form, setForm] = useState({
     title:             "",
     description:       "",
@@ -436,10 +443,10 @@ export default function AdminRequestPlanningPage({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 -m-6 -mt-4">
+    <div className="flex min-h-0 flex-1 -m-6 -mt-4 flex-col md:flex-row">
 
       {/* ═══ MAIN ══════════════════════════════════════════════════════════ */}
-      <main className="flex-1 overflow-auto bg-background">
+      <main className="min-w-0 flex-1 overflow-auto bg-background">
         <div className="mx-auto max-w-5xl w-full px-6 py-8">
 
           {/* back / breadcrumb */}
@@ -721,15 +728,10 @@ export default function AdminRequestPlanningPage({
             />
           </div>
 
-          {/* client response */}
-          {request.client_notes && (
-            <div className="mb-7 rounded-xl border border-border bg-muted/20 p-5">
-              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <User2 className="size-3.5" /> Resposta do cliente
-              </p>
-              <p className="text-sm">{request.client_notes}</p>
-            </div>
-          )}
+          {/* Chat com cliente */}
+          <div className="mb-7">
+            <RequestChat requestId={request.id} isAdmin={true} />
+          </div>
 
           {/* actions */}
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-5">
@@ -780,32 +782,33 @@ export default function AdminRequestPlanningPage({
         </div>
       </main>
 
-      {/* ═══ RIGHT SIDEBAR: etapas ═════════════════════════════════════════ */}
+      {/* ═══ RIGHT SIDEBAR: etapas (colapsável em mobile) ═════════════════════ */}
       <aside
-        className={`flex shrink-0 flex-col border-l border-border bg-background transition-all duration-200 ${
-          sidebarOpen ? "w-80" : "w-10"
+        className={`flex shrink-0 flex-col border-t md:border-t-0 md:border-l border-border bg-background transition-all duration-200 ${
+          sidebarOpen ? "w-full md:w-80" : "w-full md:w-10"
         }`}
       >
-        {/* toggle */}
+        {/* toggle — em mobile mostra sempre "Etapas (x/y)" e chevron para expandir/colapsar */}
         <button
           type="button"
           onClick={() => setSidebarOpen((o) => !o)}
           className="flex h-12 w-full shrink-0 items-center border-b border-border px-3 hover:bg-muted/40 transition-colors"
-          title={sidebarOpen ? "Fechar" : "Etapas"}
+          title={sidebarOpen ? "Fechar etapas" : "Abrir etapas"}
         >
           <ChevronRight
-            className={`size-4 text-muted-foreground transition-transform duration-200 ${sidebarOpen ? "rotate-180" : ""}`}
+            className={`hidden md:block size-4 text-muted-foreground transition-transform duration-200 ${sidebarOpen ? "rotate-180" : ""}`}
           />
-          {sidebarOpen && (
-            <div className="ml-2 flex flex-1 items-center justify-between overflow-hidden">
-              <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Etapas
-              </span>
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                {doneTasks}/{tasks.length}
-              </span>
-            </div>
-          )}
+          <ChevronDown
+            className={`md:hidden size-4 text-muted-foreground transition-transform duration-200 shrink-0 ${sidebarOpen ? "rotate-180" : ""}`}
+          />
+          <div className="ml-2 flex flex-1 items-center justify-between overflow-hidden">
+            <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Etapas
+            </span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">
+              {doneTasks}/{tasks.length}
+            </span>
+          </div>
         </button>
 
         {sidebarOpen && (

@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
   const status = paymentData.status;
   const paymentId = String(paymentData.id);
 
-  // Atualiza o request — usa anon key com o header do usuário (RLS permite update próprio)
   if (status === "approved") {
+    // Camada 1: update direto via token do usuário (RLS)
     await supabase
       .from("requests")
       .update({
@@ -75,7 +75,21 @@ export async function POST(req: NextRequest) {
         paid_at: new Date().toISOString(),
       })
       .eq("id", requestId);
+
+    // Camada 2 (redundância): RPC SECURITY DEFINER como fallback independente
+    const anonSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false } }
+    );
+    const { error: rpcErr } = await anonSupabase.rpc("mark_payment_approved", {
+      p_request_id: requestId,
+      p_payment_id: paymentId,
+    });
+    if (rpcErr) console.error("[Process] RPC fallback error:", rpcErr);
+
   } else if (status === "pending" || status === "in_process") {
+    // Salva o payment_id para que o polling e o webhook possam confirmar depois
     await supabase
       .from("requests")
       .update({ mp_payment_id: paymentId })

@@ -11,7 +11,7 @@ import {
   getDaysInMonth,
   startOfMonth,
 } from "date-fns";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { Request, RequestStatus, RequestTask } from "@/lib/database.types";
 import type { GanttFeature, GanttStatus } from "@/components/kibo-ui/gantt";
 import { getRequestTasks } from "@/lib/dashboard-data";
@@ -436,6 +436,7 @@ export function AdminGanttView({ requests }: { requests: Request[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panRef       = useRef<PanState | null>(null);
 
+  const [sidebarOpen, setSidebarOpen]   = useState(true);
   const [zoom,         setZoom]         = useState(BASE_ZOOM);
   const [scrollTrigger, setScrollTrigger] = useState<{ feature: GanttFeature; version: number } | null>(null);
   const [expandedIds,  setExpandedIds]  = useState<Set<string>>(new Set());
@@ -543,16 +544,28 @@ export function AdminGanttView({ requests }: { requests: Request[] }) {
   return (
     <div
       ref={containerRef}
-      className={`h-[640px] w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+      className={`relative h-[640px] w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
       onMouseDown={handlePanMouseDown}
     >
+      {/* Botão para ocultar/mostrar lista — absolute em cima do Gantt */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setSidebarOpen((o) => !o); }}
+        onMouseDown={(e) => e.stopPropagation()}
+        className="absolute top-2 left-2 z-50 flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/95 px-2.5 py-1.5 text-xs font-medium shadow-sm backdrop-blur-sm hover:bg-muted/80"
+        title={sidebarOpen ? "Ocultar lista de projetos" : "Mostrar lista de projetos"}
+      >
+        {sidebarOpen ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
+        <span>{sidebarOpen ? "Ocultar lista" : "Mostrar lista"}</span>
+      </button>
+
       <GanttProvider range="monthly" zoom={zoom} className="h-full min-w-0">
 
         {/* Dispara scrollToFeature APÓS o GanttProvider re-renderizar com o novo zoom */}
         <GanttScrollTrigger trigger={scrollTrigger} />
 
         {/* ── sidebar esquerda ── */}
-        <GanttSidebar>
+        <GanttSidebar className={sidebarOpen ? undefined : "hidden"}>
           {activeGroups.map((statusKey) => (
             <GanttSidebarGroup key={statusKey} name={STATUS_LABELS[statusKey]}>
               {grouped[statusKey].map((req) => {

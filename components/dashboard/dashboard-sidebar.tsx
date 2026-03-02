@@ -20,6 +20,8 @@ import {
   LayoutDashboard, ShieldCheck,
   LogOut, ChevronsUpDown, ExternalLink,
 } from "lucide-react";
+import { useNotifications } from "@/hooks/use-notifications";
+import { NotificationBadge } from "@/components/dashboard/notification-badge";
 
 const CLIENT_NAV = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -32,6 +34,7 @@ const ADMIN_NAV = [
 export function DashboardSidebar() {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
+  const { unreadCount } = useNotifications();
   const isAdmin = isAdminEmail(user?.email);
 
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
@@ -91,6 +94,7 @@ export function DashboardSidebar() {
                     <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>
+                      <NotificationBadge count={unreadCount} className="ml-auto" />
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -118,6 +122,7 @@ export function DashboardSidebar() {
                         <Link href={item.href}>
                           <item.icon />
                           <span>{item.label}</span>
+                          <NotificationBadge count={unreadCount} className="ml-auto" />
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
