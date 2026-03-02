@@ -43,7 +43,6 @@ import {
   ChevronRight,
   ListChecks,
   CircleDot,
-  ChevronsUpDown,
   Banknote,
   CheckCircle2,
   ChevronDown,

@@ -74,13 +74,6 @@ const TYPE_LABELS: Record<string, string> = {
   other:       "Outro",
 };
 
-const PRIORITY_LABELS: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
-const PRIORITY_COLOR: Record<number, string> = {
-  1: "text-slate-400",
-  2: "text-amber-500",
-  3: "text-red-500",
-};
-
 const BASE_ZOOM    = 130;      // zoom padrão (visão geral)
 const SIDEBAR_W    = 300;      // sidebar do Gantt (px)
 const BASE_COL_W   = 150;      // largura base de 1 mês no range "monthly"
@@ -500,7 +493,8 @@ export function AdminGanttView({ requests }: { requests: Request[] }) {
     const { id } = req;
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
     if (!(id in tasksByReq) && !loadingIds.has(id)) {

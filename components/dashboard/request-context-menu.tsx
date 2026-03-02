@@ -23,7 +23,6 @@ import {
   XCircle,
   Eye,
   Banknote,
-  BarChart2,
   AlertTriangle,
 } from "lucide-react";
 import { updateRequestAsAdmin } from "@/lib/dashboard-data";

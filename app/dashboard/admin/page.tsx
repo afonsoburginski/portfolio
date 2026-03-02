@@ -81,13 +81,6 @@ const TYPE_LABELS: Record<string, string> = {
   maintenance: "Manutenção", redesign: "Redesign / UI", other: "Outro"
 };
 
-const PRIORITY_LABEL: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
-const PRIORITY_FLAG:  Record<number, string> = {
-  1: "text-slate-400",
-  2: "text-yellow-500",
-  3: "text-red-500",
-};
-
 /* status order for groups */
 const GROUP_ORDER: RequestStatus[] = [
   "submitted", "reviewing", "quoted", "approved",
@@ -151,7 +144,8 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
     e.stopPropagation();
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      next.has(reqId) ? next.delete(reqId) : next.add(reqId);
+      if (next.has(reqId)) next.delete(reqId);
+      else next.add(reqId);
       return next;
     });
     if (!(reqId in tasksByReq) && !loadingIds.has(reqId)) {
@@ -210,7 +204,8 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
               type="button"
               onClick={() => setCollapsed((prev) => {
                 const next = new Set(prev);
-                next.has(statusKey) ? next.delete(statusKey) : next.add(statusKey);
+                if (next.has(statusKey)) next.delete(statusKey);
+                else next.add(statusKey);
                 return next;
               })}
               className="flex w-full items-center gap-2.5 border-b border-border/60 bg-muted/30 px-4 py-2.5 hover:bg-muted/50 transition-colors"
@@ -475,7 +470,6 @@ export default function AdminPage() {
   const quotedThisMonth = requests.filter((r) => r.status === "quoted" && inThisMonth(r.created_at)).length;
   const quotedLastMonth = requests.filter((r) => r.status === "quoted" && inLastMonth(r.created_at)).length;
   const inProgressCount = requests.filter((r) => r.status === "in_progress").length;
-  const deliveredCount = requests.filter((r) => r.status === "delivered").length;
   const deliveredThisMonth = requests.filter((r) => r.status === "delivered" && inThisMonth(r.delivered_at ?? r.updated_at)).length;
   const deliveredLastMonth = requests.filter((r) => r.status === "delivered" && inLastMonth(r.delivered_at ?? r.updated_at)).length;
 

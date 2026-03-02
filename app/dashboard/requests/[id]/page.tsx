@@ -471,6 +471,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
       {req.image_url && (
         <Card>
           <CardContent className="p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={req.image_url} alt="Referência" className="w-full rounded-lg object-cover max-h-64" />
           </CardContent>
         </Card>

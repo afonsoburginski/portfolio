@@ -120,7 +120,7 @@ export function ClientRequestContextMenu({ request, children, onUpdated }: Props
             <AlertDialogTitle className="text-zinc-100">Cancelar pedido?</AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
               Tem certeza que deseja cancelar{" "}
-              <span className="font-medium text-zinc-200">"{request.title}"</span>?
+              <span className="font-medium text-zinc-200">&quot;{request.title}&quot;</span>?
               Esta ação não poderá ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>

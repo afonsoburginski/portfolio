@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Trophy, Zap, Star, Code, Shield, TrendingUp } from "lucide-react";
+import { Trophy, Zap, Star, Code, Shield } from "lucide-react";
 import { SiReact, SiExpo, SiNextdotjs, SiNodedotjs, SiKotlin, SiSupabase, SiPostgresql } from "react-icons/si";
 import Image from "next/image";
 

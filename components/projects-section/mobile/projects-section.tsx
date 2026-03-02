@@ -31,14 +31,11 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
       }
     );
 
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
+    const el = cardRef.current;
+    if (el) observer.observe(el);
 
     return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
+      if (el) observer.unobserve(el);
     };
   }, []);
 
