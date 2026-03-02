@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ClientRequestContextMenu } from "@/components/dashboard/client-request-context-menu";
 import { getCalApi } from "@calcom/embed-react";
+import { createBrowserSupabase } from "@/lib/supabase-browser";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   submitted:   "bg-blue-500/15 text-blue-400 border-blue-500/20",
@@ -61,6 +62,20 @@ export function RequestsOverview() {
   const refresh = () => getMyRequests().then(setRequests).catch(console.error);
 
   useEffect(() => { refresh().finally(() => setLoading(false)); }, []);
+
+  // Realtime — atualiza ao vivo quando o admin cria/altera pedidos do cliente
+  useEffect(() => {
+    const supabase = createBrowserSupabase();
+    const channel = supabase
+      .channel("requests-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "requests" },
+        () => { refresh(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   useEffect(() => {
     getCalApi().then((cal) => cal("ui", { theme: "dark" })).catch(() => {});
