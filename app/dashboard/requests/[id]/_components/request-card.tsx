@@ -5,6 +5,7 @@ import {
   CreditCard, DollarSign, Loader2, MessageSquare, Truck, XCircle,
 } from "lucide-react";
 import type { Request } from "@/lib/database.types";
+import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 
 interface Props {
@@ -54,11 +55,13 @@ export function RequestCard({ req, isPaid, hasQuote, declining, onStartPayment, 
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{req.description}</p>
         </div>
 
-        {/* Mensagem do admin */}
+        {/* Observações do admin */}
         {req.admin_notes && (
           <div className="border-t border-border/60 px-5 py-4">
-            <SectionLabel icon={<MessageSquare className="size-3" />}>Mensagem</SectionLabel>
-            <p className="text-sm leading-relaxed">{req.admin_notes}</p>
+            <SectionLabel icon={<MessageSquare className="size-3" />}>Observações</SectionLabel>
+            <div className="text-sm leading-relaxed">
+              <FormattedMessageContent content={req.admin_notes} />
+            </div>
           </div>
         )}
 

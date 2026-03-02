@@ -706,7 +706,7 @@ export default function AdminRequestPlanningPage({
                   value={form.admin_notes}
                   onChange={(e) => setForm((f) => ({ ...f, admin_notes: e.target.value }))}
                   onBlur={() => save()}
-                  placeholder="Mensagem enviada junto com o orçamento..."
+                  placeholder="Observações enviadas junto com o orçamento..."
                   rows={3}
                   className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-0"
                 />

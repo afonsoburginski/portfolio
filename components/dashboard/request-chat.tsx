@@ -5,6 +5,7 @@ import { createBrowserSupabase } from "@/lib/supabase-browser";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { Loader2, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 
 interface Comment {
   id: string;
@@ -228,12 +229,12 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                     )}
 
                     <div className={cn(
-                      "px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words",
+                      "px-3 py-2 rounded-2xl text-sm leading-relaxed break-words",
                       mine
                         ? "bg-purple-600/80 text-white rounded-tr-sm"
                         : "bg-muted text-foreground rounded-tl-sm"
                     )}>
-                      {c.content}
+                      <FormattedMessageContent content={c.content} />
                     </div>
                   </div>
 

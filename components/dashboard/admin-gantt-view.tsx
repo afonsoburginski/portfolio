@@ -166,7 +166,10 @@ function FocusedDaysHeader({ start, end }: { start: Date; end: Date }) {
 
   if (months.length === 0) return null;
 
-  /* Modo foco/zoom: exibir todos os dias corridos de cada mês (1…28/29/30/31); mês e dias em linhas separadas */
+  /* Largura mínima por rótulo de dia para não sobrepor (ex.: "31" em 2 dígitos) */
+  const MIN_DAY_LABEL_PX = 14;
+
+  /* Modo foco/zoom: exibir dias adaptado ao zoom — quando cada dia fica estreito, mostrar só 1 em cada N */
   return (
     <div
       className="absolute left-0 top-[32px] z-20 flex border-b-2 border-primary/30 bg-muted/95 shadow-sm"
@@ -180,6 +183,9 @@ function FocusedDaysHeader({ start, end }: { start: Date; end: Date }) {
       {months.map(({ year, month }) => {
         const daysInMonth = getDaysInMonth(new Date(year, month, 1));
         const dayWidthPx = colWidthPx / daysInMonth;
+        const step = dayWidthPx >= MIN_DAY_LABEL_PX ? 1 : Math.max(1, Math.ceil(MIN_DAY_LABEL_PX / dayWidthPx));
+        const showDay = (d: number) =>
+          step === 1 || d === 1 || d === daysInMonth || (d - 1) % step === 0;
         const monthLabel = new Date(year, month, 1).toLocaleDateString("pt-BR", { month: "short" });
         return (
           <div
@@ -200,7 +206,7 @@ function FocusedDaysHeader({ start, end }: { start: Date; end: Date }) {
                   className="flex shrink-0 items-center justify-center text-[8px] font-medium tabular-nums text-foreground/70"
                   style={{ width: dayWidthPx, minWidth: dayWidthPx }}
                 >
-                  {d}
+                  {showDay(d) ? d : ""}
                 </span>
               ))}
             </div>
@@ -407,14 +413,15 @@ function RequestSidebarRow({
   );
 }
 
-function TaskSidebarRow({ feature }: { feature: GanttFeature }) {
+function TaskSidebarRow({ feature, index }: { feature: GanttFeature; index: number }) {
+  const label = `${index + 1}. ${feature.name}`;
   return (
     <div
       className="flex items-center gap-2 pl-8 pr-2.5 text-xs text-muted-foreground hover:bg-secondary/40"
       style={{ height: "var(--gantt-row-height)" }}
     >
       <div className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: feature.status.color }} />
-      <p className="flex-1 truncate">{feature.name}</p>
+      <p className="flex-1 truncate">{label}</p>
     </div>
   );
 }
@@ -592,8 +599,8 @@ export function AdminGanttView({ requests }: { requests: Request[] }) {
                       <PlaceholderRow label="Sem etapas cadastradas" />
                     )}
 
-                    {isExpanded && !isLoading && taskFeatures.map((f) => (
-                      <TaskSidebarRow key={f.id} feature={f} />
+                    {isExpanded && !isLoading && taskFeatures.map((f, i) => (
+                      <TaskSidebarRow key={f.id} feature={f} index={i} />
                     ))}
                   </div>
                 );
