@@ -443,6 +443,15 @@ export default function AdminRequestPlanningPage({
     return Math.ceil((new Date(d + "T12:00:00").getTime() - Date.now()) / 86400000);
   };
 
+  /** Atraso em dias na data de conclusão (não aumenta depois de concluído). */
+  const delayAtCompletion = (dueDate: string | null, completedAt: string | null) => {
+    if (!dueDate || !completedAt) return null;
+    const due = new Date(dueDate + "T12:00:00").getTime();
+    const done = new Date(completedAt).getTime();
+    const days = Math.ceil((done - due) / 86400000);
+    return days > 0 ? days : 0;
+  };
+
   return (
     <div className="flex min-h-0 flex-1 -m-6 -mt-4 flex-col md:flex-row">
 
@@ -584,7 +593,12 @@ export default function AdminRequestPlanningPage({
                   />
                   {form.delivery_deadline && (
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      ({daysLeft(form.delivery_deadline)}d)
+                      {request?.status === "delivered" && request?.delivered_at
+                        ? (() => {
+                            const at = delayAtCompletion(form.delivery_deadline, request.delivered_at);
+                            return at !== null && at > 0 ? `(Entregue +${at}d atraso)` : "(Entregue)";
+                          })()
+                        : `(${daysLeft(form.delivery_deadline)}d)`}
                     </span>
                   )}
                 </div>
@@ -690,6 +704,15 @@ export default function AdminRequestPlanningPage({
                     placeholder="Definir prazo"
                   />
                   {form.delivery_deadline && (() => {
+                    const isDelivered = request?.status === "delivered" && request?.delivered_at;
+                    if (isDelivered) {
+                      const atraso = delayAtCompletion(form.delivery_deadline, request!.delivered_at!);
+                      return (
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {atraso !== null && atraso > 0 ? `Entregue (${atraso}d de atraso)` : "Entregue"}
+                        </span>
+                      );
+                    }
                     const d = daysLeft(form.delivery_deadline);
                     if (d === null) return null;
                     const cls = d < 0 ? "text-red-500" : d <= 3 ? "text-amber-500" : "text-muted-foreground";
@@ -823,10 +846,16 @@ export default function AdminRequestPlanningPage({
               )}
 
               {tasks.map((task) => {
-                const due     = fmtDate(task.due_date);
-                const dl      = daysLeft(task.due_date);
-                const overdue = dl !== null && dl < 0;
-                const soon    = dl !== null && dl >= 0 && dl <= 3;
+                const due = fmtDate(task.due_date);
+                const isDone = task.status === "done";
+                const dl = isDone
+                  ? null
+                  : daysLeft(task.due_date);
+                const delayWhenDone = isDone && task.due_date && task.updated_at
+                  ? delayAtCompletion(task.due_date, task.updated_at)
+                  : null;
+                const overdue = !isDone && dl !== null && dl < 0;
+                const soon = !isDone && dl !== null && dl >= 0 && dl <= 3;
 
                 return (
                   <li key={task.id} className="group rounded-md p-1.5 hover:bg-muted/40">
@@ -919,11 +948,17 @@ export default function AdminRequestPlanningPage({
                             </span>
                             {due && (
                               <p className={`flex items-center gap-1 text-[10px] ${
-                                overdue ? "text-red-500" : soon ? "text-amber-500" : "text-muted-foreground"
+                                isDone ? "text-muted-foreground" : overdue ? "text-red-500" : soon ? "text-amber-500" : "text-muted-foreground"
                               }`}>
                                 <CalendarDays className="size-2.5" />
                                 {due}
-                                {dl !== null && (
+                                {isDone ? (
+                                  delayWhenDone !== null && delayWhenDone > 0 ? (
+                                    <span>(concluído com {delayWhenDone}d de atraso)</span>
+                                  ) : (
+                                    <span>(concluído)</span>
+                                  )
+                                ) : dl !== null && (
                                   <span>
                                     {overdue ? `(${Math.abs(dl)}d atraso)` : dl === 0 ? "(hoje)" : `(${dl}d)`}
                                   </span>

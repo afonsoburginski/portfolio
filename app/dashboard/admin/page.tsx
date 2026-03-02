@@ -108,6 +108,15 @@ const daysLeft = (d: string | null) => {
   return Math.ceil((new Date(d + "T12:00:00").getTime() - Date.now()) / 86400000);
 };
 
+/** Atraso em dias na data de conclusão (não aumenta depois de concluído). */
+const delayAtCompletion = (dueDate: string | null, completedAt: string | null) => {
+  if (!dueDate || !completedAt) return null;
+  const due = new Date(dueDate + "T12:00:00").getTime();
+  const done = new Date(completedAt).getTime();
+  const days = Math.ceil((done - due) / 86400000);
+  return days > 0 ? days : 0;
+};
+
 function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
   const router = useRouter();
   const [localRequests, setLocalRequests] = useState<Request[]>(initialRequests);
@@ -234,9 +243,12 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                 {rows.map((req) => {
                   const profile    = req.profiles as { full_name?: string; email?: string } | undefined;
                   const clientName = profile?.full_name ?? profile?.email ?? "—";
-                  const dl         = daysLeft(req.delivery_deadline);
-                  const overdue    = dl !== null && dl < 0;
-                  const soon       = dl !== null && dl >= 0 && dl <= 3;
+                  const isDelivered = req.status === "delivered" && req.delivered_at;
+                  const dl = isDelivered ? null : daysLeft(req.delivery_deadline);
+                  const deliveredDelay = isDelivered && req.delivery_deadline && req.delivered_at
+                    ? delayAtCompletion(req.delivery_deadline, req.delivered_at) : null;
+                  const overdue = !isDelivered && dl !== null && dl < 0;
+                  const soon = !isDelivered && dl !== null && dl >= 0 && dl <= 3;
                   const isExpanded = expandedIds.has(req.id);
                   const isLoading  = loadingIds.has(req.id);
                   const tasks      = tasksByReq[req.id] ?? [];
@@ -278,9 +290,11 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
 
                         <span className="text-xs text-muted-foreground">{fmt(req.created_at)}</span>
 
-                        <span className={`text-xs font-medium ${overdue ? "text-red-400" : soon ? "text-amber-400" : "text-muted-foreground"}`}>
+                        <span className={`text-xs font-medium ${isDelivered ? "text-muted-foreground" : overdue ? "text-red-400" : soon ? "text-amber-400" : "text-muted-foreground"}`}>
                           {fmt(req.delivery_deadline)}
-                          {dl !== null && req.delivery_deadline && (overdue ? ` (${Math.abs(dl)}d)` : dl === 0 ? " (hoje)" : "")}
+                          {isDelivered && req.delivery_deadline
+                            ? (deliveredDelay !== null && deliveredDelay > 0 ? ` (Entregue +${deliveredDelay}d)` : " (Entregue)")
+                            : dl !== null && req.delivery_deadline && (overdue ? ` (${Math.abs(dl)}d)` : dl === 0 ? " (hoje)" : "")}
                         </span>
 
                         <span className={`inline-flex w-fit items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[req.status]}`}>
@@ -319,9 +333,11 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                           {!isLoading && tasks.map((task) => {
                             const isDone   = task.status === "done";
                             const isInProg = task.status === "in_progress";
-                            const tdl      = daysLeft(task.due_date);
-                            const tOverdue = tdl !== null && tdl < 0 && !isDone;
-                            const tSoon    = tdl !== null && tdl >= 0 && tdl <= 3 && !isDone;
+                            const tdl = isDone ? null : daysLeft(task.due_date);
+                            const taskDelayDone = isDone && task.due_date && task.updated_at
+                              ? delayAtCompletion(task.due_date, task.updated_at) : null;
+                            const tOverdue = !isDone && tdl !== null && tdl < 0;
+                            const tSoon = !isDone && tdl !== null && tdl >= 0 && tdl <= 3;
 
                             return (
                               /* Mesmo grid do row pai → alinha colunas perfeitamente */
@@ -360,9 +376,11 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                                   : "text-muted-foreground/50"
                                 }`}>
                                   {task.due_date ? fmt(task.due_date) : ""}
-                                  {!isDone && tdl !== null && task.due_date && (
-                                    tOverdue ? ` (${Math.abs(tdl)}d)` : tdl === 0 ? " (hoje)" : ""
-                                  )}
+                                  {isDone && task.due_date
+                                    ? (taskDelayDone !== null && taskDelayDone > 0 ? ` (concluído +${taskDelayDone}d)` : " (concluído)")
+                                    : !isDone && tdl !== null && task.due_date && (
+                                        tOverdue ? ` (${Math.abs(tdl)}d)` : tdl === 0 ? " (hoje)" : ""
+                                      )}
                                 </span>
 
                                 {/* col 4-7: vazios */}
