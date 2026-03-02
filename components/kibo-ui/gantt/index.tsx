@@ -1416,7 +1416,7 @@ export const GanttProvider: FC<GanttProviderProps> = ({
         ref={scrollRef}
         style={{
           ...cssVariables,
-          gridTemplateColumns: "var(--gantt-sidebar-width) 1fr",
+          gridTemplateColumns: "var(--gantt-sidebar-width) minmax(0, 1fr)",
         }}
       >
         {children}
@@ -1436,7 +1436,7 @@ export const GanttTimeline: FC<GanttTimelineProps> = ({
 }) => (
   <div
     className={cn(
-      "relative flex h-full w-max flex-none overflow-clip",
+      "relative flex h-full min-w-full w-max flex-none overflow-clip",
       className
     )}
   >

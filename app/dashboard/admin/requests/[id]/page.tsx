@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
@@ -12,8 +12,10 @@ import {
   updateRequestTask,
   deleteRequestTask,
   isAdminEmail,
+  getAllProfiles,
+  changeRequestClient,
 } from "@/lib/dashboard-data";
-import type { Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
+import type { Profile, Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -41,7 +43,18 @@ import {
   ChevronRight,
   ListChecks,
   CircleDot,
+  ChevronsUpDown,
+  Banknote,
+  CheckCircle2,
+  ChevronDown,
+  Flag,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProgressCircle } from "@/components/dashboard/circle";
 import { PriorityIcon } from "@/components/dashboard/priority-icon";
 
@@ -54,26 +67,45 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   approved:    "Aprovada",
   rejected:    "Rejeitada",
   in_progress: "Em progresso",
-  delivered:   "Entregue",
+  delivered:   "Concluído",
   cancelled:   "Cancelada",
 };
 
 const STATUS_COLOR: Record<RequestStatus, string> = {
-  submitted:   "bg-blue-500 text-white",
-  reviewing:   "bg-amber-500 text-white",
-  quoted:      "bg-purple-500 text-white",
-  approved:    "bg-green-500 text-white",
-  rejected:    "bg-red-500 text-white",
-  in_progress: "bg-orange-500 text-white",
-  delivered:   "bg-emerald-500 text-white",
-  cancelled:   "bg-neutral-500 text-white",
+  submitted:   "bg-blue-500/15 text-blue-400 border border-blue-500/30",
+  reviewing:   "bg-amber-500/15 text-amber-400 border border-amber-500/30",
+  quoted:      "bg-purple-500/15 text-purple-400 border border-purple-500/30",
+  approved:    "bg-green-500/15 text-green-400 border border-green-500/30",
+  rejected:    "bg-red-500/15 text-red-400 border border-red-500/30",
+  in_progress: "bg-orange-500/15 text-orange-400 border border-orange-500/30",
+  delivered:   "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+  cancelled:   "bg-neutral-500/15 text-neutral-400 border border-neutral-500/30",
+};
+
+const STATUS_DOT: Record<RequestStatus, string> = {
+  submitted:   "bg-blue-400",
+  reviewing:   "bg-amber-400",
+  quoted:      "bg-purple-400",
+  approved:    "bg-green-400",
+  rejected:    "bg-red-400",
+  in_progress: "bg-orange-400",
+  delivered:   "bg-emerald-400",
+  cancelled:   "bg-neutral-400",
+};
+
+const PRIORITY_BG: Record<number, string> = {
+  1: "bg-slate-500/10 text-slate-400 border border-slate-500/20",
+  2: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
+  3: "bg-red-500/10 text-red-400 border border-red-500/20",
 };
 
 const TYPE_LABELS: Record<string, string> = {
   feature:     "Nova funcionalidade",
   bug_fix:     "Correção de bug",
   integration: "Integração",
-  consulting:  "Consultoria técnica",
+  maintenance: "Manutenção",
+  redesign:    "Redesign / UI",
+  other:       "Outro",
 };
 
 const PRIORITY_LABELS: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
@@ -234,20 +266,30 @@ export default function AdminRequestPlanningPage({
   const { user, loading: authLoading } = useAuth();
   const [request, setRequest]          = useState<Request | null>(null);
   const [tasks,   setTasks]            = useState<RequestTask[]>([]);
+  const [profiles, setProfiles]        = useState<Profile[]>([]);
   const [loading, setLoading]          = useState(true);
   const [saving,  setSaving]           = useState(false);
+  const [saveError, setSaveError]      = useState<string | null>(null);
+  const [changingClient, setChangingClient] = useState(false);
   const [sidebarOpen, setSidebarOpen]  = useState(true);
 
   const [form, setForm] = useState({
     title:             "",
     description:       "",
     priority:          2 as 1 | 2 | 3,
+    type:              "feature" as RequestType,
     budget:            "",
     payment_deadline:  "",
     delivery_deadline: "",
     admin_notes:       "",
   });
   const [status, setStatus] = useState<RequestStatus>("submitted");
+
+  /* Refs para sempre ler o valor atual sem stale closure */
+  const formRef   = useRef(form);
+  const statusRef = useRef<RequestStatus>("submitted");
+  useEffect(() => { formRef.current = form; }, [form]);
+  useEffect(() => { statusRef.current = status; }, [status]);
 
   const [newTitle,   setNewTitle]   = useState("");
   const [newDueDate, setNewDueDate] = useState("");
@@ -262,14 +304,15 @@ export default function AdminRequestPlanningPage({
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    Promise.all([getRequestById(id), getRequestTasks(id)])
-      .then(([req, list]) => {
+    Promise.all([getRequestById(id), getRequestTasks(id), getAllProfiles()])
+      .then(([req, list, profileList]) => {
         if (req) {
           setRequest(req);
           setForm({
             title:             req.title,
             description:       req.description,
             priority:          req.priority,
+            type:              req.type as RequestType,
             budget:            req.budget ?? "",
             payment_deadline:  req.payment_deadline ?? "",
             delivery_deadline: req.delivery_deadline ?? "",
@@ -278,19 +321,63 @@ export default function AdminRequestPlanningPage({
           setStatus(req.status);
         }
         setTasks(list ?? []);
+        setProfiles(profileList);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user, isAdmin, id]);
 
-  async function save() {
-    if (!request) return;
-    setSaving(true);
+  async function handleChangeClient(profileId: string) {
+    if (!request || profileId === request.user_id) return;
+    setChangingClient(true);
     try {
-      const updated = await updateRequestAsAdmin(request.id, { ...form, status });
+      const updated = await changeRequestClient(request.id, profileId);
       setRequest(updated);
     } catch (e) { console.error(e); }
+    finally { setChangingClient(false); }
+  }
+
+  const save = useCallback(async (overrideStatus?: RequestStatus) => {
+    if (!request) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const payload = {
+        ...formRef.current,
+        status: overrideStatus ?? statusRef.current,
+      };
+      const updated = await updateRequestAsAdmin(request.id, payload);
+      setRequest(updated);
+      if (overrideStatus) setStatus(overrideStatus);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Erro ao salvar.";
+      setSaveError(msg);
+      console.error(e);
+    }
     finally { setSaving(false); }
+  }, [request]);
+
+  async function sendQuote() {
+    await save("quoted");
+  }
+
+  async function markAsPaid() {
+    if (!request) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await updateRequestAsAdmin(request.id, {
+        paid_manually: true,
+        paid_at: new Date().toISOString(),
+        status: "approved",
+      });
+      setRequest(updated);
+      setStatus("approved");
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Erro ao marcar como pago.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function addTask() {
@@ -354,7 +441,7 @@ export default function AdminRequestPlanningPage({
 
       {/* ═══ MAIN ══════════════════════════════════════════════════════════ */}
       <main className="flex-1 overflow-auto bg-background">
-        <div className="mx-auto max-w-4xl px-10 py-8">
+        <div className="mx-auto max-w-5xl w-full px-6 py-8">
 
           {/* back / breadcrumb */}
           <div className="mb-5 flex items-center gap-2">
@@ -379,7 +466,7 @@ export default function AdminRequestPlanningPage({
             <textarea
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              onBlur={save}
+              onBlur={() => save()}
               rows={1}
               placeholder="Título da solicitação"
               className="w-full resize-none bg-transparent text-[1.75rem] font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 focus:ring-0"
@@ -400,30 +487,76 @@ export default function AdminRequestPlanningPage({
                 }
                 label="Status"
               >
-                <Select value={status} onValueChange={(v) => { setStatus(v as RequestStatus); setTimeout(save, 0); }}>
-                  <SelectTrigger className="h-7 w-auto gap-1.5 border-0 bg-transparent px-0 shadow-none focus:ring-0 hover:opacity-80">
-                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_COLOR[status]}`}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={`group flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold outline-none transition-opacity hover:opacity-80 ${STATUS_COLOR[status]}`}
+                    >
+                      <span className={`size-1.5 rounded-full ${STATUS_DOT[status]}`} />
                       {STATUS_LABELS[status]}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
+                      <ChevronDown className="size-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 p-1.5">
                     {(Object.keys(STATUS_LABELS) as RequestStatus[]).map((s) => (
-                      <SelectItem key={s} value={s}>
-                        <span className={`rounded px-1.5 py-0.5 text-xs font-semibold ${STATUS_COLOR[s]}`}>
+                      <DropdownMenuItem
+                        key={s}
+                        className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm cursor-pointer ${s === status ? "bg-white/5" : ""}`}
+                        onSelect={() => { setStatus(s); save(s); }}
+                      >
+                        <span className={`size-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
+                        <span className={`flex-1 text-xs font-medium ${s === status ? "text-zinc-100" : "text-zinc-400"}`}>
                           {STATUS_LABELS[s]}
                         </span>
-                      </SelectItem>
+                        {s === status && <Check className="size-3.5 text-zinc-400 shrink-0" />}
+                      </DropdownMenuItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </FieldCell>
               <FieldCell icon={User2} label="Cliente">
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary uppercase">
-                    {clientName.charAt(0)}
-                  </span>
-                  <span className="truncate">{clientName}</span>
-                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={changingClient}
+                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 text-sm outline-none transition-colors hover:bg-white/5 disabled:opacity-50"
+                    >
+                      {changingClient ? (
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                      ) : (
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary uppercase">
+                          {clientName.charAt(0)}
+                        </span>
+                      )}
+                      <span className="truncate font-medium">{clientName}</span>
+                      <ChevronDown className="size-3 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground transition-colors" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-60 p-1.5">
+                    {profiles.map((p) => {
+                      const name = p.full_name ?? p.email ?? "—";
+                      const isCurrent = request.user_id === p.id;
+                      return (
+                        <DropdownMenuItem
+                          key={p.id}
+                          onSelect={() => handleChangeClient(p.id)}
+                          className={`flex items-center gap-2.5 rounded-md px-2 py-2 cursor-pointer ${isCurrent ? "bg-white/5" : ""}`}
+                        >
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[11px] font-bold text-primary uppercase">
+                            {name.charAt(0)}
+                          </span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className={`text-sm truncate ${isCurrent ? "text-zinc-100 font-medium" : "text-zinc-300"}`}>{name}</span>
+                            {p.email && <span className="text-[11px] text-zinc-500 truncate">{p.email}</span>}
+                          </div>
+                          {isCurrent && <Check className="size-3.5 text-primary shrink-0" />}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </FieldCell>
             </div>
 
@@ -449,37 +582,75 @@ export default function AdminRequestPlanningPage({
                   )}
                 </div>
               </FieldCell>
-              <FieldCell icon={Tag} label="Prioridade">
-                <Select
-                  value={String(form.priority)}
-                  onValueChange={(v) => setForm((f) => ({ ...f, priority: Number(v) as 1|2|3 }))}
-                >
-                  <SelectTrigger className="h-7 w-auto gap-1 border-0 bg-transparent px-0 shadow-none focus:ring-0 hover:opacity-80">
-                    <span className={`flex items-center gap-1.5 text-sm font-medium ${PRIORITY_COLOR[form.priority]}`}>
-                      <PriorityIcon priority={form.priority} size={14} className="shrink-0" />
+              <FieldCell icon={Flag} label="Prioridade">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={`group flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold outline-none transition-opacity hover:opacity-80 ${PRIORITY_BG[form.priority]}`}
+                    >
+                      <PriorityIcon priority={form.priority} size={12} className="shrink-0" />
                       {PRIORITY_LABELS[form.priority]}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
+                      <ChevronDown className="size-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-40 p-1.5">
                     {([1, 2, 3] as const).map((p) => (
-                      <SelectItem key={p} value={String(p)}>
-                        <span className={`flex items-center gap-1.5 ${PRIORITY_COLOR[p]}`}>
-                          <PriorityIcon priority={p} size={14} className="shrink-0" />
+                      <DropdownMenuItem
+                        key={p}
+                        className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 cursor-pointer ${p === form.priority ? "bg-white/5" : ""}`}
+                        onSelect={() => {
+                          formRef.current = { ...formRef.current, priority: p };
+                          setForm((f) => ({ ...f, priority: p }));
+                          save();
+                        }}
+                      >
+                        <PriorityIcon priority={p} size={13} className={`shrink-0 ${PRIORITY_COLOR[p]}`} />
+                        <span className={`flex-1 text-xs font-medium ${p === form.priority ? "text-zinc-100" : "text-zinc-400"}`}>
                           {PRIORITY_LABELS[p]}
                         </span>
-                      </SelectItem>
+                        {p === form.priority && <Check className="size-3.5 text-zinc-400 shrink-0" />}
+                      </DropdownMenuItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </FieldCell>
             </div>
 
-            {/* linha 3: Tipo (linha única, sem coluna par) */}
+            {/* linha 3: Tipo */}
             <div className="grid grid-cols-2 divide-x divide-border/60">
               <FieldCell icon={Tag} label="Tipo">
-                <span className="text-sm text-neutral-100 dark:text-neutral-200">{TYPE_LABELS[request.type]}</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none transition-colors hover:bg-white/5"
+                    >
+                      <span className="font-medium text-zinc-200">{TYPE_LABELS[form.type] ?? form.type}</span>
+                      <ChevronDown className="size-3 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground transition-colors" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52 p-1.5">
+                    {(Object.entries(TYPE_LABELS) as [RequestType, string][]).map(([key, label]) => (
+                      <DropdownMenuItem
+                        key={key}
+                        className={`flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer ${key === form.type ? "bg-white/5" : ""}`}
+                        onSelect={() => {
+                          formRef.current = { ...formRef.current, type: key };
+                          setForm((f) => ({ ...f, type: key }));
+                          save();
+                        }}
+                      >
+                        <span className={`flex-1 text-xs font-medium ${key === form.type ? "text-zinc-100" : "text-zinc-400"}`}>
+                          {label}
+                        </span>
+                        {key === form.type && <Check className="size-3.5 text-zinc-400 shrink-0" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </FieldCell>
-              <div /> {/* célula vazia para manter alinhamento */}
+              <div />
             </div>
           </div>
 
@@ -528,7 +699,7 @@ export default function AdminRequestPlanningPage({
                 <textarea
                   value={form.admin_notes}
                   onChange={(e) => setForm((f) => ({ ...f, admin_notes: e.target.value }))}
-                  onBlur={save}
+                  onBlur={() => save()}
                   placeholder="Mensagem enviada junto com o orçamento..."
                   rows={3}
                   className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-0"
@@ -544,7 +715,7 @@ export default function AdminRequestPlanningPage({
             <Textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              onBlur={save}
+              onBlur={() => save()}
               placeholder="Descreva o escopo, entregas, critérios de aceite..."
               rows={9}
               className="resize-y text-sm font-mono"
@@ -565,16 +736,46 @@ export default function AdminRequestPlanningPage({
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-5">
             <Button
               size="sm"
-              onClick={save}
+              onClick={sendQuote}
               disabled={saving}
               className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
             >
               {saving ? <Loader2 className="size-3 animate-spin" /> : <Send className="size-3" />}
               Enviar orçamento
             </Button>
-            <Button size="sm" variant="outline" onClick={save} disabled={saving}>
+
+            <Button size="sm" variant="outline" onClick={() => save()} disabled={saving}>
               {saving ? <Loader2 className="size-3 animate-spin" /> : "Salvar alterações"}
             </Button>
+
+            {saveError && (
+              <span className="text-xs text-red-500">{saveError}</span>
+            )}
+
+            {/* empurra o resto para a direita */}
+            <div className="flex-1" />
+
+            {/* Badge de pago */}
+            {(request?.paid_at || request?.paid_manually) && (
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-md px-2.5 py-1">
+                <CheckCircle2 className="size-3.5" />
+                {request.paid_manually ? "Pago manualmente" : "Pago via MercadoPago"}
+              </span>
+            )}
+
+            {/* Marcar como pago — visível quando orçamento pendente e não pago */}
+            {status === "quoted" && !request?.paid_at && !request?.paid_manually && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={markAsPaid}
+                disabled={saving}
+                className="gap-1.5 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+              >
+                {saving ? <Loader2 className="size-3 animate-spin" /> : <Banknote className="size-3.5" />}
+                Marcar como pago
+              </Button>
+            )}
           </div>
 
         </div>

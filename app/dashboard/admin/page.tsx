@@ -8,17 +8,27 @@ import { getAllRequests, isAdminEmail } from "@/lib/dashboard-data";
 import type { Request, RequestStatus } from "@/lib/database.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProgressCircle } from "@/components/dashboard/circle";
 import {
   Loader2, ShieldCheck, FileText, DollarSign,
   Rocket, Clock, Plus, List, Table2, GanttChart,
-  ChevronDown, ChevronRight, Circle, CheckCircle2, Timer,
+  ChevronDown, ChevronRight, Circle, CheckCircle2, Timer, Filter,
 } from "lucide-react";
 import { getRequestTasks, updateRequestTask, getRequestsProgress } from "@/lib/dashboard-data";
 import type { RequestTask } from "@/lib/database.types";
 import { AdminRequestsTable } from "@/components/dashboard/admin-requests-table";
 import { AdminGanttView } from "@/components/dashboard/admin-gantt-view";
 import { PriorityIcon } from "@/components/dashboard/priority-icon";
+import { RequestContextMenu } from "@/components/dashboard/request-context-menu";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { RevenueMonthCard } from "@/components/dashboard/revenue-month-card";
 
 /* ─── constants ─────────────────────────────────────────────────────────── */
 
@@ -29,7 +39,7 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   approved:    "Aprovada",
   rejected:    "Rejeitada",
   in_progress: "Em progresso",
-  delivered:   "Entregue",
+  delivered:   "Concluído",
   cancelled:   "Cancelada",
 };
 
@@ -67,10 +77,8 @@ const STATUS_TEXT: Record<RequestStatus, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  feature:     "Feature",
-  bug_fix:     "Bug fix",
-  integration: "Integração",
-  consulting:  "Consultoria",
+  feature: "Nova funcionalidade", bug_fix: "Correção de bug", integration: "Integração",
+  maintenance: "Manutenção", redesign: "Redesign / UI", other: "Outro"
 };
 
 const PRIORITY_LABEL: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
@@ -107,14 +115,25 @@ const daysLeft = (d: string | null) => {
   return Math.ceil((new Date(d + "T12:00:00").getTime() - Date.now()) / 86400000);
 };
 
-function GroupedList({ requests }: { requests: Request[] }) {
+function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
   const router = useRouter();
+  const [localRequests, setLocalRequests] = useState<Request[]>(initialRequests);
   const [collapsed,    setCollapsed]   = useState<Set<RequestStatus>>(new Set());
   const [expandedIds,  setExpandedIds] = useState<Set<string>>(new Set());
   const [tasksByReq,   setTasksByReq]  = useState<Record<string, RequestTask[]>>({});
   const [loadingIds,   setLoadingIds]  = useState<Set<string>>(new Set());
   /** Progresso leve: carregado 1× ao montar via query bulk. */
   const [progressMap,  setProgressMap] = useState<Record<string, { total: number; done: number }>>({});
+
+  /* Sincroniza quando props mudam */
+  useEffect(() => { setLocalRequests(initialRequests); }, [initialRequests]);
+
+  const handleUpdated = (updated: Request) => {
+    setLocalRequests((prev) => prev.map((r) => r.id === updated.id ? { ...r, ...updated } : r));
+  };
+
+  /* Substitui referência de requests para usar estado local */
+  const requests = localRequests;
 
   /* Carrega progresso de todas as requests em uma única query ao montar/atualizar */
   useEffect(() => {
@@ -234,6 +253,7 @@ function GroupedList({ requests }: { requests: Request[] }) {
                   return (
                     <div key={req.id} className="border-b border-border/40 last:border-0">
                       {/* ── request row ── */}
+                      <RequestContextMenu request={req} onUpdated={handleUpdated}>
                       <div
                         className={`grid ${COLS} items-center gap-0 px-4 py-2.5 hover:bg-muted/30 transition-colors cursor-pointer`}
                         onClick={() => router.push(`/dashboard/admin/requests/${req.id}`)}
@@ -284,6 +304,7 @@ function GroupedList({ requests }: { requests: Request[] }) {
 
                         <span className="text-xs font-medium text-foreground">{req.budget ?? "—"}</span>
                       </div>
+                      </RequestContextMenu>
 
                       {/* ── subtasks ── */}
                       {isExpanded && (
@@ -434,11 +455,83 @@ export default function AdminPage() {
       ? requests
       : requests.filter((r) => r.status === filter);
 
-  const stats = [
-    { label: "Total",   value: requests.length,                                        icon: FileText,   accent: "text-foreground" },
-    { label: "Novas",   value: requests.filter((r) => r.status === "submitted").length, icon: Clock,     accent: "text-blue-400" },
-    { label: "Orçadas", value: requests.filter((r) => r.status === "quoted").length,    icon: DollarSign, accent: "text-purple-400" },
-    { label: "Ativas",  value: requests.filter((r) => r.status === "in_progress").length, icon: Rocket,  accent: "text-orange-400" },
+  /* Comparação mês a mês: limites do mês atual e do anterior */
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const inThisMonth = (d: string) => new Date(d) >= thisMonthStart;
+  const inLastMonth = (d: string) => {
+    const t = new Date(d);
+    return t >= lastMonthStart && t < thisMonthStart;
+  };
+
+  const total = requests.length;
+  const totalThisMonth = requests.filter((r) => inThisMonth(r.created_at)).length;
+  const totalLastMonth = requests.filter((r) => inLastMonth(r.created_at)).length;
+  const submittedCount = requests.filter((r) => r.status === "submitted").length;
+  const submittedThisMonth = requests.filter((r) => r.status === "submitted" && inThisMonth(r.created_at)).length;
+  const submittedLastMonth = requests.filter((r) => r.status === "submitted" && inLastMonth(r.created_at)).length;
+  const quotedCount = requests.filter((r) => r.status === "quoted").length;
+  const quotedThisMonth = requests.filter((r) => r.status === "quoted" && inThisMonth(r.created_at)).length;
+  const quotedLastMonth = requests.filter((r) => r.status === "quoted" && inLastMonth(r.created_at)).length;
+  const inProgressCount = requests.filter((r) => r.status === "in_progress").length;
+  const deliveredCount = requests.filter((r) => r.status === "delivered").length;
+  const deliveredThisMonth = requests.filter((r) => r.status === "delivered" && inThisMonth(r.delivered_at ?? r.updated_at)).length;
+  const deliveredLastMonth = requests.filter((r) => r.status === "delivered" && inLastMonth(r.delivered_at ?? r.updated_at)).length;
+
+  const deltaPct = (curr: number, prev: number) =>
+    prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
+  const deltaLabel = (curr: number, prev: number) => {
+    const pct = deltaPct(curr, prev);
+    const sign = pct >= 0 ? "+" : "";
+    return `${sign}${curr - prev} (${sign}${pct}%)`;
+  };
+
+  const statCards = [
+    {
+      label: "Total de solicitações",
+      value: total,
+      description: `${totalThisMonth} criadas este mês`,
+      mom: deltaLabel(totalThisMonth, totalLastMonth),
+      momUp: totalThisMonth >= totalLastMonth,
+      icon: FileText,
+      iconBg: "bg-neutral-100 dark:bg-neutral-800",
+      iconColor: "text-neutral-600 dark:text-neutral-400",
+      barColor: "bg-neutral-400/30",
+    },
+    {
+      label: "Novas (aguardando análise)",
+      value: submittedCount,
+      description: `${submittedThisMonth} enviadas este mês`,
+      mom: deltaLabel(submittedThisMonth, submittedLastMonth),
+      momUp: submittedThisMonth >= submittedLastMonth,
+      icon: Clock,
+      iconBg: "bg-blue-100 dark:bg-blue-950/50",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      barColor: "bg-blue-400/40",
+    },
+    {
+      label: "Orçadas (aguardando cliente)",
+      value: quotedCount,
+      description: `${quotedThisMonth} orçadas este mês`,
+      mom: deltaLabel(quotedThisMonth, quotedLastMonth),
+      momUp: quotedThisMonth >= quotedLastMonth,
+      icon: DollarSign,
+      iconBg: "bg-purple-100 dark:bg-purple-950/50",
+      iconColor: "text-purple-600 dark:text-purple-400",
+      barColor: "bg-purple-400/40",
+    },
+    {
+      label: "Em progresso",
+      value: inProgressCount,
+      description: `${inProgressCount} ativas agora · ${deliveredThisMonth} concluídas este mês`,
+      mom: `Concluídas: ${deltaLabel(deliveredThisMonth, deliveredLastMonth)} vs mês anterior`,
+      momUp: deliveredThisMonth >= deliveredLastMonth,
+      icon: Rocket,
+      iconBg: "bg-orange-100 dark:bg-orange-950/50",
+      iconColor: "text-orange-600 dark:text-orange-400",
+      barColor: "bg-orange-400/40",
+    },
   ];
 
   return (
@@ -456,51 +549,98 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardHeader className="flex-row items-center gap-2 space-y-0 px-4 pb-1 pt-4">
-              <s.icon className={`size-3.5 ${s.accent}`} />
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                {s.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className={`text-3xl font-bold ${s.accent}`}>{s.value}</p>
+      {/* stats cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((s) => (
+          <Card
+            key={s.label}
+            className="overflow-hidden border-border/80 bg-card hover:border-border hover:shadow-md/50 transition-all duration-200"
+          >
+            <CardContent className="p-0">
+              <div className="relative flex flex-col gap-4 p-5">
+                <div className={`absolute left-0 top-5 bottom-5 w-1 rounded-r-full ${s.barColor}`} aria-hidden />
+                <div className="flex items-start justify-between gap-3 pl-1">
+                  <div className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${s.iconBg} ${s.iconColor}`}>
+                    <s.icon className="size-5" strokeWidth={2} />
+                  </div>
+                  <span className={`text-3xl font-bold tabular-nums tracking-tight ${s.iconColor}`}>
+                    {s.value}
+                  </span>
+                </div>
+                <div className="space-y-1.5 pl-1">
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    {s.label}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {s.description}
+                  </p>
+                  <p className={`text-[11px] font-medium ${s.momUp ? "text-emerald-500 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+                    {s.mom}
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Revenue — linha 75% + radar por tipo 25% */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+        <Card className="border-border/80 bg-card lg:col-span-3">
+          <CardHeader className="border-b border-border/50 pb-3">
+            <CardTitle className="text-sm font-semibold">Receita — últimos 12 meses</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <RevenueChart requests={requests} months={12} />
+          </CardContent>
+        </Card>
+        <div className="min-h-[200px] lg:min-h-0">
+          <RevenueMonthCard requests={requests} />
+        </div>
+      </div>
+
       {/* toolbar — sticky abaixo do header do layout (h-14 = 56px) */}
       <div className="sticky top-14 z-20 -mx-6 flex flex-wrap items-center justify-between gap-3 border-b border-border/50 bg-background/95 px-6 py-3 backdrop-blur-sm">
-        {/* filter pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {ALL_STATUSES.map((s) => {
-            const count =
-              s === "all"
-                ? requests.length
-                : requests.filter((r) => r.status === s).length;
-            const active = filter === s;
-            return (
-              <button
-                key={s}
-                onClick={() => setFilter(s)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-                  active
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                }`}
-              >
-                {s === "all" ? "Todas" : STATUS_LABELS[s]}
-                <span className={`ml-1.5 ${active ? "opacity-60" : "opacity-40"}`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {/* filter dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 h-8">
+              <Filter className="size-3.5" />
+              {filter === "all" ? "Todas" : STATUS_LABELS[filter]}
+              <span className="ml-0.5 text-muted-foreground/60">
+                {filter === "all" ? requests.length : requests.filter((r) => r.status === filter).length}
+              </span>
+              <ChevronDown className="size-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuItem
+              onSelect={() => setFilter("all")}
+              className="flex items-center justify-between"
+            >
+              <span className={filter === "all" ? "font-semibold" : ""}>Todas</span>
+              <span className="text-xs text-muted-foreground">{requests.length}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {(ALL_STATUSES.filter((s) => s !== "all") as RequestStatus[]).map((s) => {
+              const count = requests.filter((r) => r.status === s).length;
+              if (count === 0) return null;
+              return (
+                <DropdownMenuItem
+                  key={s}
+                  onSelect={() => setFilter(s)}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className={`size-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
+                    <span className={filter === s ? "font-semibold" : ""}>{STATUS_LABELS[s]}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">{count}</span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* view toggle */}
         <div className="flex rounded-lg border border-border bg-muted/30 p-0.5">
@@ -540,7 +680,7 @@ export default function AdminPage() {
       ) : viewMode === "table" ? (
         <AdminRequestsTable requests={filtered} />
       ) : viewMode === "gantt" ? (
-        <div className="min-w-0 w-full max-w-full">
+        <div className="w-full min-w-0 max-w-full overflow-hidden">
           <AdminGanttView requests={filtered} />
         </div>
       ) : (
@@ -549,3 +689,4 @@ export default function AdminPage() {
     </div>
   );
 }
+

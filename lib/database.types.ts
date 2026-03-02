@@ -1,4 +1,10 @@
-export type RequestType = 'feature' | 'bug_fix' | 'integration' | 'consulting';
+export type RequestType =
+  | 'feature'
+  | 'bug_fix'
+  | 'integration'
+  | 'maintenance'
+  | 'redesign'
+  | 'other';
 export type RequestStatus =
   | 'submitted'
   | 'reviewing'
@@ -36,6 +42,10 @@ export interface Request {
   quoted_at: string | null;
   approved_at: string | null;
   delivered_at: string | null;
+  image_url: string | null;
+  mp_payment_id: string | null;
+  paid_at: string | null;
+  paid_manually: boolean;
   created_at: string;
   updated_at: string;
   profiles?: Profile;

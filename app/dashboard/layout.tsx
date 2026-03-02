@@ -26,10 +26,8 @@ function getBreadcrumbs(pathname: string) {
     return crumbs.slice(0, 1);
   }
   if (pathname.startsWith("/dashboard/requests/") && pathname !== "/dashboard/requests") {
-    crumbs.push({ label: "Requests", href: "/dashboard/requests" });
-    crumbs.push({ label: "Details" });
-  } else if (pathname === "/dashboard/requests") {
-    crumbs.push({ label: "My Requests" });
+    crumbs.push({ label: "Pedido", href: "/dashboard" });
+    crumbs.push({ label: "Detalhes" });
   } else if (pathname.startsWith("/dashboard/admin")) {
     crumbs.push({ label: "Admin Panel" });
   }
@@ -82,8 +80,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* ── Page content ──────────────────────────────── */}
-          <main className="flex flex-1 flex-col gap-4 p-6">
-            {children}
+          <main className="flex flex-1 flex-col p-6">
+            <div className="mx-auto w-full max-w-7xl flex flex-1 flex-col gap-4">
+              {children}
+            </div>
           </main>
         </SidebarInset>
       </SidebarProvider>

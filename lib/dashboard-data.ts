@@ -1,7 +1,7 @@
 "use client";
 
 import { createBrowserSupabase } from "@/lib/supabase-browser";
-import type { Request, RequestStatus, RequestTask, RequestTaskStatus, RequestType } from "@/lib/database.types";
+import type { Profile, Request, RequestStatus, RequestTask, RequestTaskStatus, RequestType } from "@/lib/database.types";
 
 const db = () => createBrowserSupabase();
 
@@ -24,6 +24,26 @@ export async function getAllRequests(): Promise<Request[]> {
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as Request[];
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const { data, error } = await db()
+    .from("profiles")
+    .select("id, full_name, email, avatar_url, company, is_admin, created_at, updated_at")
+    .order("full_name", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Profile[];
+}
+
+export async function changeRequestClient(requestId: string, newUserId: string): Promise<Request> {
+  const { data, error } = await db()
+    .from("requests")
+    .update({ user_id: newUserId })
+    .eq("id", requestId)
+    .select("*, profiles(id, full_name, email, avatar_url, company)")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as unknown as Request;
 }
 
 export async function createRequest(payload: {
@@ -49,21 +69,37 @@ export async function updateRequestAsAdmin(
     status: RequestStatus;
     title: string;
     description: string;
+    type: string;
     priority: number;
     budget: string;
     payment_deadline: string;
     delivery_deadline: string;
     admin_notes: string;
+    image_url: string | null;
+    paid_manually: boolean;
+    paid_at: string | null;
   }>
 ): Promise<Request> {
   const updates: Record<string, unknown> = { ...patch };
   if (patch.status === "quoted") updates.quoted_at = new Date().toISOString();
+  if (patch.status === "approved") updates.approved_at = new Date().toISOString();
   if (patch.status === "delivered") updates.delivered_at = new Date().toISOString();
   const { data, error } = await db()
     .from("requests")
     .update(updates)
     .eq("id", id)
-    .select()
+    .select("*, profiles(full_name, email)")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as unknown as Request;
+}
+
+export async function cancelRequest(id: string): Promise<Request> {
+  const { data, error } = await db()
+    .from("requests")
+    .update({ status: "cancelled" })
+    .eq("id", id)
+    .select("*, profiles(full_name, email)")
     .single();
   if (error) throw new Error(error.message);
   return data as unknown as Request;
@@ -81,6 +117,36 @@ export async function respondToQuote(
     .from("requests")
     .update(patch)
     .eq("id", id)
+    .select("*, profiles(full_name, email)")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as unknown as Request;
+}
+
+const REQUEST_IMAGES_BUCKET = "request-images";
+
+/** Upload image for a request and return public URL. Caller must ensure bucket exists (public). */
+export async function uploadRequestImage(requestId: string, file: File): Promise<string> {
+  const supabase = db();
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${requestId}/image.${ext}`;
+  const { data, error } = await supabase.storage
+    .from(REQUEST_IMAGES_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw new Error(error.message);
+  const { data: urlData } = supabase.storage.from(REQUEST_IMAGES_BUCKET).getPublicUrl(data.path);
+  return urlData.publicUrl;
+}
+
+/** Update request image_url (only for the authenticated user's own request). */
+export async function updateRequestImage(requestId: string, imageUrl: string): Promise<Request> {
+  const { data: { user } } = await db().auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const { data, error } = await db()
+    .from("requests")
+    .update({ image_url: imageUrl })
+    .eq("id", requestId)
+    .eq("user_id", user.id)
     .select()
     .single();
   if (error) throw new Error(error.message);

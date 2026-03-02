@@ -17,13 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  LayoutDashboard, List, ShieldCheck,
+  LayoutDashboard, ShieldCheck,
   LogOut, ChevronsUpDown, ExternalLink,
 } from "lucide-react";
 
 const CLIENT_NAV = [
-  { label: "Overview",    href: "/dashboard",          icon: LayoutDashboard },
-  { label: "My Requests", href: "/dashboard/requests", icon: List            },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
 ];
 
 const ADMIN_NAV = [
@@ -140,7 +139,7 @@ export function DashboardSidebar() {
                 <SidebarMenuButton
                   size="lg"
                   className="hover:bg-sidebar-accent rounded-xl px-2 data-[state=open]:bg-sidebar-accent"
-                  tooltip={fullName}
+                  suppressHydrationWarning
                 >
                   <Avatar className="size-8 rounded-lg flex-shrink-0">
                     <AvatarImage src={avatarUrl} className="rounded-lg" />

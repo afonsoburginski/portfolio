@@ -45,7 +45,7 @@ const STATUS_TO_GANTT: Record<RequestStatus, GanttStatus> = {
   approved:    { id: "approved",    name: "Aprovada",     color: "#22c55e" },
   rejected:    { id: "rejected",    name: "Rejeitada",    color: "#ef4444" },
   in_progress: { id: "in_progress", name: "Em progresso", color: "#f97316" },
-  delivered:   { id: "delivered",   name: "Entregue",     color: "#10b981" },
+  delivered:   { id: "delivered",   name: "Concluído",    color: "#10b981" },
   cancelled:   { id: "cancelled",   name: "Cancelada",    color: "#737373" },
 };
 
@@ -61,15 +61,17 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
   approved:    "Aprovada",
   rejected:    "Rejeitada",
   in_progress: "Em progresso",
-  delivered:   "Entregue",
+  delivered:   "Concluído",
   cancelled:   "Cancelada",
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  feature:     "Funcionalidade",
-  bug_fix:     "Bugfix",
+  feature:     "Nova funcionalidade",
+  bug_fix:     "Correção de bug",
   integration: "Integração",
-  consulting:  "Consultoria",
+  maintenance: "Manutenção",
+  redesign:    "Redesign / UI",
+  other:       "Outro",
 };
 
 const PRIORITY_LABELS: Record<number, string> = { 1: "Baixa", 2: "Média", 3: "Alta" };
@@ -550,7 +552,7 @@ export function AdminGanttView({ requests }: { requests: Request[] }) {
       className={`h-[640px] w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
       onMouseDown={handlePanMouseDown}
     >
-      <GanttProvider range="monthly" zoom={zoom} className="h-full w-full min-w-0 overflow-hidden">
+      <GanttProvider range="monthly" zoom={zoom} className="h-full min-w-0">
 
         {/* Dispara scrollToFeature APÓS o GanttProvider re-renderizar com o novo zoom */}
         <GanttScrollTrigger trigger={scrollTrigger} />
