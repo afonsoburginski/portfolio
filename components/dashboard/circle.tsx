@@ -40,7 +40,6 @@ export function ProgressCircle({
   const endY      = cy + r * Math.sin(angle);
   const largeArc  = clamp > 50 ? 1 : 0;
 
-  /* path do setor preenchido */
   const sectorPath =
     clamp <= 0
       ? ""
