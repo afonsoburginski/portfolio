@@ -4,14 +4,31 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { createBrowserSupabase } from "@/lib/supabase-browser";
 import type { User, Session } from "@supabase/supabase-js";
 
-const POPUP_W = 500;
-const POPUP_H = 620;
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (cfg: object) => void;
+          prompt: (cb?: (n: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean }) => void) => void;
+          cancel: () => void;
+          renderButton: (el: HTMLElement, cfg: object) => void;
+        };
+      };
+    };
+  }
+}
 
-function getRedirectUrl(): string {
-  if (typeof window !== "undefined") return `${window.location.origin}/dashboard/auth/callback`;
-  return typeof process.env.NEXT_PUBLIC_APP_URL === "string"
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/auth/callback`
-    : "";
+function loadGis(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.google?.accounts) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    document.head.appendChild(s);
+  });
 }
 
 type AuthContextValue = {
@@ -55,45 +72,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Sessão enviada pelo popup de OAuth
-  useEffect(() => {
-    const handler = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      const data = event.data;
-      if (data?.type !== "supabase-auth" || !data.session?.access_token) return;
-      const { access_token, refresh_token } = data.session;
-      await supabase.auth.setSession({ access_token, refresh_token });
-    };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, []);
-
   const signInWithGoogle = useCallback(async () => {
-    const redirectTo = getRedirectUrl();
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo, skipBrowserRedirect: true },
+    await loadGis();
+    window.google!.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      callback: async ({ credential }: { credential: string }) => {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: credential,
+        });
+        if (error) console.error("[Google Sign-In]", error);
+      },
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: "signin",
+      ux_mode: "popup",
     });
-    if (error) return;
-    if (data?.url) {
-      const left = Math.round((window.screen.width - POPUP_W) / 2);
-      const top = Math.round((window.screen.height - POPUP_H) / 2);
-      window.open(data.url, "supabase-oauth", `width=${POPUP_W},height=${POPUP_H},left=${left},top=${top},scrollbars=yes`);
-    }
+    window.google!.accounts.id.prompt((n) => {
+      if (n.isNotDisplayed() || n.isSkippedMoment()) {
+        // Fallback: OAuth redirect se o navegador bloquear o prompt nativo
+        supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${window.location.origin}/dashboard/auth/callback` },
+        });
+      }
+    });
   }, []);
 
   const signInWithGitHub = useCallback(async () => {
-    const redirectTo = getRedirectUrl();
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: { redirectTo, skipBrowserRedirect: true },
+      options: { redirectTo: `${window.location.origin}/dashboard/auth/callback` },
     });
-    if (error) return;
-    if (data?.url) {
-      const left = Math.round((window.screen.width - POPUP_W) / 2);
-      const top = Math.round((window.screen.height - POPUP_H) / 2);
-      window.open(data.url, "supabase-oauth", `width=${POPUP_W},height=${POPUP_H},left=${left},top=${top},scrollbars=yes`);
-    }
   }, []);
 
   const signOut = async () => {
