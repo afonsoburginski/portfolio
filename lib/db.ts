@@ -11,7 +11,7 @@ function getDb(): LibSQLDatabase<typeof schema> {
   if (!url) throw new Error("TURSO_DATABASE_URL is not set");
   const client = createClient({
     url,
-    authToken: process.env.TURSO_AUTH_TOKEN || undefined,
+    authToken: process.env.TURSO_AUTH_TOKEN || process.env.TURSO_DATABASE_URL_TURSO_AUTH_TOKEN || undefined,
   });
   _db = drizzle(client, { schema });
   return _db;
