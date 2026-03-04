@@ -8,7 +8,7 @@ const isDev = process.env.NODE_ENV === "development";
 async function withErrorLog(
   req: NextRequest,
   method: "GET" | "POST",
-  fn: (req: NextRequest) => Promise<NextResponse>
+  fn: (req: NextRequest) => Promise<Response>
 ) {
   try {
     return await fn(req);
