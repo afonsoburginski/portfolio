@@ -1,8 +1,3 @@
-/**
- * Migra todos os dados do dev.db local para o Turso de produção.
- * Uso:
- *   $env:TURSO_DATABASE_URL="libsql://..."; $env:TURSO_AUTH_TOKEN="eyJ..."; bun run scripts/migrate-local-to-turso.ts
- */
 
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
