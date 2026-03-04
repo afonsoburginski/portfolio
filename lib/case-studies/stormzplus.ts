@@ -4,7 +4,7 @@ export const stormzplus: CaseStudy = {
   title: "Stormzplus – Streaming Platform",
   description:
     "A full‑stack, subscription‑based streaming platform with a Netflix‑style UX. It ships multi‑profile accounts, curated content, watch progress, favorites, and a robust subscription flow. The video delivery uses HLS stored on Cloudflare R2 and distributed via CDN edge caching.",
-  image: "/projects/stormzplus.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/stormzplus.png",
   role: "Full‑stack Engineer & Architect",
   timeline: "2024–2025",
   stack:

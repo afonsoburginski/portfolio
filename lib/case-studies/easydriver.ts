@@ -4,8 +4,8 @@ export const easydriver: CaseStudy = {
   title: "EasyDriver – Ride-Hailing Platform",
   description:
     "A comprehensive ride-hailing platform built with React Native, featuring real-time GPS tracking, driver management, and seamless booking experience. Complete solution with mobile app for riders and drivers, plus web admin panel for fleet management.",
-  image: "/projects/easydriver.png",
-  image2: "/projects/easydriver-app.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/easydriver.png",
+  image2: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/easydriver-app.png",
   role: "Mobile Developer & Full-Stack Engineer",
   timeline: "2023–2024",
   stack:
@@ -123,7 +123,7 @@ export const easydriver: CaseStudy = {
         "User Management",
         "Operational Tools"
       ],
-      image: "/projects/easydriver-admin.png",
+      image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/easydriver-admin.png",
       body: [
         "Dashboard: Real-time overview with active rides, online drivers, revenue metrics, and system health indicators. Interactive charts and KPI widgets for operational insights and decision-making.",
         "Fleet Management: Driver onboarding workflow, document verification, vehicle registration, and performance monitoring. Automated driver assignment and availability management tools.",

@@ -1,31 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { createClient } from "@supabase/supabase-js";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { requests } from "@/lib/schema";
+import { eq } from "drizzle-orm";
+import { markPaymentApproved } from "@/lib/dashboard-data";
 
 const mp = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
 
-function userClient(token: string) {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { headers: { Authorization: `Bearer ${token}` } } }
-  );
-}
-
 export async function POST(req: NextRequest) {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer "))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const token = auth.slice(7);
-
-  // Autentica com token do usuário
-  const supabase = userClient(token);
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
   const { requestId, formData } = body;
@@ -33,23 +20,18 @@ export async function POST(req: NextRequest) {
   if (!requestId || !formData)
     return NextResponse.json({ error: "requestId and formData required" }, { status: 400 });
 
-  // Busca o request com cliente autenticado (RLS garante ownership)
-  const { data: request, error: reqErr } = await supabase
-    .from("requests")
-    .select("id, status, user_id, budget")
-    .eq("id", requestId)
-    .single();
+  const [request] = await db
+    .select()
+    .from(requests)
+    .where(eq(requests.id, requestId));
 
-  if (reqErr || !request)
-    return NextResponse.json({ error: "Request not found" }, { status: 404 });
-
-  if (request.status !== "quoted")
-    return NextResponse.json({ error: "Request is not payable" }, { status: 400 });
+  if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (request.status !== "quoted") return NextResponse.json({ error: "Request is not payable" }, { status: 400 });
+  if (request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");
 
-  // Cria pagamento no MercadoPago
   const payment = new Payment(mp);
   const paymentData = await payment.create({
     body: {
@@ -65,35 +47,12 @@ export async function POST(req: NextRequest) {
   const paymentId = String(paymentData.id);
 
   if (status === "approved") {
-    // Camada 1: update direto via token do usuário (RLS)
-    await supabase
-      .from("requests")
-      .update({
-        status: "approved",
-        approved_at: new Date().toISOString(),
-        mp_payment_id: paymentId,
-        paid_at: new Date().toISOString(),
-      })
-      .eq("id", requestId);
-
-    // Camada 2 (redundância): RPC SECURITY DEFINER como fallback independente
-    const anonSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { auth: { persistSession: false } }
-    );
-    const { error: rpcErr } = await anonSupabase.rpc("mark_payment_approved", {
-      p_request_id: requestId,
-      p_payment_id: paymentId,
-    });
-    if (rpcErr) console.error("[Process] RPC fallback error:", rpcErr);
-
+    await markPaymentApproved(requestId, paymentId);
   } else if (status === "pending" || status === "in_process") {
-    // Salva o payment_id para que o polling e o webhook possam confirmar depois
-    await supabase
-      .from("requests")
-      .update({ mp_payment_id: paymentId })
-      .eq("id", requestId);
+    await db
+      .update(requests)
+      .set({ mp_payment_id: paymentId, updated_at: new Date().toISOString() })
+      .where(eq(requests.id, requestId));
   }
 
   return NextResponse.json({

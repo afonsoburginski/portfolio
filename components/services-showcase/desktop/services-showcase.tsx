@@ -79,7 +79,7 @@ export function ServicesShowcaseDesktop() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
         style={{
-          backgroundImage: "url('/services-background.jpg')"
+          backgroundImage: "url('https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/services-background.png')"
         }}
       />
       <div className="max-w-[1600px] mx-auto relative z-10">
@@ -197,7 +197,7 @@ export function ServicesShowcaseDesktop() {
             className="relative aspect-[4/3] rounded-2xl overflow-hidden group"
           >
             <Image
-              src="/services-background.png"
+              src="https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/services-background.png"
               alt="services background"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

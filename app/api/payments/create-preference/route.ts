@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
-import { createClient } from "@supabase/supabase-js";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { requests } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
 const mp = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
 
-function parseBudget(raw: string | null): number {
+function parseBudget(raw: string | null | undefined): number {
   if (!raw) return 0;
   const cleaned = raw
     .replace(/[R$\s]/g, "")
@@ -15,47 +18,24 @@ function parseBudget(raw: string | null): number {
   return parseFloat(cleaned) || 0;
 }
 
-function userClient(token: string) {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { headers: { Authorization: `Bearer ${token}` } } }
-  );
-}
-
 export async function POST(req: NextRequest) {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer "))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const token = auth.slice(7);
-
-  // Autentica o usuário com o token
-  const supabase = userClient(token);
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { requestId } = await req.json();
-  if (!requestId)
-    return NextResponse.json({ error: "requestId required" }, { status: 400 });
+  if (!requestId) return NextResponse.json({ error: "requestId required" }, { status: 400 });
 
-  // Busca o request usando o cliente autenticado (RLS garante ownership)
-  const { data: request, error: reqErr } = await supabase
-    .from("requests")
-    .select("id, title, budget, status, user_id")
-    .eq("id", requestId)
-    .single();
+  const [request] = await db
+    .select()
+    .from(requests)
+    .where(eq(requests.id, requestId));
 
-  if (reqErr || !request)
-    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (request.status !== "quoted") return NextResponse.json({ error: "Request is not in quoted state" }, { status: 400 });
+  if (request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  if (request.status !== "quoted")
-    return NextResponse.json({ error: "Request is not in quoted state" }, { status: 400 });
-
-  const amount = parseBudget(request.budget as string | null);
-  if (amount <= 0)
-    return NextResponse.json({ error: "Invalid budget amount" }, { status: 400 });
+  const amount = parseBudget(request.budget);
+  if (amount <= 0) return NextResponse.json({ error: "Invalid budget amount" }, { status: 400 });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");
@@ -65,14 +45,14 @@ export async function POST(req: NextRequest) {
     body: {
       items: [
         {
-          id: request.id as string,
-          title: request.title as string,
+          id: request.id,
+          title: request.title,
           quantity: 1,
           unit_price: amount,
           currency_id: "BRL",
         },
       ],
-      payer: { email: user.email },
+      payer: { email: session.user.email },
       ...(isPublicUrl && {
         back_urls: {
           success: `${appUrl}/dashboard/requests/${requestId}?payment=success`,
@@ -82,7 +62,7 @@ export async function POST(req: NextRequest) {
         auto_return: "approved" as const,
         notification_url: `${appUrl}/api/payments/webhook`,
       }),
-      external_reference: requestId as string,
+      external_reference: requestId,
       statement_descriptor: "AFONSO BURGINSKI",
     },
   });

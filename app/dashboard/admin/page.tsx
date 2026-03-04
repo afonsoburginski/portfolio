@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
-import { getAllRequests, isAdminEmail } from "@/lib/dashboard-data";
+import { getAllRequests } from "@/lib/dashboard-data";
+import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Request, RequestStatus } from "@/lib/database.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -241,8 +242,8 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
 
                 {/* ── rows ── */}
                 {rows.map((req) => {
-                  const profile    = req.profiles as { full_name?: string; email?: string } | undefined;
-                  const clientName = profile?.full_name ?? profile?.email ?? "—";
+                  const profile    = req.profiles as { name?: string; email?: string } | undefined;
+                  const clientName = profile?.name ?? profile?.email ?? "—";
                   const isDelivered = req.status === "delivered" && req.delivered_at;
                   const dl = isDelivered ? null : daysLeft(req.delivery_deadline);
                   const deliveredDelay = isDelivered && req.delivery_deadline && req.delivered_at

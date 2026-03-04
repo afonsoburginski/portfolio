@@ -4,8 +4,8 @@ export const gemJhonrob: CaseStudy = {
   title: "GEM Jhonrob – Enterprise ERP System",
   description:
     "A comprehensive, full‑stack ERP system built for Jhonrob industrial operations. Features production order management, Kanban task workflows, expedition tracking, real‑time collaboration, and a complete audit system. The platform handles complex manufacturing processes with enterprise‑grade reliability and performance.",
-  image: "/projects/gem-jhonrob-1.png",
-  image2: "/projects/gem-jhonrob-2.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/gem-jhonrob-1.png",
+  image2: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/gem-jhonrob-2.png",
   role: "Full‑stack Engineer & Technical Lead",
   timeline: "2024–2025",
   stack:

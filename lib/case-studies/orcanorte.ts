@@ -4,7 +4,7 @@ export const orcanorte: CaseStudy = {
   title: "Orça Norte – Real‑time Quotes Marketplace",
   description:
     "B2B marketplace for the construction industry featuring real‑time quotes, product catalogs, and vendor profiles. I delivered high‑performance search and filters, item comparison, cart/lists, vendor pages, and subscription plans with zero selling fees.",
-  image: "/projects/orcanorte.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/orcanorte.png",
   role: "Tech Lead & Full‑stack Engineer",
   timeline: "2023–2025",
   stack:

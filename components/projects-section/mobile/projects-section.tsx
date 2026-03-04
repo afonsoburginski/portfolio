@@ -4,13 +4,15 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 
+const BLOB = "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects";
+
 const projects = [
-  { id: 1, image: "/projects/stormzplus.png", href: "/case-study/stormzplus", title: "Stormz+ Web" },
-  { id: 10, image: "/projects/stormzplus-app.png", href: "/case-study/stormzplus-mobile", title: "Stormz+ Mobile" },
-  { id: 4, image: "/projects/orcanorte.png", href: "/case-study/orcanorte", title: "Orcanorte" },
-  { id: 2, image: "/projects/easydriver-admin.png", href: "/case-study/easydriver", title: "EasyDriver" },
-  { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", href: "/case-study/nextjs-ffmpeg-transcoder", title: "FFmpeg Transcoder" },
-  { id: 7, image: "/projects/gem-jhonrob-1.png", href: "/case-study/gem-jhonrob", title: "GEM JHONROB" },
+  { id: 1, image: `${BLOB}/stormzplus.png`, href: "/case-study/stormzplus", title: "Stormz+ Web" },
+  { id: 10, image: `${BLOB}/stormzplus-app.png`, href: "/case-study/stormzplus-mobile", title: "Stormz+ Mobile" },
+  { id: 4, image: `${BLOB}/orcanorte.png`, href: "/case-study/orcanorte", title: "Orcanorte" },
+  { id: 2, image: `${BLOB}/easydriver-admin.png`, href: "/case-study/easydriver", title: "EasyDriver" },
+  { id: 5, image: `${BLOB}/nextjs-ffmpeg-transcoder-1.png`, href: "/case-study/nextjs-ffmpeg-transcoder", title: "FFmpeg Transcoder" },
+  { id: 7, image: `${BLOB}/gem-jhonrob-1.png`, href: "/case-study/gem-jhonrob", title: "GEM JHONROB" },
 ];
 
 const ProjectCard = ({ project, index }: { project: typeof projects[0], index: number }) => {

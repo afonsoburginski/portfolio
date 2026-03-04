@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/dashboard/auth-provider";
-import { isAdminEmail } from "@/lib/dashboard-data";
+import { isAdminEmail } from "@/lib/admin-helpers";
 import {
   Sidebar, SidebarContent, SidebarHeader, SidebarFooter,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton,
@@ -37,8 +37,8 @@ export function DashboardSidebar() {
   const { unreadCount } = useNotifications();
   const isAdmin = isAdminEmail(user?.email);
 
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
-  const fullName  = (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? "User";
+  const avatarUrl = user?.image ?? undefined;
+  const fullName  = user?.name ?? user?.email ?? "User";
   const initials  = fullName.slice(0, 2).toUpperCase();
   const email     = user?.email ?? "";
 

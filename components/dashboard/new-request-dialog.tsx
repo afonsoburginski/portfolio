@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createRequest, uploadRequestImage, updateRequestImage } from "@/lib/dashboard-data";
+import { createRequest, uploadRequestImage } from "@/lib/dashboard-data";
 import {
   Dialog,
   DialogContent,
@@ -72,7 +72,7 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
   const [form, setForm] = useState({
     title: "",
     description: "",
-    type: "feature" as string,
+    type: "feature" as import("@/lib/schema").RequestType,
     imageFile: null as File | null,
     imagePreview: null as string | null,
   });
@@ -111,11 +111,11 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
       });
       if (form.imageFile) {
         try {
-          const imageUrl = await uploadRequestImage(request.id, form.imageFile);
-          await updateRequestImage(request.id, imageUrl);
+          const fd = new FormData();
+          fd.append("file", form.imageFile);
+          await uploadRequestImage(request.id, fd);
         } catch (imgErr) {
           console.warn("Image upload failed (request was created):", imgErr);
-          // Request already created; image upload failed (e.g. bucket not set up)
         }
       }
       onOpenChange(false);
@@ -167,7 +167,7 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
               />
             </FieldRow>
             <FieldRow icon={Tag} label="Propósito">
-              <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))}>
+              <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v as import("@/lib/schema").RequestType }))}>
                 <SelectTrigger className="h-9 bg-neutral-800 border-neutral-600 text-neutral-100">
                   <SelectValue placeholder="O que você precisa?" />
                 </SelectTrigger>

@@ -4,7 +4,7 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
   title: "FFmpeg Video Transcoder – Open Source HLS Pipeline",
   description:
     "Open‑source, production‑grade video ingestion and HLS transcoding system. Unlimited uploads via Go server, local FFmpeg processing, Cloudflare R2 storage, and a modern Next.js admin dashboard. Extracted from Stormzplus and released ready‑to‑use for real projects.",
-  image: "/projects/nextjs-ffmpeg-transcoder-2.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/nextjs-ffmpeg-transcoder-2.png",
   role: "Creator & Maintainer",
   timeline: "2024–2025",
   stack:
@@ -73,7 +73,7 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
         "Media Table",
         "Video Details"
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-1.png",
+      image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/nextjs-ffmpeg-transcoder-1.png",
       body: [
         "Everything starts with collections—containers for related videos that keep your library organized. The dashboard shows quick action cards (Upload, Manage, Stream) and a grid of existing collections with stats: video count and total size.",
         "Click into any collection to see the media table: every video's status (queued/uploading/encoding/ready), duration, file size, view count. Progress bars update in real time during ingest and encode. Click 'Add more videos' to keep expanding your catalog without leaving the page.",
@@ -88,7 +88,7 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
         "R2 Publishing",
         "State Management"
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-2.png",
+      image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/nextjs-ffmpeg-transcoder-2.png",
       body: [
         "The stack is deliberately simple: Next.js 15 (App Router) handles admin UI and API orchestration. A Go HTTP server runs on port 8081 for unlimited uploads with streaming I/O. FFmpeg/FFprobe process videos locally. Cloudflare R2 stores the final HLS with CDN edge caching. Zustand manages upload queue state; React Query handles collections/videos data.",
         "Drop a file → the UI creates a job (UUID) and sends it to the Go server via multipart POST. The server streams to temp with a 64KB buffer, reporting progress every 500ms. Once complete, it returns the temp path and triggers the Next.js encode route.",
@@ -104,7 +104,7 @@ export const nextjsFfmpegTranscoder: CaseStudy = {
         "Quality Presets",
         "Flexibility"
       ],
-      image: "/projects/nextjs-ffmpeg-transcoder-3.png",
+      image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/nextjs-ffmpeg-transcoder-3.png",
       body: [
         "Node.js caps uploads at ~2GB due to V8 heap limits. Go's streaming I/O uses constant memory (~64KB buffer) regardless of file size—tested with 10GB+ files. The server is stateless: progress lives in-memory and GCs when jobs finish. Deployment is a single binary (Windows: stormz-upload-server.exe).",
         "NVENC offloads encoding to the GPU, dramatically reducing CPU load and encode time. When a compatible NVIDIA GPU is present, the encoder automatically switches to h264_nvenc or hevc_nvenc. If unavailable, it falls back to libx264—same output, just slower.",

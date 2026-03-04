@@ -11,10 +11,10 @@ import {
   createRequestTask,
   updateRequestTask,
   deleteRequestTask,
-  isAdminEmail,
   getAllProfiles,
   changeRequestClient,
 } from "@/lib/dashboard-data";
+import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Profile, Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
 import { Button } from "@/components/ui/button";
@@ -318,7 +318,7 @@ export default function AdminRequestPlanningPage({
           setForm({
             title:             req.title,
             description:       req.description,
-            priority:          req.priority,
+            priority:          (req.priority as 1 | 2 | 3),
             type:              req.type as RequestType,
             budget:            req.budget ?? "",
             payment_deadline:  req.payment_deadline ?? "",
@@ -431,8 +431,8 @@ export default function AdminRequestPlanningPage({
   if (loading || !request)
     return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>;
 
-  const profile    = request.profiles as { full_name?: string; email?: string } | undefined;
-  const clientName = profile?.full_name ?? profile?.email ?? "—";
+  const profile    = request.profiles as { name?: string; email?: string } | undefined;
+  const clientName = profile?.name ?? profile?.email ?? "—";
   const doneTasks  = tasks.filter((t) => t.status === "done").length;
 
   const fmtDate = (d: string | null) =>
@@ -552,7 +552,7 @@ export default function AdminRequestPlanningPage({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-60 p-1.5">
                     {profiles.map((p) => {
-                      const name = p.full_name ?? p.email ?? "—";
+                      const name = p.name ?? p.email ?? "—";
                       const isCurrent = request.user_id === p.id;
                       return (
                         <DropdownMenuItem
@@ -963,7 +963,7 @@ export default function AdminRequestPlanningPage({
                         <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
-                            onClick={() => { setEditDraft(task.title); setEditDue(task.due_date ?? ""); setEditType(task.type); setEditPriority(task.priority); setEditingId(task.id); }}
+                            onClick={() => { setEditDraft(task.title); setEditDue(task.due_date ?? ""); setEditType(task.type); setEditPriority(task.priority as 1 | 2 | 3); setEditingId(task.id); }}
                             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                           >
                             <Pencil className="size-3" />

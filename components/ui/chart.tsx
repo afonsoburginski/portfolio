@@ -96,6 +96,7 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContent
       itemSorter,
       nameKey,
       labelKey,
+      cursor: _cursor,
       ...domProps
     },
     ref

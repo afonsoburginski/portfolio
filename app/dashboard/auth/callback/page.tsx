@@ -1,62 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createBrowserSupabase } from "@/lib/supabase-browser";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 /**
- * Página aberta no popup após OAuth. Recebe o hash com tokens,
- * Supabase persiste a sessão, enviamos ao opener e fechamos.
+ * Better Auth handles OAuth callbacks via /api/auth/callback.
+ * This page is kept as a redirect safety net.
  */
 export default function AuthCallbackPage() {
-  const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
+  const router = useRouter();
 
   useEffect(() => {
-    const supabase = createBrowserSupabase();
-
-    const sendAndClose = (s: { access_token: string; refresh_token: string | null }) => {
-      if (window.opener) {
-        window.opener.postMessage(
-          { type: "supabase-auth", session: { access_token: s.access_token, refresh_token: s.refresh_token } },
-          window.location.origin
-        );
-      }
-      setStatus("done");
-      window.close();
-    };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (s?.access_token && window.opener) {
-        sendAndClose(s);
-      }
-    });
-
-    // Hash já pode ter sido processado antes do listener
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.access_token && window.opener) {
-        sendAndClose(session);
-      } else if (!window.location.hash && !session) {
-        setStatus("error");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    router.replace("/dashboard");
+  }, [router]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6">
-      {status === "loading" && (
-        <>
-          <Loader2 className="size-8 animate-spin text-muted-foreground mb-4" />
-          <p className="text-sm text-muted-foreground">Conectando…</p>
-        </>
-      )}
-      {status === "done" && (
-        <p className="text-sm text-muted-foreground">Login concluído. Esta janela pode ser fechada.</p>
-      )}
-      {status === "error" && (
-        <p className="text-sm text-destructive">Falha ao obter sessão. Feche e tente novamente.</p>
-      )}
+    <div className="flex min-h-screen items-center justify-center">
+      <Loader2 className="size-6 animate-spin text-muted-foreground" />
     </div>
   );
 }

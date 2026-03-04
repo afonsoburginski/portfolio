@@ -1,13 +1,35 @@
 declare namespace NodeJS {
   interface ProcessEnv {
-    NEXT_PUBLIC_SITE_URL?: string;
-    NEXT_PUBLIC_SITE_NAME?: string;
-    NEXT_PUBLIC_GA_ID?: string;
-    RESEND_API_KEY?: string;
-    CONTACT_EMAIL?: string;
-    NEXT_PUBLIC_SUPABASE_URL?: string;
-    SUPABASE_SERVICE_ROLE_KEY?: string;
+    NEXT_PUBLIC_APP_URL?: string;
+
+    // Turso (SQLite)
+    TURSO_DATABASE_URL: string;
+    TURSO_AUTH_TOKEN?: string;
+
+    // Better Auth
+    BETTER_AUTH_SECRET: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+
+    // Email
+    RESEND_API_KEY: string;
+    ADMIN_EMAIL?: string;
+
+    // Storage
+    BLOB_READ_WRITE_TOKEN?: string;
+
+    // Dashboard
     DASHBOARD_ADMIN_SECRET?: string;
+
+    // Pagamentos
+    NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY?: string;
+    MERCADOPAGO_ACCESS_TOKEN?: string;
+    MERCADOPAGO_CLIENT_ID?: string;
+    MERCADOPAGO_CLIENT_SECRET?: string;
+    MERCADOPAGO_WEBHOOK_SECRET?: string;
+
+    // Migração (temporário)
+    SUPABASE_URL?: string;
+    SUPABASE_SERVICE_ROLE_KEY?: string;
   }
 }
-

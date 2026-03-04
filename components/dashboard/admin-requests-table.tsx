@@ -43,7 +43,7 @@ type RequestRow = Request & { clientName?: string };
 function toRows(requests: Request[]): RequestRow[] {
   return requests.map((r) => ({
     ...r,
-    clientName: (r.profiles as { full_name?: string; email?: string } | undefined)?.full_name
+    clientName: (r.profiles as { name?: string; email?: string } | undefined)?.name
       ?? (r.profiles as { email?: string } | undefined)?.email
       ?? "—",
   }));

@@ -42,3 +42,8 @@ next-env.d.ts
 
 # bun
 bun.lockb
+
+# SQLite local dev database
+*.db
+*.db-shm
+*.db-wal

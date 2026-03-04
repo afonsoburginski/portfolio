@@ -149,7 +149,7 @@ export function ServicesShowcaseMobile() {
           className="relative aspect-[4/3] rounded-xl overflow-hidden mb-8"
         >
           <Image
-            src="/services-background.png"
+            src="https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/services-background.png"
             alt="services background"
             fill
             sizes="100vw"

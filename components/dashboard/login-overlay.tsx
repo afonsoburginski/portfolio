@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SiGithub, SiGoogle } from "react-icons/si";
+import { SiGoogle } from "react-icons/si";
 import { Loader2 } from "lucide-react";
 
 interface LoginOverlayProps {
@@ -18,7 +18,7 @@ interface LoginOverlayProps {
 }
 
 export function LoginOverlay({ loading }: LoginOverlayProps) {
-  const { signInWithGoogle, signInWithGitHub } = useAuth();
+  const { signInWithGoogle } = useAuth();
 
   return (
     <Dialog open defaultOpen>
@@ -57,14 +57,6 @@ export function LoginOverlay({ loading }: LoginOverlayProps) {
             >
               <SiGoogle className="size-4" />
               Continuar com Google
-            </Button>
-            <Button
-              onClick={signInWithGitHub}
-              variant="outline"
-              className="w-full gap-2 h-10"
-            >
-              <SiGithub className="size-4" />
-              Continuar com GitHub
             </Button>
           </div>
         )}

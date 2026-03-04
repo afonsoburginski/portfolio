@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
-import { getMyRequests, isAdminEmail } from "@/lib/dashboard-data";
+import { getMyRequests, getAllRequests } from "@/lib/dashboard-data";
+import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Request, RequestStatus } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,6 @@ import {
 import { ClientRequestContextMenu } from "@/components/dashboard/client-request-context-menu";
 import { AdminGanttView } from "@/components/dashboard/admin-gantt-view";
 import { getCalApi } from "@calcom/embed-react";
-import { createBrowserSupabase } from "@/lib/supabase-browser";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   submitted:   "bg-blue-500/15 text-blue-400 border-blue-500/20",
@@ -61,31 +61,29 @@ export function RequestsOverview() {
   const [loading, setLoading] = useState(true);
   const [newRequestOpen, setNewRequestOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
-  const isAdmin = isAdminEmail(user?.email);
+  const isAdmin = isAdminEmail(user?.email) || user?.isAdmin === true;
 
-  const refresh = () => getMyRequests().then(setRequests).catch(console.error);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => { refresh().finally(() => setLoading(false)); }, []);
+  const refresh = useCallback(() =>
+    (isAdmin ? getAllRequests() : getMyRequests())
+      .then(setRequests)
+      .catch(console.error),
+  [isAdmin]);
 
-  // Realtime — atualiza ao vivo quando o admin cria/altera pedidos do cliente
   useEffect(() => {
-    const supabase = createBrowserSupabase();
-    const channel = supabase
-      .channel("requests-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "requests" },
-        () => { refresh(); }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, []);
+    refresh().finally(() => setLoading(false));
+    intervalRef.current = setInterval(refresh, 5_000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [refresh]);
 
   useEffect(() => {
     getCalApi().then((cal) => cal("ui", { theme: "dark" })).catch(() => {});
   }, []);
 
-  const name = (user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ?? "there";
+  const name = user?.name?.split(" ")[0] ?? "there";
 
   const active   = requests.filter(r => !["cancelled", "rejected", "delivered"].includes(r.status));
   const inProg   = requests.filter(r => r.status === "in_progress");

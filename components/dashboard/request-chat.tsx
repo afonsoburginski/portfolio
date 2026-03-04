@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { createBrowserSupabase } from "@/lib/supabase-browser";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { Loader2, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,13 +8,13 @@ import { FormattedMessageContent } from "@/components/dashboard/formatted-messag
 
 interface Comment {
   id: string;
-  request_id: string;
-  user_id: string;
-  is_admin: boolean;
+  requestId: string;
+  userId: string;
+  isAdmin: boolean;
   content: string;
-  created_at: string;
-  optimistic?: boolean; // flag local: mensagem ainda não confirmada pelo servidor
-  profiles?: { full_name: string | null; avatar_url: string | null };
+  createdAt: string;
+  optimistic?: boolean;
+  user?: { name: string | null; image: string | null } | null;
 }
 
 interface RequestChatProps {
@@ -55,38 +54,29 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchComments = useCallback(async () => {
-    const { data } = await createBrowserSupabase()
-      .from("request_comments")
-      .select("*, profiles(full_name, avatar_url)")
-      .eq("request_id", requestId)
-      .order("created_at", { ascending: true });
-
-    if (data) {
-      // Ao receber do servidor, descarta otimistas (o servidor tem os reais)
-      setComments(data as Comment[]);
+    try {
+      const res = await fetch(`/api/comments?requestId=${requestId}`);
+      if (!res.ok) return;
+      const data: Comment[] = await res.json();
+      setComments(data);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [requestId]);
 
-  useEffect(() => { fetchComments(); }, [fetchComments]);
-
-  // Realtime — reconcilia com o servidor sem remover otimistas prematuramente
   useEffect(() => {
-    const supabase = createBrowserSupabase();
-    const channel = supabase
-      .channel(`comments-${requestId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "request_comments", filter: `request_id=eq.${requestId}` },
-        () => fetchComments()
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [requestId, fetchComments]);
+    fetchComments();
+    intervalRef.current = setInterval(fetchComments, 3_000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [fetchComments]);
 
-  // Scroll automático ao chegar novas mensagens
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [comments]);
@@ -97,19 +87,15 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     const content = text.trim();
     const tempId = `optimistic-${Date.now()}`;
 
-    // Inserção otimista — aparece instantaneamente
     const optimisticComment: Comment = {
       id: tempId,
-      request_id: requestId,
-      user_id: user.id,
-      is_admin: isAdmin,
+      requestId,
+      userId: user.id,
+      isAdmin,
       content,
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       optimistic: true,
-      profiles: {
-        full_name: (user.user_metadata?.full_name as string) ?? null,
-        avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
-      },
+      user: { name: user.name ?? null, image: user.image ?? null },
     };
 
     setComments(prev => [...prev, optimisticComment]);
@@ -118,14 +104,13 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     textareaRef.current?.focus();
 
     try {
-      await createBrowserSupabase().from("request_comments").insert({
-        request_id: requestId,
-        user_id: user.id,
-        content,
+      await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId, content }),
       });
-      // O realtime vai buscar a versão real do servidor e substituir a otimista
+      await fetchComments();
     } catch {
-      // Falha: remove a mensagem otimista e restaura o texto
       setComments(prev => prev.filter(c => c.id !== tempId));
       setText(content);
     } finally {
@@ -134,13 +119,11 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
   }
 
   async function deleteComment(id: string) {
-    // Remoção otimista
     setComments(prev => prev.filter(c => c.id !== id));
     setDeletingId(id);
     try {
-      await createBrowserSupabase().from("request_comments").delete().eq("id", id);
+      await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
     } catch {
-      // Falha: rebusca os comentários para restaurar estado
       fetchComments();
     } finally {
       setDeletingId(null);
@@ -154,7 +137,7 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     }
   }
 
-  const isMine = (c: Comment) => c.user_id === user?.id;
+  const isMine = (c: Comment) => c.userId === user?.id;
 
   return (
     <div className="flex flex-col rounded-xl border border-border/60 overflow-hidden bg-card">
@@ -194,15 +177,15 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   c.optimistic && "opacity-60"
                 )}
               >
-                <Avatar name={c.profiles?.full_name} isAdmin={c.is_admin} />
+                <Avatar name={c.user?.name} isAdmin={c.isAdmin} />
                 <div className={cn("flex flex-col gap-1 max-w-[75%]", mine ? "items-end" : "items-start")}>
                   <div className="flex items-center gap-1.5">
                     {!mine && (
                       <span className="text-[10px] font-medium text-muted-foreground">
-                        {c.profiles?.full_name ?? (c.is_admin ? "Admin" : "Usuário")}
+                        {c.user?.name ?? (c.isAdmin ? "Admin" : "Usuário")}
                       </span>
                     )}
-                    {c.is_admin && (
+                    {c.isAdmin && (
                       <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-purple-500/15 text-purple-400 uppercase tracking-wide">
                         admin
                       </span>
@@ -210,7 +193,6 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   </div>
 
                   <div className="flex items-end gap-1.5">
-                    {/* Botão de deletar — admin sempre, dono por 10min */}
                     {!c.optimistic && (isAdmin || mine) && (
                       <button
                         type="button"
@@ -239,7 +221,7 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   </div>
 
                   <span className="text-[10px] text-muted-foreground/40">
-                    {c.optimistic ? "Enviando..." : formatTime(c.created_at)}
+                    {c.optimistic ? "Enviando..." : formatTime(c.createdAt)}
                   </span>
                 </div>
               </div>

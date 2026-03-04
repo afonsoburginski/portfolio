@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { createClient } from "@supabase/supabase-js";
+import { markPaymentApproved } from "@/lib/dashboard-data";
 
 const mp = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
-
-function anonClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } }
-  );
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,12 +22,7 @@ export async function POST(req: NextRequest) {
     const requestId = paymentData.external_reference;
     if (!requestId) return NextResponse.json({ ok: true });
 
-    const { error } = await anonClient().rpc("mark_payment_approved", {
-      p_request_id: requestId,
-      p_payment_id: String(paymentData.id),
-    });
-
-    if (error) console.error("[MP Webhook] RPC error:", error);
+    await markPaymentApproved(requestId, String(paymentData.id));
 
     return NextResponse.json({ ok: true });
   } catch (err) {

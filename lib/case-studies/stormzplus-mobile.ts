@@ -4,7 +4,7 @@ export const stormzplusMobile: CaseStudy = {
   title: "Stormz+ Mobile – React Native App",
   description:
     "A production React Native application built with Expo that delivers the full Stormz+ streaming experience to iOS and Android devices. Features multi-profile support, offline downloads, native video playback, and seamless synchronization with the web platform using the same Supabase backend.",
-  image: "/projects/stormzplus-app.png",
+  image: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/stormzplus-app.png",
   role: "Mobile Developer",
   timeline: "2024–2025",
   stack:
@@ -67,7 +67,7 @@ export const stormzplusMobile: CaseStudy = {
         "Multi-profile support allows family members to have personalized viewing experiences with individual watch progress and recommendations, all synced through Supabase.",
         "Advanced content discovery features help users find new shows and movies based on their viewing history and preferences, with real-time updates.",
       ],
-      video: "/projects/stormzplus-app.mp4",
+      video: "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/stormzplus-app.mp4",
     },
     {
       title: "Technical Architecture",

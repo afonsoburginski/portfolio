@@ -6,20 +6,22 @@ import { useEffect, useState } from "react";
 
 // 3 columns layout - left & right equal size, center slightly taller
 // Portrait cards (height > width)
+const BLOB = "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects";
+
 const col1 = [
-  { id: 4, image: "/projects/orcanorte.png", height: 320, href: "/case-study/orcanorte" },
-  { id: 2, image: "/projects/easydriver-admin.png", height: 320, href: "/case-study/easydriver" },
+  { id: 4, image: `${BLOB}/orcanorte.png`, height: 320, href: "/case-study/orcanorte" },
+  { id: 2, image: `${BLOB}/easydriver-admin.png`, height: 320, href: "/case-study/easydriver" },
   { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 320 },
 ];
 
 const col2 = [
-  { id: 10, image: "/projects/stormzplus-app.png", height: 360, href: "/case-study/stormzplus-mobile" },
-  { id: 1, image: "/projects/stormzplus.png", height: 360, href: "/case-study/stormzplus" },
+  { id: 10, image: `${BLOB}/stormzplus-app.png`, height: 360, href: "/case-study/stormzplus-mobile" },
+  { id: 1, image: `${BLOB}/stormzplus.png`, height: 360, href: "/case-study/stormzplus" },
 ];
 
 const col3 = [
-  { id: 7, image: "/projects/gem-jhonrob-1.png", height: 320, href: "/case-study/gem-jhonrob" },
-  { id: 5, image: "/projects/nextjs-ffmpeg-transcoder-1.png", height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
+  { id: 7, image: `${BLOB}/gem-jhonrob-1.png`, height: 320, href: "/case-study/gem-jhonrob" },
+  { id: 5, image: `${BLOB}/nextjs-ffmpeg-transcoder-1.png`, height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
   { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 320 },
   { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 320 },
 ];

@@ -1,13 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { createBrowserSupabase } from "@/lib/supabase-browser";
 import { initPaymentBrick, unmountPaymentBrick } from "./mercadopago";
 import { verifyPayment } from "./use-request-detail";
-import type { Request } from "@/lib/database.types";
+import type { Request } from "@/lib/schema";
 
-const PIX_POLL_INTERVAL_MS = 5_000;  // verifica a cada 5s
-const PIX_POLL_TIMEOUT_MS  = 10 * 60_000; // para depois de 10min
+const PIX_POLL_INTERVAL_MS = 5_000;
+const PIX_POLL_TIMEOUT_MS  = 10 * 60_000;
 
 export type PayStep = "idle" | "method" | "paying";
 export type PayMethod = "pix" | "card";
@@ -33,12 +32,6 @@ interface UseRequestPaymentResult {
   selectMethod: (method: PayMethod) => Promise<void>;
   cancelPayment: () => Promise<void>;
   goBackToMethod: () => Promise<void>;
-}
-
-async function getAccessToken(): Promise<string> {
-  const { data: { session } } = await createBrowserSupabase().auth.getSession();
-  if (!session?.access_token) throw new Error("Sem sessão ativa");
-  return session.access_token;
 }
 
 export function useRequestPayment({
@@ -67,11 +60,6 @@ export function useRequestPayment({
     }
   }
 
-  /**
-   * Camada 4 — polling local para PIX pendente.
-   * Consulta /api/payments/verify a cada 5s até o pagamento ser aprovado
-   * ou o timeout de 10min ser atingido.
-   */
   function startPixPolling() {
     stopPolling();
     pollStartedAt.current = Date.now();
@@ -92,12 +80,10 @@ export function useRequestPayment({
   async function startPayment() {
     setBrickError(null);
     setPayStep("method");
-    // Pré-carrega preferência em background para não travar ao selecionar método
     try {
-      const token = await getAccessToken();
       const res = await fetch("/api/payments/create-preference", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId }),
       });
       if (!res.ok) {
@@ -122,18 +108,14 @@ export function useRequestPayment({
     setBrickError(null);
     brickMounted.current = true;
 
-    // Aguarda o React commitar o DOM com o div #mp-payment-brick antes de montar o Brick
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-
-    const { data: { session } } = await createBrowserSupabase().auth.getSession();
-    const payerEmail = session?.user?.email ?? undefined;
 
     try {
       await initPaymentBrick({
         preferenceId: preference.id,
         amount: preference.amount,
         method,
-        payerEmail,
+        payerEmail: undefined,
         onReady: () => setBrickLoading(false),
         onError: (err) => {
           console.error("[MP Brick]", err);
@@ -142,10 +124,9 @@ export function useRequestPayment({
         },
         onSubmit: async ({ formData }) => {
           try {
-            const token = await getAccessToken();
             const res = await fetch("/api/payments/process", {
               method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ requestId, formData }),
             });
             const json = await res.json();
@@ -158,7 +139,6 @@ export function useRequestPayment({
               await unmount();
               onPending();
               setPayStep("idle");
-              // Camada 4: inicia polling local — verifica aprovação a cada 5s
               startPixPolling();
             } else {
               setBrickError("Pagamento não aprovado. Verifique os dados e tente novamente.");

@@ -2,11 +2,11 @@
 
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { Button } from "@/components/ui/button";
-import { SiGithub, SiGoogle } from "react-icons/si";
+import { SiGoogle } from "react-icons/si";
 import { Smartphone } from "lucide-react";
 
 export function LoginScreen() {
-  const { signInWithGoogle, signInWithGitHub } = useAuth();
+  const { signInWithGoogle } = useAuth();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8">
@@ -28,14 +28,6 @@ export function LoginScreen() {
         >
           <SiGoogle className="size-4" />
           Continue with Google
-        </Button>
-        <Button
-          onClick={signInWithGitHub}
-          variant="outline"
-          className="w-full gap-2 h-11"
-        >
-          <SiGithub className="size-4" />
-          Continue with GitHub
         </Button>
       </div>
 

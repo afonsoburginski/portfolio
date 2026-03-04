@@ -10,7 +10,7 @@ export function PriorityIcon({
   size = 12,
   className = "",
 }: {
-  priority: 1 | 2 | 3;
+  priority: number;
   size?: number;
   className?: string;
 }) {
