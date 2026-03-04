@@ -1,0 +1,195 @@
+{
+  "pessoal": {
+    "nome_completo": "Afonso Kevin Burginski",
+    "titulo": "Senior Mobile & Full-Stack Engineer",
+    "subtitulo": "React Native / Kotlin / Swift / Next.js",
+    "email": "afonsoburginski@gmail.com",
+    "portfolio": "afonsodev.com",
+    "portfolio_url": "https://afonsodev.com",
+    "github": "github.com/afonsoburginski",
+    "github_url": "https://github.com/afonsoburginski",
+    "linkedin": "linkedin.com/in/afonsoburginski",
+    "linkedin_url": "https://www.linkedin.com/in/afonsoburginski",
+    "localizacao": "Brazil"
+  },
+
+  "resumo": "Senior Mobile & Full-Stack Engineer with 6+ years of experience building production-grade mobile and web applications. Specialized in React Native (Expo), Kotlin and Swift for native/cross-platform mobile development, with strong full-stack background in Next.js, TypeScript, Supabase (Auth/DB/Realtime) and PostgreSQL. Led mission-critical systems in agribusiness ERP, subscription streaming, B2B marketplaces and hospital management — from discovery and system design to App Store/Play Store deployment and long-term maintenance.",
+
+  "habilidades": {
+    "Mobile": ["React Native", "Kotlin", "Swift", "Kotlin Multiplatform", "Compose Multiplatform", "Jetpack Compose", "SwiftUI", "Android SDK", "iOS SDK", "Expo Router", "React Native Video", "React Native Reanimated", "WebRTC"],
+    "Languages": ["TypeScript", "JavaScript", "Kotlin", "Swift", "Go", "SQL"],
+    "Frameworks & Libraries": ["React Native", "React", "Next.js (App Router, RSC)", "Node.js", "Ktor", "Express.js"],
+    "Backend & Data": ["Supabase (Auth/DB/Realtime/Storage)", "PostgreSQL", "Prisma ORM", "Drizzle ORM", "SQLDelight", "REST APIs"],
+    "Architecture & Patterns": ["Clean Architecture", "SOLID", "MVVM", "MVI", "real-time systems", "offline-first", "HLS video pipelines", "RBAC"],
+    "DevOps & Cloud": ["Docker", "AWS EC2", "Nginx", "Vercel", "Cloudflare R2/CDN", "CI/CD", "EAS Build", "Fastlane", "Tauri", "Linux/VPS"],
+    "Tools & Platforms": ["Git/GitHub", "Android Studio", "Xcode", "VSCode", "Figma", "Stripe", "Mercado Pago", "LiveKit", "Firebase", "WebSockets", "App Store Connect", "Google Play Console"]
+  },
+
+  "experiencia": [
+    {
+      "cargo": "Full Stack Engineer",
+      "empresa": "JHONROB Silos e Secadores",
+      "periodo": "Nov 2023 – Present",
+      "local": "Brazil",
+      "descricao_empresa": "201-500 employees, Agricultural storage equipment (silos, dryers, grain handling)",
+      "atividades": [
+        "Architect and lead development of GEM — enterprise ERP that replaces spreadsheet workflows with a real-time platform for production orders, Kanban tasks, expedition logistics and full audit logging.",
+        "Built the web platform with Next.js 15 (App Router, RSC), React 19, TypeScript, Supabase (Auth/DB/Realtime) and PostgreSQL (5,000+ lines of Prisma schema), deployed via Docker and Nginx on dedicated VPS.",
+        "Developed Kotlin backend services for production data processing; built native Kotlin Multiplatform tools (Compose Multiplatform + Ktor + SQLDelight) including GEM Exportador — automated CAD file conversion system with real-time queue monitoring via WebSocket, supporting PDF/DWG/DXF/STEP/IGES export from Autodesk Inventor.",
+        "Implemented real-time multi-user sync with Supabase Realtime (sub-200ms latency) and multi-layer caching (Zustand + TanStack Query + in-memory Map) for sub-second responses across 10,000+ production orders.",
+        "Built advanced Kanban system with drag-and-drop (dnd-kit), column customization, task grouping, subtasks with time tracking, attachments via Supabase Storage, and comments with mentions.",
+        "Implemented complete audit trail logging 20+ event types with before/after snapshots, and granular RBAC permission system (Admin, Manager, Expedition, Developer) with server-side validation.",
+        "Built desktop application with Tauri for offline-first workflows in factory environments with auto-updater and signed releases.",
+        "Reduced error rate in commercial proposals by 80% and increased monthly profit by approximately 14%.",
+        "Deployed to production with 100+ daily active users across multiple departments with 99.9% uptime over 6 months."
+      ],
+      "metricas": {
+        "erro_reducao": "80%",
+        "lucro_aumento": "14%",
+        "usuarios_diarios": "100+",
+        "ordens_producao": "10000+",
+        "latencia_realtime": "sub-200ms",
+        "uptime": "99.9%",
+        "prisma_schema_lines": "5000+"
+      },
+      "tecnologias": ["Next.js 15", "React 19", "TypeScript", "Kotlin", "Kotlin Multiplatform", "Compose Multiplatform", "Ktor", "SQLDelight", "Supabase (Auth/DB/Realtime)", "PostgreSQL", "Prisma ORM", "TanStack Query", "Zustand", "TailwindCSS", "Framer Motion", "Docker", "Nginx", "Tauri", "dnd-kit"]
+    },
+    {
+      "cargo": "Senior Mobile Developer",
+      "empresa": "afonsodev.com",
+      "periodo": "Jan 2020 – Present",
+      "local": "Remote",
+      "descricao_empresa": "Independent software consultant — enterprise-grade mobile and web applications",
+      "atividades": [
+        "Deliver end-to-end mobile and web solutions for multiple clients using React Native, Kotlin, Swift, Next.js, Supabase and PostgreSQL, from requirements and UX collaboration to App Store/Play Store deployment and monitoring."
+      ],
+      "projetos": [
+        {
+          "nome": "Stormzplus – Subscription Streaming Platform (Mobile + Web + Admin)",
+          "descricao": "Designed and built a full-stack subscription-based VOD platform with Netflix-style UX spanning mobile (React Native + Expo), web (Next.js 15), real-time Watch Party (LiveKit/WebRTC), admin CMS and GPU-accelerated video pipeline.",
+          "url": "https://www.stormzplus.com/",
+          "detalhes_mobile": [
+            "Built production React Native app (RN 0.81 + Expo SDK 54) published on iOS App Store and Google Play Store — multi-profile accounts, HLS video playback via react-native-video and expo-video, offline downloads with file system APIs and intelligent cache management.",
+            "Implemented native video playback with hardware-accelerated HLS streaming, adaptive bitrate, 60fps performance across iOS and Android.",
+            "Built file-based routing with Expo Router for deep linking, enabling content sharing and direct navigation to shows/episodes/profiles.",
+            "Real-time data sync using SWR with automatic revalidation + Zustand for local state, sharing the same Supabase backend as web for seamless cross-platform experience.",
+            "Integrated WebRTC (react-native-webrtc) with custom signaling client for mobile Watch Party — synchronized group viewing with LiveKit.",
+            "Push notifications via Firebase for new content, episode releases and subscription reminders.",
+            "Animations with React Native Reanimated 4 and Lottie; internationalization with i18next (EN/PT-BR).",
+            "Configured native Swift modules for advanced iOS video playback controls, AirPlay support and picture-in-picture."
+          ],
+          "detalhes_web": [
+            "Built the web platform with Next.js 15.3 (App Router, RSC), React 19, Supabase Auth/DB, PostgreSQL and Drizzle ORM — multi-profile accounts, curated content, watch progress, favorites and featured rows.",
+            "GPU-accelerated video pipeline: Go service orchestrating FFmpeg with NVIDIA NVENC across multiple codec ladders for multi-bitrate HLS transcoding.",
+            "HLS stored on Cloudflare R2 and distributed via CDN edge caching with immutable asset keys and far-future cache headers.",
+            "Stripe billing + Mercado Pago (PIX) with idempotent webhooks and full subscription lifecycle management.",
+            "Integrated LiveKit WebRTC SFU for real-time Watch Party feature enabling synchronized group viewing with chat.",
+            "Custom HLS video player with captions, resume playback, quality selector and resilient error handling.",
+            "Role-based gated routes with Supabase Auth and SSR middleware checks tied to subscription status.",
+            "Desktop app option with Tauri 2.9 for native performance."
+          ],
+          "detalhes_admin": [
+            "Full content CMS: create/update/delete titles, seasons, episodes, genres, and featured spots.",
+            "Customer & subscription management: inspect accounts, handle plan changes, resolve invoice/payment issues.",
+            "Episode ingestion pipeline: attach sources, trigger FFmpeg encoding jobs, track processing status in real-time.",
+            "Asset management with Cloudflare R2 integration for media storage and CDN distribution."
+          ],
+          "tecnologias": ["React Native 0.81", "Expo SDK 54", "Swift", "TypeScript", "Next.js 15", "React 19", "Supabase (Auth/DB)", "PostgreSQL", "Drizzle ORM", "Go", "FFmpeg/NVENC", "Cloudflare R2/CDN", "Stripe", "Mercado Pago", "LiveKit", "WebRTC", "Firebase", "SWR", "Zustand", "Expo Router", "React Native Video", "React Native Reanimated 4", "Lottie", "i18next", "TailwindCSS", "Framer Motion", "Tauri 2.9"]
+        },
+        {
+          "nome": "Orça Norte – Real-time Quotes Marketplace",
+          "descricao": "Developed a B2B marketplace in construction with SEO-ready catalog, real-time quotes, vendor dashboards and subscription plans for a client.",
+          "url": "https://www.orcanorte.com.br/",
+          "detalhes": [
+            "+500 active companies and contractors on the platform with 4.9 rating.",
+            "SEO-first architecture with SSR/ISR and indexable vendor/product pages driving organic growth.",
+            "Explore with search, filters by category/price/relevance; item comparison and cart/lists.",
+            "Multi-tenant vendor system with roles (admin, operator), audit trails and bulk product import.",
+            "PDF quote export via jsPDF shareable via WhatsApp/email.",
+            "Subscription plans (Basic/Plus/Premium) with zero selling fees, automatic boosted ranking, and operational dashboards with Recharts."
+          ],
+          "tecnologias": ["Next.js 14", "React 18", "TypeScript", "NextAuth", "Prisma ORM", "PostgreSQL", "Zustand", "TanStack React Query", "TailwindCSS", "Radix UI", "Recharts", "Framer Motion"]
+        }
+      ],
+      "tecnologias": ["React Native", "Kotlin", "Swift", "Next.js", "Supabase", "PostgreSQL", "Go", "TypeScript"]
+    },
+    {
+      "cargo": "Mobile Developer",
+      "empresa": "Centro America Tecnologia",
+      "periodo": "Sep 2022 – Apr 2023",
+      "local": "Brazil",
+      "atividades": [
+        "Developed mobile applications in React Native for hospital management systems, supporting flows from UI implementation to API integration and store delivery.",
+        "Implemented features such as biometric login, real-time data visualization dashboards and complex form workflows, improving usability for clinical and administrative users.",
+        "Integrated with hospital REST APIs for patient data, scheduling and inventory management."
+      ],
+      "tecnologias": ["React Native", "TypeScript", "REST APIs", "Firebase"]
+    },
+    {
+      "cargo": "Full Stack Engineer",
+      "empresa": "TopSapp (Gestão de Provedores)",
+      "periodo": "Jan 2021 – Sep 2022",
+      "local": "Brazil",
+      "descricao_empresa": "51-200 employees, Telecommunications, Founded 2000",
+      "atividades": [
+        "Built and maintained web interfaces with Next.js for ISP management (customer data, billing, support flows).",
+        "Migrated legacy modules to modern React/Next.js, reducing complexity and enabling faster iterations on new features.",
+        "Implemented CI/CD pipelines and Git Flow versioning with GitLab.",
+        "Applied agile methodologies (Scrum and Kanban) for development sprints."
+      ],
+      "tecnologias": ["Next.js", "React", "TypeScript", "MySQL", "Git", "GitLab", "CI/CD"]
+    },
+    {
+      "cargo": "System Programmer",
+      "empresa": "Ecocentauro Sistemas Inteligentes",
+      "periodo": "Jan 2019 – Oct 2020",
+      "local": "Brazil",
+      "descricao_empresa": "201-500 employees, Software Development, Founded 1991",
+      "atividades": [
+        "Managed PostgreSQL databases, designing schemas and optimizing queries for existing systems.",
+        "Developed scripts and report layouts, improving reliability and readability of financial and operational reports for clients."
+      ],
+      "tecnologias": ["PostgreSQL", "SQL"]
+    }
+  ],
+
+  "projetos_opensource": [
+    {
+      "nome": "Next.js FFmpeg Transcoder",
+      "tipo": "Open Source (MIT)",
+      "descricao": "Production-grade video ingestion and HLS transcoding system extracted from Stormzplus. Unlimited uploads via Go server with streaming I/O (tested 10GB+ files), local FFmpeg processing with NVIDIA NVENC GPU acceleration, Cloudflare R2 storage with CDN-ready URLs, and a modern Next.js 15 admin dashboard. Cross-platform.",
+      "url": "https://github.com/afonsoburginski/nextjs-ffmpeg-transcoder",
+      "tecnologias": ["Next.js 15", "React 19", "Go 1.22+", "FFmpeg/NVENC", "Cloudflare R2", "Zustand", "TanStack React Query", "Radix UI", "TailwindCSS"]
+    }
+  ],
+
+  "educacao": [
+    {
+      "grau": "Bacharelado em Sistemas de Informação",
+      "instituicao": "Unemat Sinop",
+      "periodo": "2020 – 2024",
+      "local": "Brazil"
+    }
+  ],
+
+  "certificacoes_mobile": [
+    {"nome": "Developing Mobile Apps with React Native", "instituicao": "Meta"},
+    {"nome": "Kotlin for Java Developers", "instituicao": "JetBrains"}
+  ],
+
+  "certificacoes_fullstack": [
+    {"nome": "Meta Back-End Developer Professional Certificate", "instituicao": "Meta"},
+    {"nome": "IBM Full Stack Software Developer Professional Certificate", "instituicao": "IBM"}
+  ],
+
+  "idiomas": [
+    {"idioma": "Portuguese", "nivel": "Native"},
+    {"idioma": "English", "nivel": "B2", "detalhes": "comfortable with technical communication and client meetings"}
+  ],
+
+  "fontes": {
+    "portfolio": "https://afonsodev.com",
+    "linkedin": "https://www.linkedin.com/in/afonsoburginski",
+    "github": "https://github.com/afonsoburginski"
+  }
+}
