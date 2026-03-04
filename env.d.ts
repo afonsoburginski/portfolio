@@ -27,9 +27,5 @@ declare namespace NodeJS {
     MERCADOPAGO_CLIENT_ID?: string;
     MERCADOPAGO_CLIENT_SECRET?: string;
     MERCADOPAGO_WEBHOOK_SECRET?: string;
-
-    // Migração (temporário)
-    SUPABASE_URL?: string;
-    SUPABASE_SERVICE_ROLE_KEY?: string;
   }
 }

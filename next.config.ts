@@ -11,10 +11,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
-      // Vercel Blob (destino das imagens)
+      // Vercel Blob
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
-      // Supabase Storage (manter durante migração — remover após rodar migrate-supabase.ts)
-      { protocol: "https", hostname: "*.supabase.co" },
     ],
   },
   experimental: {
