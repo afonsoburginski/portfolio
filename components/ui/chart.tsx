@@ -76,6 +76,8 @@ interface ChartTooltipContentProps extends React.ComponentProps<"div"> {
   indicator?: "line" | "dot" | "dashed";
   nameKey?: string;
   labelKey?: string;
+  /** Stripped so Recharts' boolean is not passed to the DOM */
+  cursor?: unknown;
 }
 
 const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>(
@@ -96,6 +98,7 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContent
       itemSorter,
       nameKey,
       labelKey,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- strip Recharts cursor so it isn't passed to DOM
       cursor: _cursor,
       ...domProps
     },
