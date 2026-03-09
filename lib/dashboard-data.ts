@@ -195,6 +195,7 @@ export async function createRequestTask(payload: {
   status?: RequestTaskStatus;
   type?: RequestType;
   priority?: 1 | 2 | 3;
+  value?: number | null;
 }) {
   const [row] = await db
     .insert(request_tasks)
@@ -206,6 +207,7 @@ export async function createRequestTask(payload: {
       status: payload.status ?? "todo",
       type: payload.type ?? "feature",
       priority: payload.priority ?? 2,
+      value: payload.value ?? null,
     })
     .returning();
   return row;
@@ -220,6 +222,7 @@ export async function updateRequestTask(
     status: RequestTaskStatus;
     type: RequestType;
     priority: number;
+    value: number | null;
   }>
 ) {
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -229,6 +232,7 @@ export async function updateRequestTask(
   if (patch.status !== undefined) updates.status = patch.status;
   if (patch.type !== undefined) updates.type = patch.type;
   if (patch.priority !== undefined) updates.priority = patch.priority;
+  if (patch.value !== undefined) updates.value = patch.value;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [row] = await db.update(request_tasks).set(updates as any).where(eq(request_tasks.id, id)).returning();

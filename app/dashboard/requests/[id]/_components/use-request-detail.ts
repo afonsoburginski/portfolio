@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { Request } from "@/lib/schema";
+import type { Request, RequestTask } from "@/lib/schema";
 
 export type PaymentFeedback = "success" | "pending" | "failure" | null;
 
@@ -13,6 +13,7 @@ interface UseRequestDetailOptions {
 
 interface UseRequestDetailResult {
   req: Request | null;
+  tasks: RequestTask[];
   loading: boolean;
   paymentFeedback: PaymentFeedback;
   dismissFeedback: () => void;
@@ -37,6 +38,7 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
   const searchParams = useSearchParams();
 
   const [req, setReq] = useState<Request | null>(null);
+  const [tasks, setTasks] = useState<RequestTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [declining, setDeclining] = useState(false);
   const [paymentFeedback, setPaymentFeedback] = useState<PaymentFeedback>(null);
@@ -56,8 +58,10 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
     async function load() {
       const res = await fetch(`/api/requests/${id}`);
       if (!res.ok) return;
-      const request: Request = await res.json();
+      const data = await res.json();
+      const { request_tasks: reqTasks, ...request } = data as Request & { request_tasks?: RequestTask[] };
       setReq(request);
+      setTasks(reqTasks ?? []);
 
       if (request.status === "quoted" && request.mp_payment_id) {
         const status = await verifyPayment(id);
@@ -96,6 +100,7 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
 
   return {
     req,
+    tasks,
     loading,
     paymentFeedback,
     dismissFeedback: () => setPaymentFeedback(null),

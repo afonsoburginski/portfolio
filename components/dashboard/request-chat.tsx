@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { Loader2, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,11 +8,11 @@ import { FormattedMessageContent } from "@/components/dashboard/formatted-messag
 
 interface Comment {
   id: string;
-  requestId: string;
-  userId: string;
-  isAdmin: boolean;
+  request_id: string;
+  user_id: string;
+  is_admin: boolean;
   content: string;
-  createdAt: string;
+  created_at: string;
   optimistic?: boolean;
   user?: { name: string | null; image: string | null } | null;
 }
@@ -54,31 +54,42 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Track last count to scroll only when new messages arrive
+  const lastCountRef = useRef(0);
 
-  const fetchComments = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/comments?requestId=${requestId}`);
-      if (!res.ok) return;
-      const data: Comment[] = await res.json();
-      setComments(data);
-    } catch {
-      // ignore
-    } finally {
+  // SSE — uma conexão persistente, sem polling visível
+  useEffect(() => {
+    const es = new EventSource(`/api/comments/stream?requestId=${requestId}`);
+
+    es.onmessage = (e) => {
+      try {
+        const data: Comment[] = JSON.parse(e.data);
+        setComments((prev) => {
+          // Preserva optimistic messages que ainda não foram confirmadas
+          const optimistics = prev.filter((c) => c.optimistic);
+          const confirmed = data.filter(
+            (d) => !optimistics.some((o) => o.content === d.content && o.user_id === d.user_id)
+          );
+          return [...confirmed, ...optimistics];
+        });
+        setLoading(false);
+      } catch { /* ignore parse error */ }
+    };
+
+    es.onerror = () => {
       setLoading(false);
-    }
+    };
+
+    return () => es.close();
   }, [requestId]);
 
+  // Scroll para o fim APENAS quando o número de comentários confirmados aumenta
   useEffect(() => {
-    fetchComments();
-    intervalRef.current = setInterval(fetchComments, 3_000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [fetchComments]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const confirmedCount = comments.filter((c) => !c.optimistic).length;
+    if (confirmedCount > lastCountRef.current) {
+      lastCountRef.current = confirmedCount;
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [comments]);
 
   async function send() {
@@ -89,11 +100,11 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
 
     const optimisticComment: Comment = {
       id: tempId,
-      requestId,
-      userId: user.id,
-      isAdmin,
+      request_id: requestId,
+      user_id: user.id,
+      is_admin: isAdmin,
       content,
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       optimistic: true,
       user: { name: user.name ?? null, image: user.image ?? null },
     };
@@ -109,7 +120,8 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId, content }),
       });
-      await fetchComments();
+      // SSE vai receber o novo comentário automaticamente — remove o optimistic
+      setComments(prev => prev.filter(c => c.id !== tempId));
     } catch {
       setComments(prev => prev.filter(c => c.id !== tempId));
       setText(content);
@@ -123,8 +135,9 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     setDeletingId(id);
     try {
       await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
+      // SSE detecta a remoção automaticamente
     } catch {
-      fetchComments();
+      /* SSE vai resync */ 
     } finally {
       setDeletingId(null);
     }
@@ -137,7 +150,7 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     }
   }
 
-  const isMine = (c: Comment) => c.userId === user?.id;
+  const isMine = (c: Comment) => c.user_id === user?.id;
 
   return (
     <div className="flex flex-col rounded-xl border border-border/60 overflow-hidden bg-card">
@@ -177,15 +190,15 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   c.optimistic && "opacity-60"
                 )}
               >
-                <Avatar name={c.user?.name} isAdmin={c.isAdmin} />
+                <Avatar name={c.user?.name} isAdmin={c.is_admin} />
                 <div className={cn("flex flex-col gap-1 max-w-[75%]", mine ? "items-end" : "items-start")}>
                   <div className="flex items-center gap-1.5">
                     {!mine && (
                       <span className="text-[10px] font-medium text-muted-foreground">
-                        {c.user?.name ?? (c.isAdmin ? "Admin" : "Usuário")}
+                        {c.user?.name ?? (c.is_admin ? "Admin" : "Usuário")}
                       </span>
                     )}
-                    {c.isAdmin && (
+                    {c.is_admin && (
                       <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-purple-500/15 text-purple-400 uppercase tracking-wide">
                         admin
                       </span>
@@ -221,7 +234,7 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   </div>
 
                   <span className="text-[10px] text-muted-foreground/40">
-                    {c.optimistic ? "Enviando..." : formatTime(c.createdAt)}
+                    {c.optimistic ? "Enviando..." : formatTime(c.created_at)}
                   </span>
                 </div>
               </div>

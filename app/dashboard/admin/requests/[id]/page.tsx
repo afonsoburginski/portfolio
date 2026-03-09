@@ -298,14 +298,16 @@ export default function AdminRequestPlanningPage({
   useEffect(() => { formRef.current = form; }, [form]);
   useEffect(() => { statusRef.current = status; }, [status]);
 
-  const [newTitle,   setNewTitle]   = useState("");
-  const [newDueDate, setNewDueDate] = useState("");
-  const [adding,     setAdding]     = useState(false);
-  const [editingId,  setEditingId]  = useState<string | null>(null);
-  const [editDraft,  setEditDraft]  = useState("");
-  const [editDue,    setEditDue]    = useState("");
-  const [editType,   setEditType]   = useState<RequestType>("feature");
+  const [newTitle,    setNewTitle]    = useState("");
+  const [newDueDate,  setNewDueDate]  = useState("");
+  const [newValue,    setNewValue]    = useState("");
+  const [adding,      setAdding]      = useState(false);
+  const [editingId,   setEditingId]   = useState<string | null>(null);
+  const [editDraft,   setEditDraft]   = useState("");
+  const [editDue,     setEditDue]     = useState("");
+  const [editType,    setEditType]    = useState<RequestType>("feature");
   const [editPriority, setEditPriority] = useState<1 | 2 | 3>(2);
+  const [editValue,   setEditValue]   = useState("");
 
   const isAdmin = isAdminEmail(user?.email);
 
@@ -391,6 +393,7 @@ export default function AdminRequestPlanningPage({
     if (!request || !newTitle.trim()) return;
     setAdding(true);
     try {
+      const parsedValue = newValue ? parseFloat(newValue.replace(/[^0-9.,]/g, "").replace(",", ".")) : null;
       const t = await createRequestTask({
         request_id: request.id,
         title:      newTitle.trim(),
@@ -398,10 +401,12 @@ export default function AdminRequestPlanningPage({
         due_date:   newDueDate || null,
         type:       "feature",
         priority:   2,
+        value:      isNaN(parsedValue!) ? null : parsedValue,
       });
       setTasks((p) => [...p, t]);
       setNewTitle("");
       setNewDueDate("");
+      setNewValue("");
     } catch (e) { console.error(e); }
     finally { setAdding(false); }
   }
@@ -434,6 +439,21 @@ export default function AdminRequestPlanningPage({
   const profile    = request.profiles as { name?: string; email?: string } | undefined;
   const clientName = profile?.name ?? profile?.email ?? "—";
   const doneTasks  = tasks.filter((t) => t.status === "done").length;
+
+  const fmtBRL = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+
+  const parseBudget = (b: string | null) => {
+    if (!b) return 0;
+    const n = parseFloat(b.replace(/[^0-9.,]/g, "").replace(",", "."));
+    return isNaN(n) ? 0 : n;
+  };
+
+  const budgetBase  = parseBudget(form.budget);
+  const extrasTotal = tasks.reduce((acc, t) => acc + (t.value ?? 0), 0);
+  const totalGeral  = budgetBase + extrasTotal;
+  const paidValue   = (request.paid_at || request.paid_manually) ? totalGeral : 0;
+  const remaining   = totalGeral - paidValue;
 
   const fmtDate = (d: string | null) =>
     d ? new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : null;
@@ -862,12 +882,18 @@ export default function AdminRequestPlanningPage({
                             value={editDraft}
                             onChange={(e) => setEditDraft(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === "Enter")  patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority });
+                              if (e.key === "Enter") {
+                                const v = editValue ? parseFloat(editValue.replace(/[^0-9.,]/g, "").replace(",", ".")) : null;
+                                patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority, value: v && !isNaN(v) ? v : null });
+                              }
                               if (e.key === "Escape") setEditingId(null);
                             }}
                             className="flex-1 rounded border border-border bg-muted/30 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
                           />
-                          <button type="button" onClick={() => patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority })} className="text-muted-foreground hover:text-primary p-0.5">
+                          <button type="button" onClick={() => {
+                            const v = editValue ? parseFloat(editValue.replace(/[^0-9.,]/g, "").replace(",", ".")) : null;
+                            patchTask(task.id, { title: editDraft, due_date: editDue || null, type: editType, priority: editPriority, value: v && !isNaN(v) ? v : null });
+                          }} className="text-muted-foreground hover:text-primary p-0.5">
                             <Check className="size-3.5" />
                           </button>
                           <button type="button" onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground p-0.5">
@@ -904,12 +930,25 @@ export default function AdminRequestPlanningPage({
                             </SelectContent>
                           </Select>
                         </div>
-                        <input
-                          type="date"
-                          value={editDue}
-                          onChange={(e) => setEditDue(e.target.value)}
-                          className="w-full rounded border border-border bg-muted/30 px-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
-                        />
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="date"
+                            value={editDue}
+                            onChange={(e) => setEditDue(e.target.value)}
+                            className="flex-1 rounded border border-border bg-muted/30 px-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
+                          />
+                          <div className="relative flex items-center">
+                            <span className="absolute left-2 text-xs text-muted-foreground">R$</span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="w-24 rounded border border-border bg-muted/30 pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="flex items-start gap-2">
@@ -941,6 +980,11 @@ export default function AdminRequestPlanningPage({
                               </Button>
                               {PRIORITY_LABELS[task.priority ?? 2]}
                             </span>
+                            {task.value != null && task.value > 0 && (
+                              <span className="rounded bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">
+                                + {fmtBRL(task.value)}
+                              </span>
+                            )}
                             {due && (
                               <p className={`flex items-center gap-1 text-[10px] ${
                                 isDone ? "text-muted-foreground" : soon ? "text-amber-500" : "text-muted-foreground"
@@ -963,7 +1007,14 @@ export default function AdminRequestPlanningPage({
                         <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
-                            onClick={() => { setEditDraft(task.title); setEditDue(task.due_date ?? ""); setEditType(task.type); setEditPriority(task.priority as 1 | 2 | 3); setEditingId(task.id); }}
+                            onClick={() => {
+                              setEditDraft(task.title);
+                              setEditDue(task.due_date ?? "");
+                              setEditType(task.type);
+                              setEditPriority(task.priority as 1 | 2 | 3);
+                              setEditValue(task.value != null ? String(task.value) : "");
+                              setEditingId(task.id);
+                            }}
                             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                           >
                             <Pencil className="size-3" />
@@ -983,6 +1034,43 @@ export default function AdminRequestPlanningPage({
               })}
             </ul>
 
+            {/* resumo financeiro */}
+            {(budgetBase > 0 || extrasTotal > 0) && (
+              <div className="border-t border-border px-3 py-2.5 space-y-1.5 bg-muted/10">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Resumo financeiro</p>
+                {budgetBase > 0 && (
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Orçamento base</span>
+                    <span>{fmtBRL(budgetBase)}</span>
+                  </div>
+                )}
+                {extrasTotal > 0 && (
+                  <div className="flex justify-between text-xs text-emerald-400">
+                    <span>Extras ({tasks.filter(t => (t.value ?? 0) > 0).length} etapas)</span>
+                    <span>+ {fmtBRL(extrasTotal)}</span>
+                  </div>
+                )}
+                {(budgetBase > 0 || extrasTotal > 0) && (
+                  <div className="flex justify-between text-xs font-bold text-foreground border-t border-border/60 pt-1.5 mt-1">
+                    <span>Total</span>
+                    <span>{fmtBRL(totalGeral)}</span>
+                  </div>
+                )}
+                {totalGeral > 0 && (
+                  <div className="pt-1 space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-emerald-400">Pago</span>
+                      <span className="text-emerald-400 font-semibold">{fmtBRL(paidValue)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className={remaining > 0 ? "text-amber-400" : "text-muted-foreground"}>Restante</span>
+                      <span className={`font-semibold ${remaining > 0 ? "text-amber-400" : "text-muted-foreground"}`}>{fmtBRL(remaining)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* add task */}
             <div className="space-y-2 border-t border-border p-3">
               <input
@@ -999,16 +1087,27 @@ export default function AdminRequestPlanningPage({
                   onChange={(e) => setNewDueDate(e.target.value)}
                   className="flex-1 rounded-md border border-border bg-muted/30 px-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
                 />
-                <button
-                  type="button"
-                  onClick={addTask}
-                  disabled={adding || !newTitle.trim()}
-                  className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
-                >
-                  {adding ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
-                  Adicionar
-                </button>
+                <div className="relative flex items-center">
+                  <span className="absolute left-2 text-xs text-muted-foreground pointer-events-none">R$</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    value={newValue}
+                    onChange={(e) => setNewValue(e.target.value)}
+                    className="w-20 rounded-md border border-border bg-muted/30 pl-7 pr-2 py-1 text-xs outline-none [color-scheme:dark] focus:ring-1 focus:ring-primary"
+                  />
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={addTask}
+                disabled={adding || !newTitle.trim()}
+                className="flex w-full items-center justify-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
+              >
+                {adding ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                Adicionar etapa
+              </button>
             </div>
           </>
         )}

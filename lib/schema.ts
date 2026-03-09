@@ -101,6 +101,7 @@ export const request_tasks = sqliteTable("request_tasks", {
     enum: ["feature", "bug_fix", "integration", "maintenance", "redesign", "full_system", "other"],
   }).notNull().default("feature"),
   priority: integer("priority").notNull().default(2),
+  value: real("value"),
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
   updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
@@ -111,6 +112,34 @@ export const notifications = sqliteTable("notifications", {
   request_id: text("request_id").notNull().references(() => requests.id, { onDelete: "cascade" }),
   read: integer("read", { mode: "boolean" }).notNull().default(false),
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
+});
+
+// ——— Projects ———
+
+export const projects = sqliteTable("projects", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  long_description: text("long_description"),
+  category: text("category", {
+    enum: ["web", "mobile", "desktop", "full_system", "other"],
+  }).notNull().default("web"),
+  status: text("status", {
+    enum: ["development", "production", "archived"],
+  }).notNull().default("production"),
+  image: text("image"),
+  link: text("link"),
+  github: text("github"),
+  tags: text("tags").notNull().default("[]"),
+  tech_stack: text("tech_stack").notNull().default("[]"),
+  features_web: text("features_web").notNull().default("[]"),
+  features_desktop: text("features_desktop").notNull().default("[]"),
+  requirements: text("requirements"),
+  featured: integer("featured", { mode: "boolean" }).notNull().default(false),
+  sort_order: integer("sort_order").notNull().default(0),
+  created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
+  updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
 
 // ——— TypeScript types ———
@@ -124,3 +153,7 @@ export type Notification = typeof notifications.$inferSelect;
 export type RequestType = "feature" | "bug_fix" | "integration" | "maintenance" | "redesign" | "full_system" | "other";
 export type RequestStatus = "submitted" | "reviewing" | "quoted" | "approved" | "rejected" | "in_progress" | "delivered" | "cancelled";
 export type RequestTaskStatus = "todo" | "in_progress" | "done";
+
+export type Project = typeof projects.$inferSelect;
+export type ProjectCategory = "web" | "mobile" | "desktop" | "full_system" | "other";
+export type ProjectStatus = "development" | "production" | "archived";

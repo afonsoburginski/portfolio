@@ -21,7 +21,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const { markRequestRead } = useNotifications();
 
   const {
-    req, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
+    req, tasks, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
   } = useRequestDetail({ id, userId: user?.id });
 
   // Marca notificações deste pedido como lidas ao abrir a página
@@ -85,6 +85,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
       <RequestCard
         req={req}
+        tasks={tasks}
         isPaid={isPaid}
         hasQuote={hasQuote}
         declining={declining}

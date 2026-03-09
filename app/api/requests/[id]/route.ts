@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { requests, request_comments, user } from "@/lib/schema";
+import { requests, request_comments, request_tasks, user } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin-helpers";
 
@@ -35,17 +35,25 @@ export async function GET(
 
   if (!isOwner && !admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const comments = await db
-    .select({ comment: request_comments, user })
-    .from(request_comments)
-    .leftJoin(user, eq(request_comments.user_id, user.id))
-    .where(eq(request_comments.request_id, id))
-    .orderBy(request_comments.created_at);
+  const [comments, tasks] = await Promise.all([
+    db
+      .select({ comment: request_comments, user })
+      .from(request_comments)
+      .leftJoin(user, eq(request_comments.user_id, user.id))
+      .where(eq(request_comments.request_id, id))
+      .orderBy(request_comments.created_at),
+    db
+      .select()
+      .from(request_tasks)
+      .where(eq(request_tasks.request_id, id))
+      .orderBy(request_tasks.position),
+  ]);
 
   return NextResponse.json({
     ...rows[0].request,
     profiles: rows[0].user,
     request_comments: comments.map(c => ({ ...c.comment, profiles: c.user })),
+    request_tasks: tasks,
   });
 }
 

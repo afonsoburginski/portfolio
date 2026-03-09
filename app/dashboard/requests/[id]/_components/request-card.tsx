@@ -4,12 +4,13 @@ import {
   ArrowLeft, CalendarClock, CheckCircle2, Clock,
   CreditCard, DollarSign, Loader2, MessageSquare, Truck, XCircle,
 } from "lucide-react";
-import type { Request } from "@/lib/database.types";
+import type { Request, RequestTask } from "@/lib/database.types";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 
 interface Props {
   req: Request;
+  tasks: RequestTask[];
   isPaid: boolean;
   hasQuote: boolean;
   declining: boolean;
@@ -17,7 +18,7 @@ interface Props {
   onDecline: () => void;
 }
 
-export function RequestCard({ req, isPaid, hasQuote, declining, onStartPayment, onDecline }: Props) {
+export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPayment, onDecline }: Props) {
   const hasImage = !!req.image_url;
 
   return (
@@ -47,7 +48,7 @@ export function RequestCard({ req, isPaid, hasQuote, declining, onStartPayment, 
       {/* ── Painel direito ── */}
       <div className="flex flex-col flex-1 min-w-0">
         <RequestHeader req={req} isPaid={isPaid} showBackButton={!hasImage} />
-        {hasQuote && <QuoteBar req={req} />}
+        {hasQuote && <QuoteBar req={req} tasks={tasks} isPaid={isPaid} />}
 
         {/* Descrição */}
         <div className="px-5 py-4 flex-1 overflow-y-auto">
@@ -133,25 +134,77 @@ function RequestHeader({
   );
 }
 
-function QuoteBar({ req }: { req: Request }) {
+function QuoteBar({ req, tasks, isPaid }: { req: Request; tasks: RequestTask[]; isPaid: boolean }) {
+  const fmtBRL = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+
+  const parseBudget = (b: string | null | undefined) => {
+    if (!b) return 0;
+    const n = parseFloat(b.replace(/[^0-9.,]/g, "").replace(",", "."));
+    return isNaN(n) ? 0 : n;
+  };
+
+  const budgetBase  = parseBudget(req.budget);
+  const extrasTotal = tasks.reduce((acc, t) => acc + ((t.value as number | null) ?? 0), 0);
+  const totalGeral  = budgetBase + extrasTotal;
+  const paidValue   = isPaid ? totalGeral : 0;
+  const remaining   = totalGeral - paidValue;
+
   return (
-    <div className="flex items-center gap-5 border-b border-border/60 px-5 py-2.5 bg-muted/20 flex-wrap">
-      <MetaItem icon={<DollarSign className="size-3 text-purple-400" />} label="Valor">
-        <span className="text-sm font-bold">{req.budget}</span>
-      </MetaItem>
-      {req.payment_deadline && (
-        <MetaItem icon={<CalendarClock className="size-3 text-muted-foreground" />} label="Vencimento">
-          <span className="text-sm font-medium">
-            {new Date(req.payment_deadline).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-          </span>
+    <div className="border-b border-border/60 bg-muted/20">
+      {/* linha 1: valores */}
+      <div className="flex items-center gap-5 px-5 py-2.5 flex-wrap">
+        <MetaItem icon={<DollarSign className="size-3 text-purple-400" />} label="Orçamento base">
+          <span className="text-sm font-bold">{req.budget ?? "—"}</span>
         </MetaItem>
-      )}
-      {req.delivery_deadline && (
-        <MetaItem icon={<Truck className="size-3 text-muted-foreground" />} label="Entrega">
-          <span className="text-sm font-medium">
-            {new Date(req.delivery_deadline).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-          </span>
-        </MetaItem>
+
+        {extrasTotal > 0 && (
+          <MetaItem icon={<DollarSign className="size-3 text-emerald-400" />} label="Extras">
+            <span className="text-sm font-semibold text-emerald-400">+ {fmtBRL(extrasTotal)}</span>
+          </MetaItem>
+        )}
+
+        {extrasTotal > 0 && (
+          <MetaItem icon={<DollarSign className="size-3 text-foreground" />} label="Total">
+            <span className="text-sm font-bold">{fmtBRL(totalGeral)}</span>
+          </MetaItem>
+        )}
+
+        {req.payment_deadline && (
+          <MetaItem icon={<CalendarClock className="size-3 text-muted-foreground" />} label="Vencimento">
+            <span className="text-sm font-medium">
+              {new Date(req.payment_deadline).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+            </span>
+          </MetaItem>
+        )}
+
+        {req.delivery_deadline && (
+          <MetaItem icon={<Truck className="size-3 text-muted-foreground" />} label="Entrega">
+            <span className="text-sm font-medium">
+              {new Date(req.delivery_deadline).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+            </span>
+          </MetaItem>
+        )}
+      </div>
+
+      {/* linha 2: pago / restante */}
+      {totalGeral > 0 && (
+        <div className="flex items-center gap-4 px-5 pb-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="size-3 text-emerald-400" />
+            <span className="text-[11px] text-muted-foreground">Pago</span>
+            <span className={`text-xs font-semibold ${isPaid ? "text-emerald-400" : "text-muted-foreground/60"}`}>
+              {fmtBRL(paidValue)}
+            </span>
+          </div>
+          {remaining > 0 && (
+            <div className="flex items-center gap-1.5">
+              <CreditCard className="size-3 text-amber-400" />
+              <span className="text-[11px] text-muted-foreground">Restante</span>
+              <span className="text-xs font-semibold text-amber-400">{fmtBRL(remaining)}</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
