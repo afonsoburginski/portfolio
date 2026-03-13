@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requests } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { markPaymentApproved } from "@/lib/dashboard-data";
+import { isAdminEmail } from "@/lib/admin-helpers";
 
 const mp = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
@@ -26,8 +27,14 @@ export async function POST(req: NextRequest) {
     .where(eq(requests.id, requestId));
 
   if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
-  if (request.status !== "quoted") return NextResponse.json({ error: "Request is not payable" }, { status: 400 });
-  if (request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const isAdmin = isAdminEmail(session.user.email) || (session.user as { isAdmin?: boolean }).isAdmin === true;
+  if (!isAdmin && request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Pagamento já aprovado — retorna sucesso imediatamente (idempotente)
+  if (request.paid_at || request.status === "approved") {
+    return NextResponse.json({ status: "approved", alreadyApproved: true });
+  }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");

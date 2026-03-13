@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { requests } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { isAdminEmail } from "@/lib/admin-helpers";
 
 const mp = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
@@ -32,7 +33,9 @@ export async function POST(req: NextRequest) {
 
   if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
   if (request.status !== "quoted") return NextResponse.json({ error: "Request is not in quoted state" }, { status: 400 });
-  if (request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const isAdmin = isAdminEmail(session.user.email) || (session.user as { isAdmin?: boolean }).isAdmin === true;
+  if (!isAdmin && request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const amount = parseBudget(request.budget);
   if (amount <= 0) return NextResponse.json({ error: "Invalid budget amount" }, { status: 400 });

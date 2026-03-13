@@ -111,6 +111,12 @@ export async function cancelRequest(id: string) {
   return row;
 }
 
+export async function deleteRequest(id: string) {
+  await db.delete(request_comments).where(eq(request_comments.request_id, id));
+  await db.delete(request_tasks).where(eq(request_tasks.request_id, id));
+  await db.delete(requests).where(eq(requests.id, id));
+}
+
 export async function respondToQuote(
   id: string,
   status: "approved" | "rejected",

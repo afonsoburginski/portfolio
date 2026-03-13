@@ -135,6 +135,10 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
     setLocalRequests((prev) => prev.map((r) => r.id === updated.id ? { ...r, ...updated } : r));
   };
 
+  const handleDeleted = (id: string) => {
+    setLocalRequests((prev) => prev.filter((r) => r.id !== id));
+  };
+
   /* Substitui referência de requests para usar estado local */
   const requests = localRequests;
 
@@ -261,7 +265,7 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                   return (
                     <div key={req.id} className="border-b border-border/40 last:border-0">
                       {/* ── request row ── */}
-                      <RequestContextMenu request={req} onUpdated={handleUpdated}>
+                      <RequestContextMenu request={req} onUpdated={handleUpdated} onDeleted={handleDeleted}>
                       <div
                         className={`grid ${COLS} items-center gap-0 px-4 py-2.5 hover:bg-muted/30 transition-colors cursor-pointer`}
                         onClick={() => router.push(`/dashboard/admin/requests/${req.id}`)}

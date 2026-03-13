@@ -24,8 +24,9 @@ import {
   Eye,
   Banknote,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
-import { updateRequestAsAdmin } from "@/lib/dashboard-data";
+import { updateRequestAsAdmin, deleteRequest } from "@/lib/dashboard-data";
 import type { Request, RequestStatus } from "@/lib/database.types";
 
 /* ── Status config ─────────────────────────────────────── */
@@ -60,10 +61,11 @@ interface Props {
   request: Request;
   children: React.ReactNode;
   onUpdated?: (updated: Request) => void;
+  onDeleted?: (id: string) => void;
 }
 
 /* ── Component ─────────────────────────────────────────── */
-export function RequestContextMenu({ request, children, onUpdated }: Props) {
+export function RequestContextMenu({ request, children, onUpdated, onDeleted }: Props) {
   const router = useRouter();
 
   async function changeStatus(status: RequestStatus) {
@@ -76,6 +78,12 @@ export function RequestContextMenu({ request, children, onUpdated }: Props) {
     if (priority === request.priority) return;
     const updated = await updateRequestAsAdmin(request.id, { priority });
     onUpdated?.(updated);
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Deletar "${request.title}" permanentemente? Esta ação não pode ser desfeita.`)) return;
+    await deleteRequest(request.id);
+    onDeleted?.(request.id);
   }
 
   return (
@@ -146,6 +154,17 @@ export function RequestContextMenu({ request, children, onUpdated }: Props) {
             ))}
           </ContextMenuSubContent>
         </ContextMenuSub>
+
+        <ContextMenuSeparator />
+
+        {/* Deletar */}
+        <ContextMenuItem
+          className="gap-2 text-red-400 focus:text-red-400 focus:bg-red-500/10"
+          onSelect={handleDelete}
+        >
+          <Trash2 className="size-3.5" />
+          Deletar pedido
+        </ContextMenuItem>
 
         <ContextMenuSeparator />
 

@@ -11,6 +11,7 @@ import {
   createRequestTask,
   updateRequestTask,
   deleteRequestTask,
+  deleteRequest,
   getAllProfiles,
   changeRequestClient,
 } from "@/lib/dashboard-data";
@@ -273,6 +274,8 @@ export default function AdminRequestPlanningPage({
   const [saveError, setSaveError]      = useState<string | null>(null);
   const [changingClient, setChangingClient] = useState(false);
   const [sidebarOpen, setSidebarOpen]  = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting]           = useState(false);
 
   /* Em mobile inicia colapsada para priorizar o conteúdo; usuário expande se quiser */
   useEffect(() => {
@@ -422,6 +425,19 @@ export default function AdminRequestPlanningPage({
     setTasks((p) => p.filter((t) => t.id !== taskId));
   }
 
+  async function handleDelete() {
+    if (!request) return;
+    setDeleting(true);
+    try {
+      await deleteRequest(request.id);
+      window.location.href = "/dashboard/admin";
+    } catch (e) {
+      console.error(e);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
+
   /* guards */
   if (authLoading)
     return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>;
@@ -488,6 +504,42 @@ export default function AdminRequestPlanningPage({
             </Button>
             <span className="text-muted-foreground/40">/</span>
             <span className="truncate text-sm text-muted-foreground">{request.title}</span>
+
+            <div className="ml-auto flex items-center gap-2">
+              {confirmDelete ? (
+                <>
+                  <span className="text-xs text-destructive">Deletar permanentemente?</span>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="h-7 text-xs"
+                    disabled={deleting}
+                    onClick={handleDelete}
+                  >
+                    {deleting ? <Loader2 className="size-3 animate-spin" /> : "Confirmar"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-muted-foreground"
+                    disabled={deleting}
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-3.5" />
+                  Deletar pedido
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* ── HEADER: título ── */}

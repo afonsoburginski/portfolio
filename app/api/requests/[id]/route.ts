@@ -113,3 +113,22 @@ export async function PATCH(
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(row);
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const admin = userIsAdmin(session.user as { email?: string | null; isAdmin?: boolean });
+  if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  await db.delete(request_comments).where(eq(request_comments.request_id, id));
+  await db.delete(request_tasks).where(eq(request_tasks.request_id, id));
+  const [deleted] = await db.delete(requests).where(eq(requests.id, id)).returning();
+
+  if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ success: true });
+}
