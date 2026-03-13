@@ -51,7 +51,7 @@ export function DashboardSidebar() {
     /* --sidebar CSS var is neutral-950; no className override needed */
     <Sidebar collapsible="icon">
       {/* ── Header ───────────────────────────────────────── */}
-      <SidebarHeader className="h-14 px-3">
+      <SidebarHeader className="h-14">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent rounded-xl px-2">
