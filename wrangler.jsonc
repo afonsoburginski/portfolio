@@ -17,6 +17,16 @@
       "service": "portfolio"
     }
   ],
+  "routes": [
+    {
+      "pattern": "afonsodev.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.afonsodev.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {
     "NEXT_PUBLIC_APP_URL": "https://afonsodev.com"
   }
