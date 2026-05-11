@@ -2,7 +2,7 @@ declare namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_APP_URL?: string;
 
-    // Turso (SQLite)
+    // Turso/local libSQL fallback for development
     TURSO_DATABASE_URL: string;
     TURSO_AUTH_TOKEN?: string;
 
@@ -28,4 +28,8 @@ declare namespace NodeJS {
     MERCADOPAGO_CLIENT_SECRET?: string;
     MERCADOPAGO_WEBHOOK_SECRET?: string;
   }
+}
+
+interface CloudflareEnv {
+  DB: unknown;
 }

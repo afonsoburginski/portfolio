@@ -1,8 +1,11 @@
 import { createClient } from "@libsql/client";
 
-const TURSO_URL = "libsql://portfolio-db-vercel-icfg-p3drvchgdtqlfeaobcwrykoc.aws-us-east-1.turso.io";
-const TURSO_TOKEN =
-  "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NzI2Mzg5NDksImlkIjoiMDE5Y2I5ODMtY2QwMS03NTJlLTlkMzMtYzA3M2ZkYjk0ZmFhIiwicmlkIjoiYTlmOTI0OWItNmY4NS00OGQ2LThhM2ItNzI4MmM2MWEyOGY4In0.saNIT2LOyVSkEMBnzDHSMoyA-jtFckJmit6Pin7kYef87QQ_OybYUZOeYQATfQt-RMoDZ1XvIC8jPkjiv222CQ";
+const TURSO_URL = process.env.TURSO_DATABASE_URL;
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN ?? process.env.TURSO_DATABASE_URL_TURSO_AUTH_TOKEN;
+
+if (!TURSO_URL || !TURSO_TOKEN) {
+  throw new Error("TURSO_DATABASE_URL and TURSO_AUTH_TOKEN are required");
+}
 
 const client = createClient({ url: TURSO_URL, authToken: TURSO_TOKEN });
 

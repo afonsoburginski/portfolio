@@ -33,8 +33,15 @@ yarn-error.log*
 *client_secret*.json
 client_secret*.json
 
+# Database exports can contain auth/session tokens
+backups/
+
 # vercel
 .vercel
+
+# cloudflare / opennext
+.wrangler/
+.open-next/
 
 # typescript
 *.tsbuildinfo

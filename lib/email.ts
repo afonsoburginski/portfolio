@@ -1,9 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@afonsodev.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://afonsodev.com";
+
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(apiKey);
+}
 
 const TYPE_LABELS: Record<string, string> = {
   feature:     "Nova funcionalidade",
@@ -33,7 +37,7 @@ export async function sendNewRequestNotification(params: {
   const { requestId, title, description, type, priority, clientName, clientEmail } = params;
   const adminUrl = `${APP_URL}/dashboard/admin/requests/${requestId}`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "Afonsodev <noreply@afonsodev.com>",
     to: ADMIN_EMAIL,
     subject: `📥 Novo pedido: ${title}`,
