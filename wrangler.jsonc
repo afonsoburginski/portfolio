@@ -29,5 +29,12 @@
   ],
   "vars": {
     "NEXT_PUBLIC_APP_URL": "https://afonsodev.com"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "portfolio-db",
+      "database_id": "b8e9f078-205b-44c1-b73d-fca0de6c0529"
+    }
+  ]
 }
