@@ -8,7 +8,23 @@ This project is prepared for Cloudflare Workers + D1 through OpenNext.
 npx wrangler login
 ```
 
+If you are running this from a non-interactive terminal, create a Cloudflare API token and export it first:
+
+```bash
+export CLOUDFLARE_API_TOKEN="..."
+```
+
 ## 2. Create D1 Database
+
+Automated path:
+
+```bash
+npm run d1:setup
+```
+
+This creates/reuses `portfolio-db`, patches `wrangler.jsonc` with the real `database_id`, and imports the local `dump.d1.sql`.
+
+Manual path:
 
 ```bash
 npx wrangler d1 create portfolio-db
