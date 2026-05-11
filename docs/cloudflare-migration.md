@@ -26,6 +26,8 @@ Copy the returned `database_id` into `wrangler.jsonc`:
 ]
 ```
 
+Current deploy note: `wrangler.jsonc` intentionally does not include the D1 binding until the real `database_id` is available. This lets the public portfolio deploy first. After creating D1, copy the `d1_databases` block from `wrangler.d1.example.jsonc` into `wrangler.jsonc`.
+
 ## 3. Import Current Data
 
 The current Turso data was exported to:
