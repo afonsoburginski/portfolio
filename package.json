@@ -5,13 +5,14 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare deploy",
-    "d1:import": "wrangler d1 execute portfolio-db --remote --file backups/turso-export-2026-05-10T23-17-26-488Z/dump.d1.sql"
+    "d1:import": "wrangler d1 execute portfolio-db --remote --file backups/turso-export-2026-05-10T23-17-26-488Z/dump.d1.sql",
+    "next:build": "next build"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.3",
