@@ -16,8 +16,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
-      // Vercel Blob
-      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      // Cloudflare R2
+      { protocol: "https", hostname: "pub-*.r2.dev" },
+      { protocol: "https", hostname: "cdn.afonsodev.com" },
     ],
   },
   experimental: {

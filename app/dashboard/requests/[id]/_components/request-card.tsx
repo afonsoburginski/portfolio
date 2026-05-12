@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import type { Request, RequestTask } from "@/lib/database.types";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
+import { ImageUpload } from "@/components/dashboard/image-upload";
+import { updateRequestImage } from "@/lib/dashboard-data";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 
 interface Props {
@@ -16,9 +18,10 @@ interface Props {
   declining: boolean;
   onStartPayment: () => void;
   onDecline: () => void;
+  onImageChange?: (url: string | null) => void;
 }
 
-export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPayment, onDecline }: Props) {
+export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPayment, onDecline, onImageChange }: Props) {
   const hasImage = !!req.image_url;
 
   return (
@@ -55,6 +58,21 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
           <SectionLabel>Descrição</SectionLabel>
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{req.description}</p>
         </div>
+
+        {/* Upload de imagem */}
+        {onImageChange && (
+          <div className="border-t border-border/60 px-5 py-4">
+            <SectionLabel>Imagem de referência</SectionLabel>
+            <ImageUpload
+              value={req.image_url}
+              onChange={async (url) => {
+                await updateRequestImage(req.id, url);
+                onImageChange(url);
+              }}
+              folder="requests"
+            />
+          </div>
+        )}
 
         {/* Observações do admin */}
         {req.admin_notes && (

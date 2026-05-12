@@ -29,13 +29,20 @@
   ],
   "vars": {
     "NEXT_PUBLIC_APP_URL": "https://afonsodev.com",
-    "BETTER_AUTH_URL": "https://afonsodev.com"
+    "BETTER_AUTH_URL": "https://afonsodev.com",
+    "R2_PUBLIC_URL": "https://cdn.afonsodev.com"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "portfolio-db",
       "database_id": "b8e9f078-205b-44c1-b73d-fca0de6c0529"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "portfolio"
     }
   ]
 }

@@ -9,6 +9,7 @@ import {
   getRequestTasks,
   getRequestStages,
   updateRequestAsAdmin,
+  updateRequestImage,
   createRequestTask,
   updateRequestTask,
   deleteRequestTask,
@@ -16,6 +17,7 @@ import {
   getAllProfiles,
   changeRequestClient,
 } from "@/lib/dashboard-data";
+import { ImageUpload } from "@/components/dashboard/image-upload";
 import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Profile, Request, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
@@ -50,6 +52,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Flag,
+  ImageIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -813,6 +816,17 @@ export default function AdminRequestPlanningPage({
                   placeholder="Observações enviadas junto com o orçamento..."
                   rows={3}
                   className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-0"
+                />
+              </CFRow>
+
+              <CFRow icon={ImageIcon} label="Imagem">
+                <ImageUpload
+                  value={request.image_url}
+                  onChange={async (url) => {
+                    await updateRequestImage(request.id, url);
+                    setRequest((r) => r ? { ...r, image_url: url } : r);
+                  }}
+                  folder="requests"
                 />
               </CFRow>
 

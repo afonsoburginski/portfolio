@@ -468,11 +468,9 @@ export default function AdminPage() {
   }, [user, isAdmin]);
 
   function toggleCard(key: keyof typeof cardVisibility) {
-    setCardVisibility((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
-      setUserPreference("admin_dashboard_cards", JSON.stringify(next)).catch(console.error);
-      return next;
-    });
+    const next = { ...cardVisibility, [key]: !cardVisibility[key] };
+    setCardVisibility(next);
+    setUserPreference("admin_dashboard_cards", JSON.stringify(next)).catch(console.error);
   }
   const hiddenCount = Object.values(cardVisibility).filter((v) => !v).length;
 

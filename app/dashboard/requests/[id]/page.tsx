@@ -91,6 +91,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
         declining={declining}
         onStartPayment={startPayment}
         onDecline={decline}
+        onImageChange={(url) => updateReq({ image_url: url })}
       />
 
       <RequestChat requestId={req.id} isAdmin={false} />

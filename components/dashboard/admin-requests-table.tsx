@@ -162,7 +162,7 @@ export function AdminRequestsTable({ requests: initialRequests }: { requests: Re
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => router.push(`/dashboard/admin/requests/${req.id}`)}
                 >
-                  {({ cell }) => <TableCell cell={cell} />}
+                  {({ cell }) => <TableCell key={cell.id} cell={cell} />}
                 </TableRow>
               </RequestContextMenu>
             );

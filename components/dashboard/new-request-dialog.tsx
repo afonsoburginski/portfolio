@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createRequest, uploadRequestImage } from "@/lib/dashboard-data";
+import { createRequest, updateRequestImage } from "@/lib/dashboard-data";
 import {
   Dialog,
   DialogContent,
@@ -293,7 +293,12 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
         try {
           const fd = new FormData();
           fd.append("file", form.imageFile);
-          await uploadRequestImage(request.id, fd);
+          fd.append("folder", "requests");
+          const res = await fetch("/api/upload", { method: "POST", body: fd });
+          if (res.ok) {
+            const { url } = await res.json();
+            await updateRequestImage(request.id, url);
+          }
         } catch (imgErr) {
           console.warn("Image upload failed (request was created):", imgErr);
         }

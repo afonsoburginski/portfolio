@@ -3,7 +3,6 @@
 import { db } from "./db";
 import { requests, request_comments, request_tasks, request_stages, user_preferences, notifications, user } from "./schema";
 import { eq, desc, inArray, and, sql } from "drizzle-orm";
-import { put } from "@vercel/blob";
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import type { RequestStatus, RequestType, RequestTaskStatus } from "./schema";
@@ -151,21 +150,25 @@ export async function getAllProfiles() {
 
 // ——— Image upload ———
 
-export async function uploadRequestImage(requestId: string, formData: FormData) {
+export async function updateRequestImage(requestId: string, imageUrl: string | null) {
   const u = await currentUser();
   if (!u) throw new Error("Not authenticated");
-  const file = formData.get("file") as File;
-  if (!file) throw new Error("No file provided");
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const { url } = await put(`request-images/${requestId}/image.${ext}`, file, {
-    access: "public",
-    addRandomSuffix: false,
-  });
-  await db
-    .update(requests)
-    .set({ image_url: url, updated_at: new Date().toISOString() })
-    .where(and(eq(requests.id, requestId), eq(requests.user_id, u.id)));
-  return url;
+  const isAdm = isAdmin(u);
+
+  // Admin pode atualizar qualquer request, usuário só os próprios
+  if (isAdm) {
+    await db
+      .update(requests)
+      .set({ image_url: imageUrl, updated_at: new Date().toISOString() })
+      .where(eq(requests.id, requestId));
+  } else {
+    await db
+      .update(requests)
+      .set({ image_url: imageUrl, updated_at: new Date().toISOString() })
+      .where(and(eq(requests.id, requestId), eq(requests.user_id, u.id)));
+  }
+
+  return imageUrl;
 }
 
 // ——— Tasks ———
