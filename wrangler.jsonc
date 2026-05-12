@@ -28,7 +28,8 @@
     }
   ],
   "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://afonsodev.com"
+    "NEXT_PUBLIC_APP_URL": "https://afonsodev.com",
+    "BETTER_AUTH_URL": "https://afonsodev.com"
   },
   "d1_databases": [
     {

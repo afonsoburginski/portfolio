@@ -14,11 +14,12 @@ export const auth = betterAuth({
     },
   }),
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   trustedOrigins: [
     "https://www.afonsodev.com",
     "https://afonsodev.com",
     "http://localhost:3000",
+    process.env.BETTER_AUTH_URL,
     process.env.NEXT_PUBLIC_APP_URL,
   ].filter((o): o is string => Boolean(o)),
   socialProviders: {
