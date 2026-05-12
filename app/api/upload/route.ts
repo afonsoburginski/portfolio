@@ -3,8 +3,6 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { isAdminEmail } from "@/lib/admin-helpers";
 
-export const runtime = "edge";
-
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL ?? "https://cdn.afonsodev.com";
 
 export async function POST(req: Request) {
