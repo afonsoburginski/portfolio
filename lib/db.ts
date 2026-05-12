@@ -1,40 +1,16 @@
-import { drizzle as drizzleD1 } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/d1";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import * as schema from "./schema";
 
-type Database = ReturnType<typeof drizzleD1<typeof schema>>;
+type Database = ReturnType<typeof drizzle<typeof schema>>;
 
 let _db: Database | null = null;
 
-function getCloudflareD1(): unknown {
-  try {
-    // Imported lazily so the app still runs in normal Node/Next dev without OpenNext context.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require("@opennextjs/cloudflare");
-    return getCloudflareContext({ async: false })?.env?.DB;
-  } catch {
-    return undefined;
-  }
-}
-
 function getDb(): Database {
   if (_db) return _db;
-
-  const d1 = getCloudflareD1();
-  if (d1) {
-    _db = drizzleD1(d1 as never, { schema });
-    return _db;
-  }
-
-  const url = process.env.TURSO_DATABASE_URL;
-  if (!url) throw new Error("TURSO_DATABASE_URL is not set and Cloudflare D1 binding DB was not found");
-  const requireFn = eval("require") as NodeRequire;
-  const { drizzle: drizzleLibsql } = requireFn("drizzle-orm/libsql");
-  const { createClient } = requireFn("@libsql/client");
-  const client = createClient({
-    url,
-    authToken: process.env.TURSO_AUTH_TOKEN || process.env.TURSO_DATABASE_URL_TURSO_AUTH_TOKEN || undefined,
-  });
-  _db = drizzleLibsql(client, { schema }) as unknown as Database;
+  const d1 = getCloudflareContext({ async: false }).env.DB;
+  if (!d1) throw new Error("Cloudflare D1 binding 'DB' not found. Run via `wrangler dev` or `next dev` with initOpenNextCloudflareForDev().");
+  _db = drizzle(d1, { schema });
   return _db;
 }
 

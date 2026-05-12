@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+void initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -29,7 +32,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  serverExternalPackages: ["@libsql/client"],
 };
 
 export default nextConfig;
