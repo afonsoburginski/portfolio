@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 // ——— Better Auth managed tables (camelCase as required by Better Auth adapter) ———
@@ -124,6 +124,15 @@ export const request_stages = sqliteTable("request_stages", {
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
   updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
+
+export const user_preferences = sqliteTable("user_preferences", {
+  user_id: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),
+  value: text("value").notNull(),
+  updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.user_id, t.key] }),
+}));
 
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

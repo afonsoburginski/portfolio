@@ -247,6 +247,7 @@ body {
 html {
   scrollbar-width: thin;
   scrollbar-color: #4a4a4a #0a0a0a;
+  background-color: oklch(0.145 0 0);
 }
 
 /* WebKit (Chrome, Edge, Safari) */

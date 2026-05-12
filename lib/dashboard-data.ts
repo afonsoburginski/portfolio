@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "./db";
-import { requests, request_comments, request_tasks, request_stages, notifications, user } from "./schema";
+import { requests, request_comments, request_tasks, request_stages, user_preferences, notifications, user } from "./schema";
 import { eq, desc, inArray, and, sql } from "drizzle-orm";
 import { put } from "@vercel/blob";
 import { auth } from "./auth";
@@ -199,6 +199,29 @@ export async function getRequestStages(requestId: string) {
     .from(request_stages)
     .where(eq(request_stages.request_id, requestId))
     .orderBy(request_stages.position);
+}
+
+export async function getUserPreference(key: string): Promise<string | null> {
+  const u = await currentUser();
+  if (!u) return null;
+  const [row] = await db
+    .select({ value: user_preferences.value })
+    .from(user_preferences)
+    .where(and(eq(user_preferences.user_id, u.id), eq(user_preferences.key, key)))
+    .limit(1);
+  return row?.value ?? null;
+}
+
+export async function setUserPreference(key: string, value: string): Promise<void> {
+  const u = await currentUser();
+  if (!u) throw new Error("Not authenticated");
+  await db
+    .insert(user_preferences)
+    .values({ user_id: u.id, key, value })
+    .onConflictDoUpdate({
+      target: [user_preferences.user_id, user_preferences.key],
+      set: { value, updated_at: sql`(datetime('now'))` },
+    });
 }
 
 export async function createRequestTask(payload: {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
-import { getAllRequests } from "@/lib/dashboard-data";
+import { getAllRequests, getUserPreference, setUserPreference } from "@/lib/dashboard-data";
 import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Request, RequestStatus } from "@/lib/database.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,9 @@ import {
   Loader2, ShieldCheck, FileText, DollarSign,
   Rocket, Clock, Plus, List, Table2, GanttChart,
   ChevronDown, ChevronRight, Circle, CheckCircle2, Timer, Filter,
+  Eye, EyeOff,
 } from "lucide-react";
+import { DropdownMenuCheckboxItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { getRequestTasks, updateRequestTask, getRequestsProgress } from "@/lib/dashboard-data";
 import type { RequestTask } from "@/lib/database.types";
 import { AdminRequestsTable } from "@/components/dashboard/admin-requests-table";
@@ -259,7 +261,10 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
                   const tasks      = tasksByReq[req.id] ?? [];
                   const hasFetched = req.id in tasksByReq;
                   const prog       = progressMap[req.id];
-                  const pct        = prog && prog.total > 0 ? Math.round((prog.done / prog.total) * 100) : 0;
+                  /* Se está entregue (delivered) e não tem etapas, mostra 100% */
+                  const pct        = req.status === "delivered" && (!prog || prog.total === 0)
+                    ? 100
+                    : prog && prog.total > 0 ? Math.round((prog.done / prog.total) * 100) : 0;
                   const doneTasks  = prog?.done ?? 0;
 
                   return (
@@ -438,16 +443,38 @@ export default function AdminPage() {
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState<RequestStatus | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [cardVisibility, setCardVisibility] = useState({
+    stats: true,
+    revenue: true,
+    revenueMonth: true,
+  });
 
   const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    getAllRequests()
-      .then(setRequests)
+    Promise.all([getAllRequests(), getUserPreference("admin_dashboard_cards")])
+      .then(([reqs, pref]) => {
+        setRequests(reqs);
+        if (pref) {
+          try {
+            const parsed = JSON.parse(pref) as Partial<typeof cardVisibility>;
+            setCardVisibility((prev) => ({ ...prev, ...parsed }));
+          } catch {}
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user, isAdmin]);
+
+  function toggleCard(key: keyof typeof cardVisibility) {
+    setCardVisibility((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      setUserPreference("admin_dashboard_cards", JSON.stringify(next)).catch(console.error);
+      return next;
+    });
+  }
+  const hiddenCount = Object.values(cardVisibility).filter((v) => !v).length;
 
   if (authLoading)
     return (
@@ -510,9 +537,8 @@ export default function AdminPage() {
       mom: deltaLabel(totalThisMonth, totalLastMonth),
       momUp: totalThisMonth >= totalLastMonth,
       icon: FileText,
-      iconBg: "bg-neutral-100 dark:bg-neutral-800",
       iconColor: "text-neutral-600 dark:text-neutral-400",
-      barColor: "bg-neutral-400/30",
+      accent: "border-l-neutral-500/60",
     },
     {
       label: "Novas (aguardando análise)",
@@ -521,9 +547,8 @@ export default function AdminPage() {
       mom: deltaLabel(submittedThisMonth, submittedLastMonth),
       momUp: submittedThisMonth >= submittedLastMonth,
       icon: Clock,
-      iconBg: "bg-blue-100 dark:bg-blue-950/50",
       iconColor: "text-blue-600 dark:text-blue-400",
-      barColor: "bg-blue-400/40",
+      accent: "border-l-blue-500/60",
     },
     {
       label: "Orçadas (aguardando cliente)",
@@ -532,9 +557,8 @@ export default function AdminPage() {
       mom: deltaLabel(quotedThisMonth, quotedLastMonth),
       momUp: quotedThisMonth >= quotedLastMonth,
       icon: DollarSign,
-      iconBg: "bg-purple-100 dark:bg-purple-950/50",
       iconColor: "text-purple-600 dark:text-purple-400",
-      barColor: "bg-purple-400/40",
+      accent: "border-l-purple-500/60",
     },
     {
       label: "Em progresso",
@@ -543,9 +567,8 @@ export default function AdminPage() {
       mom: `Concluídas: ${deltaLabel(deliveredThisMonth, deliveredLastMonth)} vs mês anterior`,
       momUp: deliveredThisMonth >= deliveredLastMonth,
       icon: Rocket,
-      iconBg: "bg-orange-100 dark:bg-orange-950/50",
       iconColor: "text-orange-600 dark:text-orange-400",
-      barColor: "bg-orange-400/40",
+      accent: "border-l-orange-500/60",
     },
   ];
 
@@ -556,63 +579,84 @@ export default function AdminPage() {
         <div className="flex size-9 items-center justify-center rounded-lg border bg-muted">
           <ShieldCheck className="size-4 text-muted-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-semibold">Admin</h1>
           <p className="text-sm text-muted-foreground">
             Gerencie solicitações, especifique e envie orçamentos.
           </p>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 h-8">
+              {hiddenCount > 0 ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              Cards
+              {hiddenCount > 0 && (
+                <span className="text-[10px] text-muted-foreground/70">({hiddenCount} oculto{hiddenCount > 1 ? "s" : ""})</span>
+              )}
+              <ChevronDown className="size-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">Exibir cards</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem checked={cardVisibility.stats} onCheckedChange={() => toggleCard("stats")}>
+              Cards de estatísticas
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={cardVisibility.revenue} onCheckedChange={() => toggleCard("revenue")}>
+              Receita — últimos 12 meses
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={cardVisibility.revenueMonth} onCheckedChange={() => toggleCard("revenueMonth")}>
+              Receita — mês atual
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* stats cards */}
+      {cardVisibility.stats && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <Card
+          <div
             key={s.label}
-            className="overflow-hidden border-border/80 bg-card hover:border-border hover:shadow-md/50 transition-all duration-200"
+            className={`relative flex flex-col gap-2 rounded-xl border border-l-[3px] bg-card px-4 py-3 transition-all hover:shadow-sm ${s.accent}`}
           >
-            <CardContent className="p-0">
-              <div className="relative flex flex-col gap-4 p-5">
-                <div className={`absolute left-0 top-5 bottom-5 w-1 rounded-r-full ${s.barColor}`} aria-hidden />
-                <div className="flex items-start justify-between gap-3 pl-1">
-                  <div className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${s.iconBg} ${s.iconColor}`}>
-                    <s.icon className="size-5" strokeWidth={2} />
-                  </div>
-                  <span className={`text-3xl font-bold tabular-nums tracking-tight ${s.iconColor}`}>
-                    {s.value}
-                  </span>
-                </div>
-                <div className="space-y-1.5 pl-1">
-                  <CardTitle className="text-sm font-semibold text-foreground">
-                    {s.label}
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {s.description}
-                  </p>
-                  <p className={`text-[11px] font-medium ${s.momUp ? "text-emerald-500 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
-                    {s.mom}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+              <s.icon className={`size-3.5 shrink-0 ${s.iconColor}`} strokeWidth={2} />
+            </div>
+            <div className="flex items-end justify-between gap-2">
+              <span className={`text-2xl font-bold tabular-nums leading-none ${s.iconColor}`}>
+                {s.value}
+              </span>
+              <span className={`text-[10px] font-medium ${s.momUp ? "text-emerald-500 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+                {s.mom}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground/70 leading-snug">{s.description}</p>
+          </div>
         ))}
       </div>
+      )}
 
       {/* Revenue — linha 75% + radar por tipo 25% */}
+      {(cardVisibility.revenue || cardVisibility.revenueMonth) && (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        <Card className="border-border/80 bg-card lg:col-span-3">
-          <CardHeader className="border-b border-border/50 pb-3">
-            <CardTitle className="text-sm font-semibold">Receita — últimos 12 meses</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <RevenueChart requests={requests} months={12} />
-          </CardContent>
-        </Card>
-        <div className="min-h-[200px] lg:min-h-0">
-          <RevenueMonthCard requests={requests} />
-        </div>
+        {cardVisibility.revenue && (
+          <Card className={`border-border/80 bg-card ${cardVisibility.revenueMonth ? "lg:col-span-3" : "lg:col-span-4"}`}>
+            <CardHeader className="border-b border-border/50 pb-3">
+              <CardTitle className="text-sm font-semibold">Receita — últimos 12 meses</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <RevenueChart requests={requests} months={12} />
+            </CardContent>
+          </Card>
+        )}
+        {cardVisibility.revenueMonth && (
+          <div className={`min-h-[200px] lg:min-h-0 ${cardVisibility.revenue ? "" : "lg:col-span-4"}`}>
+            <RevenueMonthCard requests={requests} />
+          </div>
+        )}
       </div>
+      )}
 
       {/* toolbar — sticky abaixo do header do layout (h-14 = 56px) */}
       <div className="sticky top-14 z-20 -mx-6 flex flex-wrap items-center justify-between gap-3 border-b border-border/50 bg-background/95 px-6 py-3 backdrop-blur-sm">

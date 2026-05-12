@@ -7,12 +7,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/dashboard/new", destination: "/dashboard", permanent: false },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.afonsodev.com" }],
-        destination: "https://afonsodev.com/:path*",
-        permanent: true,
-      },
     ];
   },
   images: {
