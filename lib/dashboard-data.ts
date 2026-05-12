@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "./db";
-import { requests, request_comments, request_tasks, notifications, user } from "./schema";
+import { requests, request_comments, request_tasks, request_stages, notifications, user } from "./schema";
 import { eq, desc, inArray, and, sql } from "drizzle-orm";
 import { put } from "@vercel/blob";
 import { auth } from "./auth";
@@ -191,6 +191,14 @@ export async function getRequestTasks(requestId: string) {
     .from(request_tasks)
     .where(eq(request_tasks.request_id, requestId))
     .orderBy(request_tasks.position);
+}
+
+export async function getRequestStages(requestId: string) {
+  return db
+    .select()
+    .from(request_stages)
+    .where(eq(request_stages.request_id, requestId))
+    .orderBy(request_stages.position);
 }
 
 export async function createRequestTask(payload: {

@@ -5,6 +5,7 @@ export type {
   Request,
   RequestComment,
   RequestTask,
+  RequestStage,
   RequestType,
   RequestStatus,
   RequestTaskStatus,

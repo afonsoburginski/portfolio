@@ -7,6 +7,7 @@ import { LoginOverlay } from "@/components/dashboard/login-overlay";
 import {
   getRequestById,
   getRequestTasks,
+  getRequestStages,
   updateRequestAsAdmin,
   createRequestTask,
   updateRequestTask,
@@ -16,7 +17,7 @@ import {
   changeRequestClient,
 } from "@/lib/dashboard-data";
 import { isAdminEmail } from "@/lib/admin-helpers";
-import type { Profile, Request, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
+import type { Profile, Request, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -268,6 +269,7 @@ export default function AdminRequestPlanningPage({
   const { user, loading: authLoading } = useAuth();
   const [request, setRequest]          = useState<Request | null>(null);
   const [tasks,   setTasks]            = useState<RequestTask[]>([]);
+  const [stages,  setStages]           = useState<RequestStage[]>([]);
   const [profiles, setProfiles]        = useState<Profile[]>([]);
   const [loading, setLoading]          = useState(true);
   const [saving,  setSaving]           = useState(false);
@@ -316,8 +318,8 @@ export default function AdminRequestPlanningPage({
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    Promise.all([getRequestById(id), getRequestTasks(id), getAllProfiles()])
-      .then(([req, list, profileList]) => {
+    Promise.all([getRequestById(id), getRequestTasks(id), getRequestStages(id), getAllProfiles()])
+      .then(([req, list, stageList, profileList]) => {
         if (req) {
           setRequest(req);
           setForm({
@@ -333,6 +335,7 @@ export default function AdminRequestPlanningPage({
           setStatus(req.status);
         }
         setTasks(list ?? []);
+        setStages(stageList ?? []);
         setProfiles(profileList);
       })
       .catch(console.error)
@@ -465,11 +468,16 @@ export default function AdminRequestPlanningPage({
     return isNaN(n) ? 0 : n;
   };
 
-  const budgetBase  = parseBudget(form.budget);
-  const extrasTotal = tasks.reduce((acc, t) => acc + (t.value ?? 0), 0);
-  const totalGeral  = budgetBase + extrasTotal;
-  const paidValue   = (request.paid_at || request.paid_manually) ? totalGeral : 0;
-  const remaining   = totalGeral - paidValue;
+  const budgetBase     = parseBudget(form.budget);
+  const stagesExtras   = stages.filter(s => s.is_extra).reduce((acc, s) => acc + s.amount, 0);
+  const stagesPaid     = stages.filter(s => s.status === "paid").reduce((acc, s) => acc + s.amount, 0);
+  const tasksExtras    = tasks.reduce((acc, t) => acc + (t.value ?? 0), 0);
+  const extrasTotal    = stages.length > 0 ? stagesExtras : tasksExtras;
+  const totalGeral     = budgetBase + extrasTotal;
+  const paidValue      = stages.length > 0
+    ? stagesPaid
+    : ((request.paid_at || request.paid_manually) ? totalGeral : 0);
+  const remaining      = totalGeral - paidValue;
 
   const fmtDate = (d: string | null) =>
     d ? new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : null;
@@ -1098,7 +1106,7 @@ export default function AdminRequestPlanningPage({
                 )}
                 {extrasTotal > 0 && (
                   <div className="flex justify-between text-xs text-emerald-400">
-                    <span>Extras ({tasks.filter(t => (t.value ?? 0) > 0).length} etapas)</span>
+                    <span>Extras ({stages.length > 0 ? stages.filter(s => s.is_extra).length : tasks.filter(t => (t.value ?? 0) > 0).length} {stages.length > 0 ? "adicional(is)" : "etapas"})</span>
                     <span>+ {fmtBRL(extrasTotal)}</span>
                   </div>
                 )}
