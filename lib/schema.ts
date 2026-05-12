@@ -106,6 +106,25 @@ export const request_tasks = sqliteTable("request_tasks", {
   updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
 
+export const request_stages = sqliteTable("request_stages", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  request_id: text("request_id").notNull().references(() => requests.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  amount: real("amount").notNull(),
+  position: real("position").notNull().default(0),
+  is_extra: integer("is_extra", { mode: "boolean" }).notNull().default(false),
+  status: text("status", { enum: ["pending", "paid", "cancelled"] }).notNull().default("pending"),
+  paid_at: text("paid_at"),
+  paid_method: text("paid_method", { enum: ["mp", "manual"] }),
+  mp_payment_id: text("mp_payment_id"),
+  work_status: text("work_status", { enum: ["not_started", "in_progress", "done"] }).notNull().default("not_started"),
+  started_at: text("started_at"),
+  due_date: text("due_date"),
+  finished_at: text("finished_at"),
+  created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
+  updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
+});
+
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   user_id: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -148,6 +167,7 @@ export type User = typeof user.$inferSelect;
 export type Request = typeof requests.$inferSelect & { user?: User | null; profiles?: User | null };
 export type RequestComment = typeof request_comments.$inferSelect & { user?: User | null; profiles?: User | null };
 export type RequestTask = typeof request_tasks.$inferSelect;
+export type RequestStage = typeof request_stages.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
 export type RequestType = "feature" | "bug_fix" | "integration" | "maintenance" | "redesign" | "full_system" | "other";
