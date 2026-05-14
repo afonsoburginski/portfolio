@@ -24,6 +24,10 @@ jobs:
           node-version: 20
           cache: npm
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - run: npm ci
 
       - name: Build (OpenNext + Cloudflare)
