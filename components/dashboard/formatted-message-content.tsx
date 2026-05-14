@@ -11,6 +11,34 @@ function isMarkdownTable(lines: string[]): boolean {
   return lines.every((l) => l.includes("|"));
 }
 
+function renderInlineMarkdown(text: string, keyPrefix: string) {
+  const nodes: React.ReactNode[] = [];
+  const linkPattern = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = linkPattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    nodes.push(
+      <a
+        key={`${keyPrefix}-link-${match.index}`}
+        href={match[2]}
+        target="_blank"
+        rel="noreferrer"
+        className="font-medium underline underline-offset-2 hover:opacity-80"
+      >
+        {match[1]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes.length > 0 ? nodes : text;
+}
+
 export function FormattedMessageContent({
   content,
   className,
@@ -71,7 +99,11 @@ export function FormattedMessageContent({
     }
     if (normalLines.length > 0) {
       normalLines.forEach((line, idx) => {
-        parts.push(<span key={`t-${parts.length}-${idx}`}>{line}</span>);
+        parts.push(
+          <span key={`t-${parts.length}-${idx}`}>
+            {renderInlineMarkdown(line, `t-${parts.length}-${idx}`)}
+          </span>
+        );
         if (idx < normalLines.length - 1) parts.push(<br key={`br-${parts.length}-${idx}`} />);
       });
     }

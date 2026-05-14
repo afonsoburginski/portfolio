@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, CalendarClock, CheckCircle2, Clock,
-  CreditCard, DollarSign, Loader2, MessageSquare, Truck, XCircle,
+  CreditCard, DollarSign, FileText, Loader2, MessageSquare, Truck, XCircle,
 } from "lucide-react";
 import type { Request, RequestTask } from "@/lib/database.types";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
@@ -22,13 +22,15 @@ interface Props {
 }
 
 export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPayment, onDecline, onImageChange }: Props) {
-  const hasImage = !!req.image_url;
+  const hasAttachment = !!req.image_url;
+  const attachmentIsImage = !!req.image_url && /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(req.image_url);
+  const attachmentName = req.image_url ? decodeURIComponent(req.image_url.split("/").pop() ?? "arquivo").replace(/^[0-9a-f-]{36}-/i, "") : "";
 
   return (
     <div className="rounded-xl border border-border/60 overflow-hidden bg-card flex flex-col md:flex-row">
 
-      {/* ── Imagem (esquerda) — ocupa 100% da altura via self-stretch ── */}
-      {hasImage && (
+      {/* ── Anexo (esquerda) — ocupa 100% da altura via self-stretch ── */}
+      {hasAttachment && (
         <div className="relative md:w-[55%] shrink-0 border-b md:border-b-0 md:border-r border-border/60 bg-black/30 self-stretch">
           {/* Botão voltar sobreposto */}
           <Link
@@ -38,19 +40,36 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
             <ArrowLeft className="size-4" />
           </Link>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={req.image_url!}
-            alt="Referência do projeto"
-            className="w-full h-full object-cover"
-            style={{ minHeight: 300 }}
-          />
+          {attachmentIsImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={req.image_url!}
+              alt="Referência do projeto"
+              className="w-full h-full object-cover"
+              style={{ minHeight: 300 }}
+            />
+          ) : (
+            <a
+              href={req.image_url!}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-[300px] h-full items-center justify-center p-6 text-center transition-colors hover:bg-white/5"
+            >
+              <span className="flex max-w-xs flex-col items-center gap-3">
+                <span className="flex size-14 items-center justify-center rounded-xl bg-white/10 text-white">
+                  <FileText className="size-7" />
+                </span>
+                <span className="break-all text-sm font-medium text-white">{attachmentName}</span>
+                <span className="text-xs text-white/55">Abrir anexo</span>
+              </span>
+            </a>
+          )}
         </div>
       )}
 
       {/* ── Painel direito ── */}
       <div className="flex flex-col flex-1 min-w-0">
-        <RequestHeader req={req} isPaid={isPaid} showBackButton={!hasImage} />
+        <RequestHeader req={req} isPaid={isPaid} showBackButton={!hasAttachment} />
         {hasQuote && <QuoteBar req={req} tasks={tasks} isPaid={isPaid} />}
 
         {/* Descrição */}
@@ -59,10 +78,10 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{req.description}</p>
         </div>
 
-        {/* Upload de imagem */}
+        {/* Upload de anexo */}
         {onImageChange && (
           <div className="border-t border-border/60 px-5 py-4">
-            <SectionLabel>Imagem de referência</SectionLabel>
+            <SectionLabel>Anexo de referência</SectionLabel>
             <ImageUpload
               value={req.image_url}
               onChange={async (url) => {
@@ -70,6 +89,7 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
                 onImageChange(url);
               }}
               folder="requests"
+              label="Adicionar anexo"
             />
           </div>
         )}

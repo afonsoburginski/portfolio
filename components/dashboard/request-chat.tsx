@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
-import { Loader2, Send, Trash2 } from "lucide-react";
+import { Loader2, Paperclip, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 
@@ -45,15 +45,21 @@ function formatTime(iso: string) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+function markdownLinkLabel(label: string) {
+  return label.replace(/[\[\]]/g, "").replace(/[()]/g, "-");
+}
+
 export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   // Track last count to scroll only when new messages arrive
   const lastCountRef = useRef(0);
 
@@ -92,10 +98,10 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
     }
   }, [comments]);
 
-  async function send() {
-    if (!text.trim() || !user) return;
+  async function send(contentOverride?: string) {
+    if (!(contentOverride ?? text).trim() || !user) return;
 
-    const content = text.trim();
+    const content = (contentOverride ?? text).trim();
     const tempId = `optimistic-${Date.now()}`;
 
     const optimisticComment: Comment = {
@@ -127,6 +133,36 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
       setText(content);
     } finally {
       setSending(false);
+    }
+  }
+
+  async function sendAttachment(file: File) {
+    if (!user) return;
+    if (file.size > 25 * 1024 * 1024) {
+      setText((current) => current || "Arquivo deve ter no máximo 25 MB.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "comments");
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao enviar anexo");
+      }
+
+      const { url, name } = await res.json();
+      const attachmentLine = `[Anexo: ${markdownLinkLabel(name ?? file.name)}](${url})`;
+      await send(text.trim() ? `${text.trim()}\n${attachmentLine}` : attachmentLine);
+    } catch (err) {
+      setText((current) => current || (err instanceof Error ? err.message : "Erro ao enviar anexo"));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -246,6 +282,25 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
 
       {/* Input */}
       <div className="border-t border-border/60 px-3 py-2.5 flex items-end gap-2 bg-muted/10">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.rar"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) sendAttachment(file);
+          }}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sending || uploading}
+          className="shrink-0 flex items-center justify-center size-8 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Anexar arquivo"
+        >
+          {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Paperclip className="size-3.5" />}
+        </button>
         <textarea
           ref={textareaRef}
           value={text}
@@ -258,8 +313,8 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
         />
         <button
           type="button"
-          onClick={send}
-          disabled={!text.trim() || sending}
+          onClick={() => send()}
+          disabled={!text.trim() || sending || uploading}
           className="shrink-0 flex items-center justify-center size-8 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}

@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Send, Type, AlignLeft, Tag, ImagePlus, X, FileText } from "lucide-react";
+import { Loader2, Send, Type, AlignLeft, Tag, Paperclip, X, FileText } from "lucide-react";
 import type { RequestType } from "@/lib/schema";
 
 /* ─── constants ──────────────────────────────────────────────────────────── */
@@ -43,8 +43,8 @@ const PROPOSITOS = [
   { value: "other",       label: "Outro" },
 ];
 
-const ACCEPT_IMAGE = "image/jpeg,image/png,image/webp,image/gif";
-const MAX_IMAGE_MB = 5;
+const ACCEPT_ATTACHMENT = "image/jpeg,image/png,image/webp,image/gif,application/pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.rar";
+const MAX_ATTACHMENT_MB = 25;
 
 /* ─── media query hook ───────────────────────────────────────────────────── */
 
@@ -90,16 +90,16 @@ interface FormState {
   title: string;
   description: string;
   type: RequestType;
-  imageFile: File | null;
-  imagePreview: string | null;
+  attachmentFile: File | null;
+  attachmentPreview: string | null;
 }
 
 const EMPTY_FORM: FormState = {
   title: "",
   description: "",
   type: "feature",
-  imageFile: null,
-  imagePreview: null,
+  attachmentFile: null,
+  attachmentPreview: null,
 };
 
 /* ─── shared form body ───────────────────────────────────────────────────── */
@@ -166,28 +166,42 @@ function FormBody({
             />
           </FieldRow>
 
-          <FieldRow icon={ImagePlus} label="Imagem (opcional)" alignTop>
+          <FieldRow icon={Paperclip} label="Anexo (opcional)" alignTop>
             <div className="space-y-2">
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={ACCEPT_IMAGE}
+                accept={ACCEPT_ATTACHMENT}
                 onChange={onFileChange}
                 className="hidden"
               />
-              {form.imagePreview ? (
-                <div className="relative inline-block">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={form.imagePreview}
-                    alt="Preview"
-                    className="max-h-36 rounded-lg border border-neutral-600 object-cover"
-                  />
+              {form.attachmentFile ? (
+                <div className="relative inline-flex max-w-full items-center gap-3 rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2">
+                  {form.attachmentPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={form.attachmentPreview}
+                      alt="Preview"
+                      className="size-12 rounded-md border border-neutral-700 object-cover"
+                    />
+                  ) : (
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-neutral-700 text-neutral-300">
+                      <FileText className="size-5" />
+                    </span>
+                  )}
+                  <span className="min-w-0 pr-6">
+                    <span className="block truncate text-sm font-medium text-neutral-100">
+                      {form.attachmentFile.name}
+                    </span>
+                    <span className="block text-xs text-neutral-500">
+                      {(form.attachmentFile.size / 1024 / 1024).toFixed(1)} MB
+                    </span>
+                  </span>
                   <button
                     type="button"
                     onClick={onClearImage}
                     className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-neutral-800 border border-neutral-600 text-neutral-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-colors"
-                    aria-label="Remover imagem"
+                    aria-label="Remover anexo"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -198,12 +212,12 @@ function FormBody({
                   onClick={() => fileInputRef.current?.click()}
                   className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-600 px-4 py-3 text-sm text-neutral-400 hover:border-neutral-500 hover:bg-neutral-700/40 hover:text-neutral-200 transition-colors w-full sm:w-auto"
                 >
-                  <ImagePlus className="size-4 shrink-0" />
-                  Adicionar imagem
+                  <Paperclip className="size-4 shrink-0" />
+                  Adicionar anexo
                 </button>
               )}
               <p className="text-xs text-neutral-500 pb-1">
-                JPEG, PNG, WebP ou GIF · Máx. {MAX_IMAGE_MB} MB
+                Imagem, PDF, planilha, documento ou compactado · Máx. {MAX_ATTACHMENT_MB} MB
               </p>
             </div>
           </FieldRow>
@@ -263,18 +277,23 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) { setForm(f => ({ ...f, imageFile: null, imagePreview: null })); return; }
-    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
-      setError(`Imagem deve ter no máximo ${MAX_IMAGE_MB} MB.`);
+    if (!file) { setForm(f => ({ ...f, attachmentFile: null, attachmentPreview: null })); return; }
+    if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+      setError(`Arquivo deve ter no máximo ${MAX_ATTACHMENT_MB} MB.`);
       return;
     }
-    setForm(f => ({ ...f, imageFile: file, imagePreview: URL.createObjectURL(file) }));
+    if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
+    setForm(f => ({
+      ...f,
+      attachmentFile: file,
+      attachmentPreview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+    }));
     setError(null);
   }
 
   function clearImage() {
-    if (form.imagePreview) URL.revokeObjectURL(form.imagePreview);
-    setForm(f => ({ ...f, imageFile: null, imagePreview: null }));
+    if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
+    setForm(f => ({ ...f, attachmentFile: null, attachmentPreview: null }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -289,18 +308,18 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
         type: form.type,
         priority: 2,
       });
-      if (form.imageFile) {
+      if (form.attachmentFile) {
         try {
           const fd = new FormData();
-          fd.append("file", form.imageFile);
+          fd.append("file", form.attachmentFile);
           fd.append("folder", "requests");
           const res = await fetch("/api/upload", { method: "POST", body: fd });
           if (res.ok) {
             const { url } = await res.json();
             await updateRequestImage(request.id, url);
           }
-        } catch (imgErr) {
-          console.warn("Image upload failed (request was created):", imgErr);
+        } catch (attachmentErr) {
+          console.warn("Attachment upload failed (request was created):", attachmentErr);
         }
       }
       handleOpenChange(false);
@@ -316,7 +335,7 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
   function handleOpenChange(next: boolean) {
     if (!next) {
       setError(null);
-      if (form.imagePreview) URL.revokeObjectURL(form.imagePreview);
+      if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
       setForm(EMPTY_FORM);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }

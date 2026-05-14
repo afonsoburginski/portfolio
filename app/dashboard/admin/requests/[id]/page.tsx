@@ -819,7 +819,7 @@ export default function AdminRequestPlanningPage({
                 />
               </CFRow>
 
-              <CFRow icon={ImageIcon} label="Imagem">
+              <CFRow icon={ImageIcon} label="Anexo">
                 <ImageUpload
                   value={request.image_url}
                   onChange={async (url) => {
@@ -827,6 +827,7 @@ export default function AdminRequestPlanningPage({
                     setRequest((r) => r ? { ...r, image_url: url } : r);
                   }}
                   folder="requests"
+                  label="Adicionar anexo"
                 />
               </CFRow>
 
