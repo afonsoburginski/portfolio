@@ -3,6 +3,7 @@
 export type {
   User as Profile,
   Request,
+  RequestAttachment,
   RequestComment,
   RequestTask,
   RequestStage,

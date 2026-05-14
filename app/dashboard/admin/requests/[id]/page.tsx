@@ -6,20 +6,22 @@ import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
 import {
   getRequestById,
+  getRequestAttachments,
   getRequestTasks,
   getRequestStages,
   updateRequestAsAdmin,
-  updateRequestImage,
+  createRequestAttachment,
   createRequestTask,
   updateRequestTask,
   deleteRequestTask,
+  deleteRequestAttachment,
   deleteRequest,
   getAllProfiles,
   changeRequestClient,
 } from "@/lib/dashboard-data";
-import { ImageUpload } from "@/components/dashboard/image-upload";
+import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { isAdminEmail } from "@/lib/admin-helpers";
-import type { Profile, Request, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
+import type { Profile, Request, RequestAttachment, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -273,6 +275,7 @@ export default function AdminRequestPlanningPage({
   const [request, setRequest]          = useState<Request | null>(null);
   const [tasks,   setTasks]            = useState<RequestTask[]>([]);
   const [stages,  setStages]           = useState<RequestStage[]>([]);
+  const [attachments, setAttachments]  = useState<RequestAttachment[]>([]);
   const [profiles, setProfiles]        = useState<Profile[]>([]);
   const [loading, setLoading]          = useState(true);
   const [saving,  setSaving]           = useState(false);
@@ -321,8 +324,8 @@ export default function AdminRequestPlanningPage({
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    Promise.all([getRequestById(id), getRequestTasks(id), getRequestStages(id), getAllProfiles()])
-      .then(([req, list, stageList, profileList]) => {
+    Promise.all([getRequestById(id), getRequestTasks(id), getRequestStages(id), getRequestAttachments(id), getAllProfiles()])
+      .then(([req, list, stageList, attachmentList, profileList]) => {
         if (req) {
           setRequest(req);
           setForm({
@@ -339,6 +342,7 @@ export default function AdminRequestPlanningPage({
         }
         setTasks(list ?? []);
         setStages(stageList ?? []);
+        setAttachments(attachmentList ?? []);
         setProfiles(profileList);
       })
       .catch(console.error)
@@ -820,15 +824,41 @@ export default function AdminRequestPlanningPage({
               </CFRow>
 
               <CFRow icon={ImageIcon} label="Anexo">
-                <ImageUpload
-                  value={request.image_url}
-                  onChange={async (url) => {
-                    await updateRequestImage(request.id, url);
-                    setRequest((r) => r ? { ...r, image_url: url } : r);
-                  }}
-                  folder="requests"
-                  label="Adicionar anexo"
-                />
+                <div className="space-y-3">
+                  {attachments.some((attachment) => attachment.kind === "image") && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {attachments.filter((attachment) => attachment.kind === "image").map((image) => (
+                        <div key={image.id} className="group relative overflow-hidden rounded-lg border border-border bg-muted/20">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={image.url} alt={image.name} className="h-28 w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await deleteRequestAttachment(image.id);
+                              setAttachments((prev) => prev.filter((attachment) => attachment.id !== image.id));
+                            }}
+                            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                            title="Remover imagem"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <RequestAttachments
+                    files={attachments.filter((attachment) => attachment.kind !== "image")}
+                    folder="requests"
+                    onAdd={async (attachment) => {
+                      const created = await createRequestAttachment({ request_id: request.id, ...attachment });
+                      setAttachments((prev) => [...prev, created]);
+                    }}
+                    onDelete={async (attachmentId) => {
+                      await deleteRequestAttachment(attachmentId);
+                      setAttachments((prev) => prev.filter((attachment) => attachment.id !== attachmentId));
+                    }}
+                  />
+                </div>
               </CFRow>
 
             </div>

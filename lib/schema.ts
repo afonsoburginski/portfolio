@@ -90,6 +90,18 @@ export const request_comments = sqliteTable("request_comments", {
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
 });
 
+export const request_attachments = sqliteTable("request_attachments", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  request_id: text("request_id").notNull().references(() => requests.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  name: text("name").notNull(),
+  mime_type: text("mime_type"),
+  size: integer("size"),
+  kind: text("kind", { enum: ["image", "file"] }).notNull().default("file"),
+  position: real("position").notNull().default(0),
+  created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
+});
+
 export const request_tasks = sqliteTable("request_tasks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   request_id: text("request_id").notNull().references(() => requests.id, { onDelete: "cascade" }),
@@ -175,6 +187,7 @@ export const projects = sqliteTable("projects", {
 export type User = typeof user.$inferSelect;
 export type Request = typeof requests.$inferSelect & { user?: User | null; profiles?: User | null };
 export type RequestComment = typeof request_comments.$inferSelect & { user?: User | null; profiles?: User | null };
+export type RequestAttachment = typeof request_attachments.$inferSelect;
 export type RequestTask = typeof request_tasks.$inferSelect;
 export type RequestStage = typeof request_stages.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;

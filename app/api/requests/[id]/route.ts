@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { requests, request_comments, request_tasks, user } from "@/lib/schema";
+import { requests, request_attachments, request_comments, request_tasks, user } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin-helpers";
 
@@ -35,7 +35,7 @@ export async function GET(
 
   if (!isOwner && !admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const [comments, tasks] = await Promise.all([
+  const [comments, tasks, attachments] = await Promise.all([
     db
       .select({ comment: request_comments, user })
       .from(request_comments)
@@ -47,6 +47,11 @@ export async function GET(
       .from(request_tasks)
       .where(eq(request_tasks.request_id, id))
       .orderBy(request_tasks.position),
+    db
+      .select()
+      .from(request_attachments)
+      .where(eq(request_attachments.request_id, id))
+      .orderBy(request_attachments.position, request_attachments.created_at),
   ]);
 
   return NextResponse.json({
@@ -54,6 +59,7 @@ export async function GET(
     profiles: rows[0].user,
     request_comments: comments.map(c => ({ ...c.comment, profiles: c.user })),
     request_tasks: tasks,
+    request_attachments: attachments,
   });
 }
 
@@ -126,6 +132,7 @@ export async function DELETE(
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   await db.delete(request_comments).where(eq(request_comments.request_id, id));
+  await db.delete(request_attachments).where(eq(request_attachments.request_id, id));
   await db.delete(request_tasks).where(eq(request_tasks.request_id, id));
   const [deleted] = await db.delete(requests).where(eq(requests.id, id)).returning();
 

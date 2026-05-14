@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createRequest, updateRequestImage } from "@/lib/dashboard-data";
+import { createRequest, createRequestAttachment } from "@/lib/dashboard-data";
 import {
   Dialog,
   DialogContent,
@@ -90,16 +90,14 @@ interface FormState {
   title: string;
   description: string;
   type: RequestType;
-  attachmentFile: File | null;
-  attachmentPreview: string | null;
+  attachmentFiles: Array<{ file: File; preview: string | null }>;
 }
 
 const EMPTY_FORM: FormState = {
   title: "",
   description: "",
   type: "feature",
-  attachmentFile: null,
-  attachmentPreview: null,
+  attachmentFiles: [],
 };
 
 /* ─── shared form body ───────────────────────────────────────────────────── */
@@ -172,38 +170,44 @@ function FormBody({
                 ref={fileInputRef}
                 type="file"
                 accept={ACCEPT_ATTACHMENT}
+                multiple
                 onChange={onFileChange}
                 className="hidden"
               />
-              {form.attachmentFile ? (
-                <div className="relative inline-flex max-w-full items-center gap-3 rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2">
-                  {form.attachmentPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={form.attachmentPreview}
-                      alt="Preview"
-                      className="size-12 rounded-md border border-neutral-700 object-cover"
-                    />
-                  ) : (
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-neutral-700 text-neutral-300">
-                      <FileText className="size-5" />
-                    </span>
-                  )}
-                  <span className="min-w-0 pr-6">
-                    <span className="block truncate text-sm font-medium text-neutral-100">
-                      {form.attachmentFile.name}
-                    </span>
-                    <span className="block text-xs text-neutral-500">
-                      {(form.attachmentFile.size / 1024 / 1024).toFixed(1)} MB
-                    </span>
-                  </span>
+              {form.attachmentFiles.length > 0 ? (
+                <div className="space-y-2">
+                  {form.attachmentFiles.map(({ file, preview }, index) => (
+                    <div key={`${file.name}-${index}`} className="relative inline-flex max-w-full items-center gap-3 rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2">
+                      {preview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={preview}
+                          alt="Preview"
+                          className="size-12 rounded-md border border-neutral-700 object-cover"
+                        />
+                      ) : (
+                        <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-neutral-700 text-neutral-300">
+                          <FileText className="size-5" />
+                        </span>
+                      )}
+                      <span className="min-w-0 pr-6">
+                        <span className="block truncate text-sm font-medium text-neutral-100">
+                          {file.name}
+                        </span>
+                        <span className="block text-xs text-neutral-500">
+                          {(file.size / 1024 / 1024).toFixed(1)} MB
+                        </span>
+                      </span>
+                    </div>
+                  ))}
                   <button
                     type="button"
                     onClick={onClearImage}
-                    className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-neutral-800 border border-neutral-600 text-neutral-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-colors"
+                    className="flex w-fit items-center gap-1.5 rounded-md border border-neutral-600 px-2 py-1 text-xs text-neutral-400 hover:bg-red-500/10 hover:text-red-400"
                     aria-label="Remover anexo"
                   >
                     <X className="size-3.5" />
+                    Limpar anexos
                   </button>
                 </div>
               ) : (
@@ -276,24 +280,31 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) { setForm(f => ({ ...f, attachmentFile: null, attachmentPreview: null })); return; }
-    if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) { setForm(f => ({ ...f, attachmentFiles: [] })); return; }
+    const tooLarge = files.find((file) => file.size > MAX_ATTACHMENT_MB * 1024 * 1024);
+    if (tooLarge) {
       setError(`Arquivo deve ter no máximo ${MAX_ATTACHMENT_MB} MB.`);
       return;
     }
-    if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
+    form.attachmentFiles.forEach(({ preview }) => {
+      if (preview) URL.revokeObjectURL(preview);
+    });
     setForm(f => ({
       ...f,
-      attachmentFile: file,
-      attachmentPreview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      attachmentFiles: files.map((file) => ({
+        file,
+        preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      })),
     }));
     setError(null);
   }
 
   function clearImage() {
-    if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
-    setForm(f => ({ ...f, attachmentFile: null, attachmentPreview: null }));
+    form.attachmentFiles.forEach(({ preview }) => {
+      if (preview) URL.revokeObjectURL(preview);
+    });
+    setForm(f => ({ ...f, attachmentFiles: [] }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -308,18 +319,27 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
         type: form.type,
         priority: 2,
       });
-      if (form.attachmentFile) {
-        try {
-          const fd = new FormData();
-          fd.append("file", form.attachmentFile);
-          fd.append("folder", "requests");
-          const res = await fetch("/api/upload", { method: "POST", body: fd });
-          if (res.ok) {
-            const { url } = await res.json();
-            await updateRequestImage(request.id, url);
+      if (form.attachmentFiles.length > 0) {
+        for (const { file } of form.attachmentFiles) {
+          try {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("folder", "requests");
+            const res = await fetch("/api/upload", { method: "POST", body: fd });
+            if (res.ok) {
+              const uploaded = await res.json();
+              await createRequestAttachment({
+                request_id: request.id,
+                url: uploaded.url,
+                name: uploaded.name ?? file.name,
+                mime_type: uploaded.type ?? file.type ?? null,
+                size: uploaded.size ?? file.size ?? null,
+                kind: file.type.startsWith("image/") ? "image" : "file",
+              });
+            }
+          } catch (attachmentErr) {
+            console.warn("Attachment upload failed (request was created):", attachmentErr);
           }
-        } catch (attachmentErr) {
-          console.warn("Attachment upload failed (request was created):", attachmentErr);
         }
       }
       handleOpenChange(false);
@@ -335,7 +355,9 @@ export function NewRequestDialog({ open, onOpenChange, onSuccess }: NewRequestDi
   function handleOpenChange(next: boolean) {
     if (!next) {
       setError(null);
-      if (form.attachmentPreview) URL.revokeObjectURL(form.attachmentPreview);
+      form.attachmentFiles.forEach(({ preview }) => {
+        if (preview) URL.revokeObjectURL(preview);
+      });
       setForm(EMPTY_FORM);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }

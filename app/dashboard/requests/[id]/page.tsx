@@ -13,6 +13,7 @@ import { PaymentFlow } from "./_components/payment-flow";
 import { RequestCard } from "./_components/request-card";
 import { QUOTE_STATUSES } from "./_components/constants";
 import { useNotifications } from "@/hooks/use-notifications";
+import { createRequestAttachment, deleteRequestAttachment } from "@/lib/dashboard-data";
 
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -21,7 +22,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const { markRequestRead } = useNotifications();
 
   const {
-    req, tasks, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
+    req, tasks, attachments, setAttachments, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
   } = useRequestDetail({ id, userId: user?.id });
 
   // Marca notificações deste pedido como lidas ao abrir a página
@@ -91,7 +92,15 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
         declining={declining}
         onStartPayment={startPayment}
         onDecline={decline}
-        onImageChange={(url) => updateReq({ image_url: url })}
+        attachments={attachments}
+        onAddAttachment={async (attachment) => {
+          const created = await createRequestAttachment({ request_id: req.id, ...attachment });
+          setAttachments((prev) => [...prev, created]);
+        }}
+        onDeleteAttachment={async (attachmentId) => {
+          await deleteRequestAttachment(attachmentId);
+          setAttachments((prev) => prev.filter((attachment) => attachment.id !== attachmentId));
+        }}
       />
 
       <RequestChat requestId={req.id} isAdmin={false} />

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "./db";
-import { requests, request_comments, request_tasks, request_stages, user_preferences, notifications, user } from "./schema";
+import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user } from "./schema";
 import { eq, desc, inArray, and, sql } from "drizzle-orm";
 import { auth } from "./auth";
 import { headers } from "next/headers";
@@ -112,6 +112,7 @@ export async function cancelRequest(id: string) {
 
 export async function deleteRequest(id: string) {
   await db.delete(request_comments).where(eq(request_comments.request_id, id));
+  await db.delete(request_attachments).where(eq(request_attachments.request_id, id));
   await db.delete(request_tasks).where(eq(request_tasks.request_id, id));
   await db.delete(requests).where(eq(requests.id, id));
 }
@@ -169,6 +170,89 @@ export async function updateRequestImage(requestId: string, imageUrl: string | n
   }
 
   return imageUrl;
+}
+
+// ——— Request attachments ———
+
+async function canMutateRequest(requestId: string) {
+  const u = await currentUser();
+  if (!u) throw new Error("Not authenticated");
+  const isAdm = isAdmin(u);
+  const [row] = await db
+    .select({ user_id: requests.user_id })
+    .from(requests)
+    .where(eq(requests.id, requestId))
+    .limit(1);
+  if (!row) throw new Error("Request not found");
+  if (!isAdm && row.user_id !== u.id) throw new Error("Forbidden");
+  return { user: u, isAdmin: isAdm };
+}
+
+export async function getRequestAttachments(requestId: string) {
+  return db
+    .select()
+    .from(request_attachments)
+    .where(eq(request_attachments.request_id, requestId))
+    .orderBy(request_attachments.position, request_attachments.created_at);
+}
+
+export async function createRequestAttachment(payload: {
+  request_id: string;
+  url: string;
+  name: string;
+  mime_type?: string | null;
+  size?: number | null;
+  kind?: "image" | "file";
+}) {
+  await canMutateRequest(payload.request_id);
+  const countRows = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(request_attachments)
+    .where(eq(request_attachments.request_id, payload.request_id));
+  const position = countRows[0]?.count ?? 0;
+  const [row] = await db
+    .insert(request_attachments)
+    .values({
+      request_id: payload.request_id,
+      url: payload.url,
+      name: payload.name,
+      mime_type: payload.mime_type ?? null,
+      size: payload.size ?? null,
+      kind: payload.kind ?? "file",
+      position,
+    })
+    .returning();
+
+  if (row.kind === "image") {
+    await updateRequestImage(payload.request_id, row.url);
+  }
+
+  return row;
+}
+
+export async function deleteRequestAttachment(id: string) {
+  const [attachment] = await db
+    .select()
+    .from(request_attachments)
+    .where(eq(request_attachments.id, id))
+    .limit(1);
+  if (!attachment) return null;
+
+  await canMutateRequest(attachment.request_id);
+  await db.delete(request_attachments).where(eq(request_attachments.id, id));
+
+  const [nextImage] = await db
+    .select()
+    .from(request_attachments)
+    .where(and(eq(request_attachments.request_id, attachment.request_id), eq(request_attachments.kind, "image")))
+    .orderBy(request_attachments.position, request_attachments.created_at)
+    .limit(1);
+
+  if (attachment.kind === "image") {
+    await updateRequestImage(attachment.request_id, nextImage?.url ?? null);
+  }
+
+  return attachment;
 }
 
 // ——— Tasks ———

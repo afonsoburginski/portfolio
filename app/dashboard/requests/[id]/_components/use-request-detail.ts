@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { Request, RequestTask } from "@/lib/schema";
+import type { Request, RequestAttachment, RequestTask } from "@/lib/schema";
 
 export type PaymentFeedback = "success" | "pending" | "failure" | null;
 
@@ -14,12 +14,14 @@ interface UseRequestDetailOptions {
 interface UseRequestDetailResult {
   req: Request | null;
   tasks: RequestTask[];
+  attachments: RequestAttachment[];
   loading: boolean;
   paymentFeedback: PaymentFeedback;
   dismissFeedback: () => void;
   decline: () => Promise<void>;
   declining: boolean;
   updateReq: (patch: Partial<Request>) => void;
+  setAttachments: Dispatch<SetStateAction<RequestAttachment[]>>;
 }
 
 export async function verifyPayment(requestId: string): Promise<string> {
@@ -39,6 +41,7 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
 
   const [req, setReq] = useState<Request | null>(null);
   const [tasks, setTasks] = useState<RequestTask[]>([]);
+  const [attachments, setAttachments] = useState<RequestAttachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [declining, setDeclining] = useState(false);
   const [paymentFeedback, setPaymentFeedback] = useState<PaymentFeedback>(null);
@@ -59,9 +62,13 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
       const res = await fetch(`/api/requests/${id}`);
       if (!res.ok) return;
       const data = await res.json();
-      const { request_tasks: reqTasks, ...request } = data as Request & { request_tasks?: RequestTask[] };
+      const { request_tasks: reqTasks, request_attachments: reqAttachments, ...request } = data as Request & {
+        request_tasks?: RequestTask[];
+        request_attachments?: RequestAttachment[];
+      };
       setReq(request);
       setTasks(reqTasks ?? []);
+      setAttachments(reqAttachments ?? []);
 
       if (request.status === "quoted" && request.mp_payment_id) {
         const status = await verifyPayment(id);
@@ -101,11 +108,13 @@ export function useRequestDetail({ id, userId }: UseRequestDetailOptions): UseRe
   return {
     req,
     tasks,
+    attachments,
     loading,
     paymentFeedback,
     dismissFeedback: () => setPaymentFeedback(null),
     decline,
     declining,
     updateReq,
+    setAttachments,
   };
 }

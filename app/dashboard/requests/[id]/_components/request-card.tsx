@@ -2,12 +2,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, CalendarClock, CheckCircle2, Clock,
-  CreditCard, DollarSign, FileText, Loader2, MessageSquare, Truck, XCircle,
+  CreditCard, DollarSign, Loader2, MessageSquare, Trash2, Truck, XCircle,
 } from "lucide-react";
-import type { Request, RequestTask } from "@/lib/database.types";
+import type { Request, RequestAttachment, RequestTask } from "@/lib/database.types";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
-import { ImageUpload } from "@/components/dashboard/image-upload";
-import { updateRequestImage } from "@/lib/dashboard-data";
+import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 
 interface Props {
@@ -18,19 +17,58 @@ interface Props {
   declining: boolean;
   onStartPayment: () => void;
   onDecline: () => void;
-  onImageChange?: (url: string | null) => void;
+  attachments?: RequestAttachment[];
+  onAddAttachment?: (attachment: {
+    url: string;
+    name: string;
+    mime_type: string | null;
+    size: number | null;
+    kind: "image" | "file";
+  }) => Promise<void>;
+  onDeleteAttachment?: (id: string) => Promise<void>;
 }
 
-export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPayment, onDecline, onImageChange }: Props) {
-  const hasAttachment = !!req.image_url;
-  const attachmentIsImage = !!req.image_url && /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(req.image_url);
-  const attachmentName = req.image_url ? decodeURIComponent(req.image_url.split("/").pop() ?? "arquivo").replace(/^[0-9a-f-]{36}-/i, "") : "";
+function isImageUrl(url: string) {
+  return /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(url);
+}
+
+function legacyAttachment(req: Request): RequestAttachment | null {
+  if (!req.image_url) return null;
+  return {
+    id: "legacy-image-url",
+    request_id: req.id,
+    url: req.image_url,
+    name: "anexo importado",
+    mime_type: null,
+    size: null,
+    kind: isImageUrl(req.image_url) ? "image" : "file",
+    position: 0,
+    created_at: req.created_at,
+  };
+}
+
+export function RequestCard({
+  req,
+  tasks,
+  isPaid,
+  hasQuote,
+  declining,
+  onStartPayment,
+  onDecline,
+  attachments = [],
+  onAddAttachment,
+  onDeleteAttachment,
+}: Props) {
+  const allAttachments = attachments.length > 0 ? attachments : (legacyAttachment(req) ? [legacyAttachment(req)!] : []);
+  const images = allAttachments.filter((a) => a.kind === "image" || isImageUrl(a.url));
+  const files = allAttachments.filter((a) => a.kind !== "image" && !isImageUrl(a.url));
+  const heroImage = images[0] ?? null;
 
   return (
     <div className="rounded-xl border border-border/60 overflow-hidden bg-card flex flex-col md:flex-row">
 
-      {/* ── Anexo (esquerda) — ocupa 100% da altura via self-stretch ── */}
-      {hasAttachment && (
+      {/* ── Imagem (esquerda) — ocupa 100% da altura via self-stretch ── */}
+      {heroImage && (
         <div className="relative md:w-[55%] shrink-0 border-b md:border-b-0 md:border-r border-border/60 bg-black/30 self-stretch">
           {/* Botão voltar sobreposto */}
           <Link
@@ -40,36 +78,47 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
             <ArrowLeft className="size-4" />
           </Link>
 
-          {attachmentIsImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={req.image_url!}
-              alt="Referência do projeto"
-              className="w-full h-full object-cover"
-              style={{ minHeight: 300 }}
-            />
-          ) : (
-            <a
-              href={req.image_url!}
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-[300px] h-full items-center justify-center p-6 text-center transition-colors hover:bg-white/5"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroImage.url}
+            alt="Referência do projeto"
+            className="w-full h-full object-cover"
+            style={{ minHeight: 300 }}
+          />
+
+          {onDeleteAttachment && !heroImage.id.startsWith("legacy-") && (
+            <button
+              type="button"
+              onClick={() => onDeleteAttachment(heroImage.id)}
+              className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-red-600"
+              title="Remover imagem"
             >
-              <span className="flex max-w-xs flex-col items-center gap-3">
-                <span className="flex size-14 items-center justify-center rounded-xl bg-white/10 text-white">
-                  <FileText className="size-7" />
-                </span>
-                <span className="break-all text-sm font-medium text-white">{attachmentName}</span>
-                <span className="text-xs text-white/55">Abrir anexo</span>
-              </span>
-            </a>
+              <Trash2 className="size-4" />
+            </button>
+          )}
+
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-3 right-3 flex gap-2 overflow-x-auto">
+              {images.slice(1).map((image) => (
+                <a
+                  key={image.id}
+                  href={image.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block size-14 shrink-0 overflow-hidden rounded-md border border-white/30 bg-black/40"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={image.url} alt={image.name} className="size-full object-cover" />
+                </a>
+              ))}
+            </div>
           )}
         </div>
       )}
 
       {/* ── Painel direito ── */}
       <div className="flex flex-col flex-1 min-w-0">
-        <RequestHeader req={req} isPaid={isPaid} showBackButton={!hasAttachment} />
+        <RequestHeader req={req} isPaid={isPaid} showBackButton={!heroImage} />
         {hasQuote && <QuoteBar req={req} tasks={tasks} isPaid={isPaid} />}
 
         {/* Descrição */}
@@ -78,18 +127,15 @@ export function RequestCard({ req, tasks, isPaid, hasQuote, declining, onStartPa
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{req.description}</p>
         </div>
 
-        {/* Upload de anexo */}
-        {onImageChange && (
+        {/* Anexos */}
+        {onAddAttachment && (
           <div className="border-t border-border/60 px-5 py-4">
             <SectionLabel>Anexo de referência</SectionLabel>
-            <ImageUpload
-              value={req.image_url}
-              onChange={async (url) => {
-                await updateRequestImage(req.id, url);
-                onImageChange(url);
-              }}
+            <RequestAttachments
+              files={files}
               folder="requests"
-              label="Adicionar anexo"
+              onAdd={onAddAttachment}
+              onDelete={onDeleteAttachment}
             />
           </div>
         )}
