@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
       // Cloudflare R2
       { protocol: "https", hostname: "pub-*.r2.dev" },
       { protocol: "https", hostname: "cdn.afonsodev.com" },
+      // Legacy Vercel Blob (projetos antigos ainda apontam pra cá)
+      { protocol: "https", hostname: "y3s2nvfmhyxopshw.public.blob.vercel-storage.com" },
     ],
   },
   experimental: {
