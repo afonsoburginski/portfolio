@@ -75,13 +75,6 @@ const row2 = bottomTags.filter((_, i) => i % 2 !== 0);
 export function ServicesShowcaseDesktop() {
   return (
     <section id="services" className="relative py-20 px-4 md:px-8">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-        style={{
-          backgroundImage: "url('/services-background.png')"
-        }}
-      />
       <div className="max-w-[1600px] mx-auto relative z-10">
         {/* Top Container */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
