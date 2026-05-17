@@ -18,4 +18,3 @@ export type CaseStudy = {
   revenueNote?: string;
   sections?: { title: string; body: string[]; image?: string; video?: string; subsections?: string[] }[];
 };
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
 import { isAdminEmail } from "@/lib/admin-helpers";
@@ -25,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import {
   Loader2, ShieldCheck, FolderKanban, Plus, Pencil, Trash2,
   Eye, EyeOff, ArrowUp, ArrowDown, ExternalLink, ImageOff,
-  ImagePlus, X,
+  ImagePlus, X, FileText,
 } from "lucide-react";
 
 const CATEGORY_LABEL: Record<ProjectCategory, string> = {
@@ -397,8 +398,21 @@ export default function AdminProjectsPage() {
                   variant="ghost"
                   size="icon"
                   className="size-7 text-muted-foreground hover:text-foreground"
+                  asChild
+                  aria-label="Editar case study"
+                  title="Editar case study"
+                >
+                  <Link href={`/dashboard/admin/projects/${p.id}`}>
+                    <FileText className="size-3.5" />
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-muted-foreground hover:text-foreground"
                   onClick={() => openEdit(p)}
                   aria-label="Editar projeto"
+                  title="Editar dados do card"
                 >
                   <Pencil className="size-3.5" />
                 </Button>

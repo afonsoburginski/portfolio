@@ -518,6 +518,47 @@ export async function reorderProjects(orderedIds: string[]) {
   );
 }
 
+export async function getProjectBySlug(slug: string) {
+  const rows = await db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getProjectByIdAdmin(id: string) {
+  await requireAdmin();
+  const rows = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function updateProjectCaseStudy(
+  id: string,
+  patch: Partial<{
+    subtitle: string | null;
+    role: string | null;
+    timeline: string | null;
+    stack: string | null;
+    live_url: string | null;
+    github_url: string | null;
+    story: string | null;
+    image2: string | null;
+    revenue_note: string | null;
+    extra_images: string;
+    objectives: string;
+    highlights: string;
+    outcomes: string;
+    challenges: string;
+    sections: string;
+  }>,
+) {
+  await requireAdmin();
+  const [row] = await db
+    .update(projects)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .set({ ...(patch as any), updated_at: sql`datetime('now')` })
+    .where(eq(projects.id, id))
+    .returning();
+  return row;
+}
+
 // ——— Payment helper (replaces Supabase RPC mark_payment_approved) ———
 
 export async function markPaymentApproved(requestId: string, paymentId: string) {
