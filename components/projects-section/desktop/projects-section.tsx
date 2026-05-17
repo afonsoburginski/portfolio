@@ -65,8 +65,8 @@ export const ProjectsSectionDesktop = ({ projects }: { projects: Project[] }) =>
                     />
                   )}
 
-                  {/* Bottom CTA bar */}
-                  <div className="absolute left-2 right-2 bottom-2 z-30">
+                  {/* Bottom CTA bar — só aparece no hover */}
+                  <div className="absolute left-2 right-2 bottom-2 z-30 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out">
                     <div className="w-full flex items-center justify-center gap-2 text-white text-base font-normal font-sans backdrop-blur-md bg-white/20 border !border-white shadow-lg hover:bg-white/30 transition-all duration-300 px-5 py-3 rounded-full">
                       <span>View Casestudy</span>
                       <ArrowUpRight size={14} />

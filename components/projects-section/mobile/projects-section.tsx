@@ -83,13 +83,17 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
         </h3>
       </motion.div>
 
-      {/* Bottom CTA bar */}
-      <div className="absolute left-2 right-2 bottom-2 z-30">
+      {/* Bottom CTA bar — só aparece quando o card está em foco (centro da tela) */}
+      <motion.div
+        className="absolute left-2 right-2 bottom-2 z-30"
+        animate={{ opacity: isInFocus ? 1 : 0, y: isInFocus ? 0 : 8 }}
+        transition={{ duration: 0.4 }}
+      >
         <div className="w-full flex items-center justify-center gap-2 text-white text-sm font-normal font-sans backdrop-blur-md bg-white/20 border !border-white shadow-lg transition-all duration-300 px-4 py-2.5 rounded-full">
           <span>View Casestudy</span>
           <ArrowUpRight size={14} />
         </div>
-      </div>
+      </motion.div>
     </motion.a>
   );
 };
