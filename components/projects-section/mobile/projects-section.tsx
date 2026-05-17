@@ -3,19 +3,9 @@ import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import type { Project } from "@/lib/schema";
 
-const BLOB = "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects";
-
-const projects = [
-  { id: 1, image: `${BLOB}/stormzplus.png`, href: "/case-study/stormzplus", title: "Stormz+ Web" },
-  { id: 10, image: `${BLOB}/stormzplus-app.png`, href: "/case-study/stormzplus-mobile", title: "Stormz+ Mobile" },
-  { id: 4, image: "https://cdn.afonsodev.com/projects/orcanorte-1.png", href: "/case-study/orcanorte", title: "Orcanorte" },
-  { id: 2, image: `${BLOB}/easydriver-admin.png`, href: "/case-study/easydriver", title: "EasyDriver" },
-  { id: 5, image: `${BLOB}/nextjs-ffmpeg-transcoder-1.png`, href: "/case-study/nextjs-ffmpeg-transcoder", title: "FFmpeg Transcoder" },
-  { id: 7, image: `${BLOB}/gem-jhonrob-1.png`, href: "/case-study/gem-jhonrob", title: "GEM JHONROB" },
-];
-
-const ProjectCard = ({ project, index }: { project: typeof projects[0], index: number }) => {
+const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
   const [isInFocus, setIsInFocus] = useState(false);
   const cardRef = useRef<HTMLAnchorElement>(null);
 
@@ -23,13 +13,12 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Considera em foco se estiver 60% ou mais visível
           setIsInFocus(entry.isIntersecting && entry.intersectionRatio >= 0.6);
         });
       },
       {
         threshold: [0, 0.25, 0.5, 0.6, 0.75, 1],
-        rootMargin: "-20% 0px -20% 0px", // Foco no centro vertical da tela
+        rootMargin: "-20% 0px -20% 0px",
       }
     );
 
@@ -44,35 +33,37 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
   return (
     <motion.a
       ref={cardRef}
-      href={project.href ?? "https://www.behance.net/"}
+      href={project.link ?? "#"}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="group relative overflow-hidden rounded-lg cursor-pointer block"
-      style={{ 
+      style={{
         height: '400px',
       }}
     >
       {/* Image with zoom when in focus */}
-      <motion.div 
+      <motion.div
         className="absolute inset-0"
         animate={{ scale: isInFocus ? 1.05 : 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <Image
-          src={project.image}
-          alt={project.title}
-          fill
-          sizes="100vw"
-          className="object-contain"
-          priority={project.id <= 2}
-          style={{ filter: 'grayscale(0)' }}
-        />
+        {project.image && (
+          <Image
+            src={project.image}
+            alt={project.title}
+            fill
+            sizes="100vw"
+            className="object-contain"
+            priority={index < 2}
+            style={{ filter: 'grayscale(0)' }}
+          />
+        )}
       </motion.div>
 
       {/* Gradient overlay for better text visibility - appears when in focus */}
-      <motion.div 
+      <motion.div
         className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"
         animate={{ opacity: isInFocus ? 1 : 0 }}
         transition={{ duration: 0.4 }}
@@ -82,7 +73,7 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/50 via-black/20 to-transparent z-10" />
 
       {/* Project Title - Top - appears when in focus */}
-      <motion.div 
+      <motion.div
         className="absolute top-4 left-4 right-4 z-20"
         animate={{ opacity: isInFocus ? 1 : 0, y: isInFocus ? 0 : 10 }}
         transition={{ duration: 0.4 }}
@@ -103,7 +94,7 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
   );
 };
 
-export const ProjectsSectionMobile = () => {
+export const ProjectsSectionMobile = ({ projects }: { projects: Project[] }) => {
   return (
     <section id="projects" className="relative pt-8 pb-12 px-4">
       <div className="w-full">
@@ -133,4 +124,3 @@ export const ProjectsSectionMobile = () => {
     </section>
   );
 };
-

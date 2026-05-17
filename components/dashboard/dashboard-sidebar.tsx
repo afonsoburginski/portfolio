@@ -17,18 +17,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  LayoutDashboard, ShieldCheck,
+  LayoutDashboard, ShieldCheck, FolderKanban,
   LogOut, ChevronsUpDown, ExternalLink,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationBadge } from "@/components/dashboard/notification-badge";
 
-const CLIENT_NAV = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+type NavItem = { label: string; href: string; icon: typeof LayoutDashboard; showBadge?: boolean };
+
+const CLIENT_NAV: NavItem[] = [
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, showBadge: true },
 ];
 
-const ADMIN_NAV = [
-  { label: "All Requests", href: "/dashboard/admin", icon: ShieldCheck },
+const ADMIN_NAV: NavItem[] = [
+  { label: "All Requests", href: "/dashboard/admin", icon: ShieldCheck, showBadge: true },
+  { label: "Projects", href: "/dashboard/admin/projects", icon: FolderKanban },
 ];
 
 export function DashboardSidebar() {
@@ -94,7 +97,9 @@ export function DashboardSidebar() {
                     <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>
-                      <NotificationBadge count={unreadCount} className="ml-auto" />
+                      {item.showBadge && (
+                        <NotificationBadge count={unreadCount} className="ml-auto" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

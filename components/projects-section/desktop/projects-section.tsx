@@ -3,32 +3,9 @@ import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import type { Project } from "@/lib/schema";
 
-// 3 columns layout - left & right equal size, center slightly taller
-// Portrait cards (height > width)
-const BLOB = "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects";
-
-const col1 = [
-  { id: 4, image: "https://cdn.afonsodev.com/projects/orcanorte-1.png", height: 320, href: "/case-study/orcanorte" },
-  { id: 2, image: `${BLOB}/easydriver-admin.png`, height: 320, href: "/case-study/easydriver" },
-  { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 320 },
-];
-
-const col2 = [
-  { id: 10, image: `${BLOB}/stormzplus-app.png`, height: 360, href: "/case-study/stormzplus-mobile" },
-  { id: 1, image: `${BLOB}/stormzplus.png`, height: 360, href: "/case-study/stormzplus" },
-];
-
-const col3 = [
-  { id: 7, image: `${BLOB}/gem-jhonrob-1.png`, height: 320, href: "/case-study/gem-jhonrob" },
-  { id: 5, image: `${BLOB}/nextjs-ffmpeg-transcoder-1.png`, height: 360, href: "/case-study/nextjs-ffmpeg-transcoder" },
-  { id: 8, image: "https://framerusercontent.com/images/MM7F7DNjn9gGQjHqbiowegENsRY.png", height: 320 },
-  { id: 9, image: "https://framerusercontent.com/images/W7bXB4tsou7l5mHYU8sze3sBeg.png", height: 320 },
-];
-
-const columns = [col1, col2, col3];
-
-export const ProjectsSectionDesktop = () => {
+export const ProjectsSectionDesktop = ({ projects }: { projects: Project[] }) => {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -43,8 +20,13 @@ export const ProjectsSectionDesktop = () => {
   // Calculate blur amount based on scroll position
   // When at top (scrollY = 0), blur is maximum (20px)
   // As user scrolls down, blur decreases much faster
-  const blurAmount = Math.max(0, 20 - (scrollY / 10)); // Changed from 15 to 10 for even faster transition
+  const blurAmount = Math.max(0, 20 - (scrollY / 10));
   const opacity = Math.min(1, Math.max(0.3, 1 - (blurAmount / 20)));
+
+  // Distribute projects round-robin into 3 columns by index % 3.
+  // Middle column (idx 1) renders slightly taller to keep the original visual.
+  const columns: Project[][] = [[], [], []];
+  projects.forEach((p, i) => columns[i % 3].push(p));
 
   return (
     <section id="projects" className="relative pt-32 pb-12 px-6">
@@ -55,16 +37,16 @@ export const ProjectsSectionDesktop = () => {
               key={colIndex}
               className={`flex flex-col gap-2.5 flex-1 ${colIndex === 1 ? '-mt-22' : ''}`}
             >
-              {column.filter(project => ![6, 8, 9].includes(project.id)).map((project, index) => (
+              {column.map((project, index) => (
                 <motion.a
                   key={project.id}
-                  href={project.href ?? "https://www.behance.net/"}
+                  href={project.link ?? "#"}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: colIndex * 0.1 + index * 0.1 }}
                   className="group relative overflow-hidden rounded-[4px] cursor-pointer block"
-                  style={{ 
+                  style={{
                     height: `clamp(${colIndex === 1 ? '512px' : '462.72px'}, ${colIndex === 1 ? '55vh' : '48vh'}, ${colIndex === 1 ? '585px' : '520px'})`,
                     transform: colIndex === 1 ? 'scale(1.05)' : 'scale(1)',
                     filter: `blur(${blurAmount}px)`,
@@ -72,15 +54,16 @@ export const ProjectsSectionDesktop = () => {
                     transition: 'filter 0.3s ease-out, opacity 0.3s ease-out'
                   }}
                 >
-                  {/* Image */}
-                  <Image
-                    src={project.image}
-                    alt="project img"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                    className="object-cover transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-110"
-                    priority={project.id <= 3}
-                  />
+                  {project.image && (
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      className="object-cover transition-all duration-500 filter grayscale group-hover:grayscale-0 group-hover:scale-110"
+                      priority={index === 0}
+                    />
+                  )}
 
                   {/* Bottom CTA bar */}
                   <div className="absolute left-2 right-2 bottom-2 z-30">
@@ -98,4 +81,3 @@ export const ProjectsSectionDesktop = () => {
     </section>
   );
 };
-

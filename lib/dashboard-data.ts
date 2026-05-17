@@ -1,12 +1,18 @@
 "use server";
 
 import { db } from "./db";
-import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user } from "./schema";
-import { eq, desc, inArray, and, sql } from "drizzle-orm";
+import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user, projects } from "./schema";
+import { eq, desc, inArray, and, sql, asc } from "drizzle-orm";
 import { auth } from "./auth";
 import { headers } from "next/headers";
-import type { RequestStatus, RequestType, RequestTaskStatus } from "./schema";
+import type { RequestStatus, RequestType, RequestTaskStatus, ProjectCategory, ProjectStatus } from "./schema";
 import { isAdmin } from "./admin-helpers";
+
+async function requireAdmin() {
+  const u = await currentUser();
+  if (!isAdmin(u)) throw new Error("Forbidden");
+  return u!;
+}
 
 async function currentUser() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -422,6 +428,94 @@ export async function addComment(requestId: string, content: string) {
 
 export async function deleteComment(id: string) {
   await db.delete(request_comments).where(eq(request_comments.id, id));
+}
+
+// ——— Projects (home cards + case-study slugs) ———
+
+export async function getHomeProjects() {
+  return db
+    .select()
+    .from(projects)
+    .where(eq(projects.featured, true))
+    .orderBy(asc(projects.sort_order));
+}
+
+export async function getAllProjectsAdmin() {
+  await requireAdmin();
+  return db.select().from(projects).orderBy(asc(projects.sort_order));
+}
+
+export async function createProject(payload: {
+  slug: string;
+  title: string;
+  description?: string;
+  image?: string | null;
+  link?: string | null;
+  category?: ProjectCategory;
+  status?: ProjectStatus;
+  featured?: boolean;
+}) {
+  await requireAdmin();
+  const last = await db
+    .select({ max: sql<number>`COALESCE(MAX(${projects.sort_order}), 0)` })
+    .from(projects);
+  const nextOrder = (last[0]?.max ?? 0) + 10;
+  const [row] = await db
+    .insert(projects)
+    .values({
+      slug: payload.slug,
+      title: payload.title,
+      description: payload.description ?? "",
+      image: payload.image ?? null,
+      link: payload.link ?? null,
+      category: payload.category ?? "web",
+      status: payload.status ?? "production",
+      featured: payload.featured ?? true,
+      sort_order: nextOrder,
+    })
+    .returning();
+  return row;
+}
+
+export async function updateProject(
+  id: string,
+  patch: Partial<{
+    slug: string;
+    title: string;
+    description: string;
+    image: string | null;
+    link: string | null;
+    category: ProjectCategory;
+    status: ProjectStatus;
+    featured: boolean;
+    sort_order: number;
+  }>,
+) {
+  await requireAdmin();
+  const [row] = await db
+    .update(projects)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .set({ ...(patch as any), updated_at: sql`datetime('now')` })
+    .where(eq(projects.id, id))
+    .returning();
+  return row;
+}
+
+export async function deleteProject(id: string) {
+  await requireAdmin();
+  await db.delete(projects).where(eq(projects.id, id));
+}
+
+export async function reorderProjects(orderedIds: string[]) {
+  await requireAdmin();
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      db
+        .update(projects)
+        .set({ sort_order: (idx + 1) * 10, updated_at: sql`datetime('now')` })
+        .where(eq(projects.id, id)),
+    ),
+  );
 }
 
 // ——— Payment helper (replaces Supabase RPC mark_payment_approved) ———

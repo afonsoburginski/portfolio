@@ -29,8 +29,8 @@ export const HeaderDesktop = () => {
       scrolled ? 'px-6 py-3' : 'px-6 py-4'
     }`}>
       <nav className={`max-w-[1600px] mx-auto relative flex items-center justify-between px-6 py-3 transition-all duration-300 ${
-        scrolled 
-          ? 'backdrop-blur-md bg-black/40 border border-white/10 shadow-lg rounded-2xl' 
+        scrolled
+          ? 'backdrop-blur-xl bg-black/40 border border-white/10 shadow-lg rounded-2xl'
           : ''
       }`}>
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0">
