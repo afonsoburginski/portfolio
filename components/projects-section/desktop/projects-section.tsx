@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 const BLOB = "https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects";
 
 const col1 = [
-  { id: 4, image: `${BLOB}/orcanorte.png`, height: 320, href: "/case-study/orcanorte" },
+  { id: 4, image: "https://cdn.afonsodev.com/projects/orcanorte-1.png", height: 320, href: "/case-study/orcanorte" },
   { id: 2, image: `${BLOB}/easydriver-admin.png`, height: 320, href: "/case-study/easydriver" },
   { id: 6, image: "https://framerusercontent.com/images/jlIAaI4caPj3oVLaxetMd2RvY.png", height: 320 },
 ];
