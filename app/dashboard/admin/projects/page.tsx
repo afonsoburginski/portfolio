@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
 import { isAdminEmail } from "@/lib/admin-helpers";
@@ -22,10 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ImageUpload } from "@/components/dashboard/image-upload";
 import {
   Loader2, ShieldCheck, FolderKanban, Plus, Pencil, Trash2,
   Eye, EyeOff, ArrowUp, ArrowDown, ExternalLink, ImageOff,
+  ImagePlus, X,
 } from "lucide-react";
 
 const CATEGORY_LABEL: Record<ProjectCategory, string> = {
@@ -41,7 +41,6 @@ type FormState = {
   title: string;
   description: string;
   image: string | null;
-  link: string;
   category: ProjectCategory;
   featured: boolean;
 };
@@ -51,10 +50,17 @@ const EMPTY_FORM: FormState = {
   title: "",
   description: "",
   image: null,
-  link: "",
   category: "web",
   featured: true,
 };
+
+type ImageMeta = { width: number; height: number; sizeBytes: number };
+
+function formatBytes(b: number) {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
 
 function slugify(text: string) {
   return text
@@ -74,8 +80,11 @@ export default function AdminProjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [imageMeta, setImageMeta] = useState<ImageMeta | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = isAdminEmail(user?.email);
 
@@ -90,8 +99,51 @@ export default function AdminProjectsPage() {
   function openCreate() {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setImageMeta(null);
     setError(null);
     setDialogOpen(true);
+  }
+
+  async function handleImageFile(file: File) {
+    setError(null);
+
+    // Preview imediato com dimensões reais (sem esperar o upload terminar).
+    const localPreview = URL.createObjectURL(file);
+    const img = new window.Image();
+    const dims = await new Promise<{ w: number; h: number }>((resolve) => {
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 0, h: 0 });
+      img.src = localPreview;
+    });
+    setForm((f) => ({ ...f, image: localPreview }));
+    setImageMeta({ width: dims.w, height: dims.h, sizeBytes: file.size });
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "projects");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao fazer upload");
+      }
+      const { url } = await res.json();
+      URL.revokeObjectURL(localPreview);
+      setForm((f) => ({ ...f, image: url }));
+    } catch (e) {
+      URL.revokeObjectURL(localPreview);
+      setForm((f) => ({ ...f, image: null }));
+      setImageMeta(null);
+      setError(e instanceof Error ? e.message : "Erro ao fazer upload");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleImageRemove() {
+    setForm((f) => ({ ...f, image: null }));
+    setImageMeta(null);
   }
 
   function openEdit(p: Project) {
@@ -101,10 +153,10 @@ export default function AdminProjectsPage() {
       title: p.title,
       description: p.description ?? "",
       image: p.image ?? null,
-      link: p.link ?? "",
       category: p.category as ProjectCategory,
       featured: !!p.featured,
     });
+    setImageMeta(null);
     setError(null);
     setDialogOpen(true);
   }
@@ -116,6 +168,9 @@ export default function AdminProjectsPage() {
     const slug = (form.slug || slugify(form.title)).trim();
     if (!slug) return setError("Slug é obrigatório.");
 
+    // Link is derived: every project opens at /case-study/<slug>
+    const link = `/case-study/${slug}`;
+
     setSubmitting(true);
     try {
       if (editing) {
@@ -124,7 +179,7 @@ export default function AdminProjectsPage() {
           title: form.title.trim(),
           description: form.description.trim(),
           image: form.image,
-          link: form.link.trim() || null,
+          link,
           category: form.category,
           featured: form.featured,
         });
@@ -135,7 +190,7 @@ export default function AdminProjectsPage() {
           title: form.title.trim(),
           description: form.description.trim(),
           image: form.image,
-          link: form.link.trim() || null,
+          link,
           category: form.category,
           featured: form.featured,
         });
@@ -364,30 +419,104 @@ export default function AdminProjectsPage() {
 
       {/* create/edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-xl bg-neutral-900 border-neutral-800">
-          <DialogHeader>
+        <DialogContent
+          className="w-[min(960px,95vw)] max-w-none sm:max-w-none max-h-[90vh] overflow-y-auto bg-neutral-900 border-neutral-800 p-0"
+        >
+          <DialogHeader className="px-6 pt-6 pb-3 border-b border-neutral-800">
             <DialogTitle className="text-base">
               {editing ? "Editar projeto" : "Novo projeto"}
             </DialogTitle>
             <DialogDescription className="text-xs text-neutral-500">
-              Card exibido na seção <span className="font-mono">Featured Projects</span> da home.
+              Card exibido na home. O link abre automaticamente em <span className="font-mono">/case-study/&lt;slug&gt;</span>.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-400">Imagem (thumb da home)</Label>
-              <ImageUpload
-                value={form.image}
-                onChange={(url) => setForm((f) => ({ ...f, image: url }))}
-                folder="projects"
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-0">
+            {/* ── coluna esquerda: imagem ─────────────────────── */}
+            <div className="flex flex-col gap-2 px-6 pt-5 pb-5 md:border-r md:border-neutral-800">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-neutral-400">Imagem (thumb da home)</Label>
+                {imageMeta && (
+                  <span className="text-[10px] font-mono text-neutral-500">
+                    {imageMeta.width}×{imageMeta.height} · {formatBytes(imageMeta.sizeBytes)}
+                  </span>
+                )}
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
                 accept="image/*"
-                label="Adicionar imagem"
-                description="PNG/JPG/WebP — recomenda-se 1200×900px ou maior."
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageFile(file);
+                  e.target.value = "";
+                }}
+                className="hidden"
               />
+
+              {form.image ? (
+                <div className="relative group min-h-[380px] flex items-center justify-center rounded-lg border border-neutral-800 bg-neutral-950/50 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.image}
+                    alt="Preview"
+                    className="max-h-[460px] w-auto max-w-full object-contain"
+                  />
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                      <Loader2 className="size-5 animate-spin text-white" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 rounded-md bg-black/70 px-2 py-1 text-[11px] text-white hover:bg-black"
+                      title="Trocar imagem"
+                    >
+                      <ImagePlus className="size-3.5" />
+                      Trocar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleImageRemove}
+                      className="flex size-7 items-center justify-center rounded-md bg-black/70 text-white hover:bg-red-600"
+                      title="Remover imagem"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex min-h-[380px] flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-neutral-700 bg-neutral-950/50 px-4 py-6 text-sm text-neutral-400 transition-colors hover:border-neutral-500 hover:bg-neutral-800/30 disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="size-5 animate-spin" />
+                      Enviando…
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="size-7 text-neutral-500" />
+                      <div className="text-center space-y-1">
+                        <p className="font-medium text-neutral-300">Anexar imagem</p>
+                        <p className="text-[11px] text-neutral-500">
+                          PNG / JPG / WebP — recomenda‑se 1200×900px ou maior.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* ── coluna direita: campos ─────────────────────── */}
+            <div className="flex flex-col gap-4 px-6 pt-5 pb-5">
               <div className="space-y-1.5">
                 <Label className="text-xs text-neutral-400">Título</Label>
                 <Input
@@ -397,7 +526,6 @@ export default function AdminProjectsPage() {
                     setForm((f) => ({
                       ...f,
                       title,
-                      // auto-preenche slug se ainda não foi editado manualmente
                       slug: !editing && (f.slug === "" || f.slug === slugify(f.title)) ? slugify(title) : f.slug,
                     }));
                   }}
@@ -416,28 +544,19 @@ export default function AdminProjectsPage() {
                   className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 font-mono text-xs"
                   required
                 />
+                <p className="text-[10px] text-neutral-500">
+                  Abre em <span className="font-mono text-neutral-400">/case-study/{form.slug || "<slug>"}</span>
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-400">Descrição curta</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Uma linha que explica o projeto."
-                rows={2}
-                className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
-              />
-            </div>
-
-            <div className="grid grid-cols-[1fr_140px] gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs text-neutral-400">Link</Label>
-                <Input
-                  value={form.link}
-                  onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
-                  placeholder="/case-study/orcanorte"
-                  className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs"
+                <Label className="text-xs text-neutral-400">Descrição curta</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Uma linha que explica o projeto."
+                  rows={3}
+                  className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
                 />
               </div>
 
@@ -459,28 +578,29 @@ export default function AdminProjectsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <label className="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-800/50 px-3 py-2 cursor-pointer hover:bg-neutral-800 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={form.featured}
+                  onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
+                  className="size-4 rounded border-neutral-600 bg-neutral-900"
+                />
+                <span className="text-sm text-neutral-200">Exibir na home</span>
+                <span className="ml-auto text-[11px] text-neutral-500">
+                  Desmarque para ocultar sem deletar
+                </span>
+              </label>
+
+              {error && (
+                <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
             </div>
 
-            <label className="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-800/50 px-3 py-2 cursor-pointer hover:bg-neutral-800 transition-colors">
-              <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
-                className="size-4 rounded border-neutral-600 bg-neutral-900"
-              />
-              <span className="text-sm text-neutral-200">Exibir na home</span>
-              <span className="ml-auto text-[11px] text-neutral-500">
-                Desmarque para ocultar sem deletar
-              </span>
-            </label>
-
-            {error && (
-              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                {error}
-              </p>
-            )}
-
-            <DialogFooter>
+            {/* ── footer ─────────────────────── */}
+            <DialogFooter className="col-span-full border-t border-neutral-800 px-6 py-4">
               <Button
                 type="button"
                 variant="outline"
@@ -491,7 +611,7 @@ export default function AdminProjectsPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || uploading}
                 className="gap-2 bg-white text-neutral-900 hover:bg-neutral-200"
               >
                 {submitting && <Loader2 className="size-4 animate-spin" />}
