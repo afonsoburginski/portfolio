@@ -27,6 +27,17 @@ const tools = [
 
 const experiences = [
   {
+    role: "Senior Mobile Engineer",
+    company: "Atman Systems",
+    period: "2026 - Present",
+    description: "Mobile architecture and delivery for enterprise products. React Native with native modules in Swift and Kotlin, performance and release pipelines (EAS Build, Fastlane), and end-to-end ownership of the mobile stack.",
+    highlights: [
+      { text: "React Native + native", icon: Code },
+      { text: "Mobile architecture", icon: Star },
+      { text: "App Store & Play Store", icon: Trophy }
+    ]
+  },
+  {
     role: "Full Stack Engineer",
     company: "JHONROB Silos e Secadores",
     period: "Nov 2023 - Present",
