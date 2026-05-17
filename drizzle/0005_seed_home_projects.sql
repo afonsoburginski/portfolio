@@ -24,7 +24,7 @@ INSERT OR IGNORE INTO "projects" (
     'Mobile app for the Stormz+ streaming platform.',
     'mobile',
     'production',
-    'https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/stormzplus-app.png',
+    'https://cdn.afonsodev.com/projects/stormzplus-app.png',
     '/case-study/stormzplus-mobile',
     1,
     20
@@ -36,7 +36,7 @@ INSERT OR IGNORE INTO "projects" (
     'Jewelry shop showcase and catalog.',
     'web',
     'production',
-    'https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/gem-jhonrob-1.png',
+    'https://cdn.afonsodev.com/projects/gem-jhonrob-1.png',
     '/case-study/gem-jhonrob',
     1,
     30
@@ -48,7 +48,7 @@ INSERT OR IGNORE INTO "projects" (
     'Driver management platform with admin and mobile clients.',
     'full_system',
     'production',
-    'https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/easydriver-admin.png',
+    'https://cdn.afonsodev.com/projects/easydriver-admin.png',
     '/case-study/easydriver',
     1,
     40
@@ -60,7 +60,7 @@ INSERT OR IGNORE INTO "projects" (
     'Stormz+ streaming web platform.',
     'web',
     'production',
-    'https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/stormzplus.png',
+    'https://cdn.afonsodev.com/projects/stormzplus.png',
     '/case-study/stormzplus',
     1,
     50
@@ -72,7 +72,7 @@ INSERT OR IGNORE INTO "projects" (
     'Server-side media transcoder built with Next.js and FFmpeg.',
     'web',
     'production',
-    'https://y3s2nvfmhyxopshw.public.blob.vercel-storage.com/projects/nextjs-ffmpeg-transcoder-1.png',
+    'https://cdn.afonsodev.com/projects/nextjs-ffmpeg-transcoder-1.png',
     '/case-study/nextjs-ffmpeg-transcoder',
     1,
     60
