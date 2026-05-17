@@ -8,6 +8,8 @@ import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { getHomeProjects } from "@/lib/dashboard-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const projects = await getHomeProjects();
 
