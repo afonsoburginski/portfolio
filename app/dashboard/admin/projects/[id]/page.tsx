@@ -17,14 +17,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Loader2, ShieldCheck, ArrowLeft, Save, Plus, Trash2,
-  ImagePlus, X, ExternalLink,
+  ImagePlus, X, ExternalLink, ChevronDown, ChevronRight,
+  ArrowUp, ArrowDown, Image as ImageIcon, Film,
 } from "lucide-react";
 
 type ChallengeRow = { title: string; detail: string };
 type SectionRow = {
   title: string;
-  body: string;        // textarea: one paragraph per line
-  subsections: string; // textarea: one subsection per line
+  body: string[];
+  subsections: string[];
   image: string;
   video: string;
 };
@@ -34,17 +35,102 @@ function parseJson<T>(raw: string | null | undefined, fb: T): T {
   try { return JSON.parse(raw) as T; } catch { return fb; }
 }
 
-const linesToArray = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean);
-const arrayToLines = (a: string[] | null | undefined) => (a ?? []).join("\n");
+/* ─── ListEditor: rows of single-line items with reorder + delete ───── */
+
+function ListEditor({
+  items, onChange, placeholder, multiline,
+}: {
+  items: string[];
+  onChange: (items: string[]) => void;
+  placeholder: string;
+  multiline?: boolean;
+}) {
+  const update = (i: number, v: string) => onChange(items.map((x, idx) => (idx === i ? v : x)));
+  const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  const swap = (i: number, j: number) => {
+    if (j < 0 || j >= items.length) return;
+    const next = [...items];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      {items.length === 0 && (
+        <p className="text-[11px] text-neutral-500 italic px-1">Nenhum item.</p>
+      )}
+      {items.map((item, i) => (
+        <div key={i} className="group flex items-start gap-1.5">
+          <div className="flex flex-col gap-0.5 pt-1.5">
+            <button
+              type="button"
+              onClick={() => swap(i, i - 1)}
+              disabled={i === 0}
+              className="flex size-4 items-center justify-center rounded text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              aria-label="Mover para cima"
+            >
+              <ArrowUp className="size-3" />
+            </button>
+            <button
+              type="button"
+              onClick={() => swap(i, i + 1)}
+              disabled={i === items.length - 1}
+              className="flex size-4 items-center justify-center rounded text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              aria-label="Mover para baixo"
+            >
+              <ArrowDown className="size-3" />
+            </button>
+          </div>
+          {multiline ? (
+            <Textarea
+              value={item}
+              onChange={(e) => update(i, e.target.value)}
+              placeholder={placeholder}
+              rows={2}
+              className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm flex-1"
+            />
+          ) : (
+            <Input
+              value={item}
+              onChange={(e) => update(i, e.target.value)}
+              placeholder={placeholder}
+              className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-sm flex-1"
+            />
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-8 text-neutral-500 hover:text-red-400 shrink-0"
+            onClick={() => remove(i)}
+            aria-label="Remover"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-8 gap-1.5 border-dashed border-neutral-700 bg-transparent text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 w-full"
+        onClick={() => onChange([...items, ""])}
+      >
+        <Plus className="size-3.5" />
+        Adicionar item
+      </Button>
+    </div>
+  );
+}
+
+/* ─── ImageField: URL input + R2 upload + thumb preview ────────────── */
 
 function ImageField({
-  label,
-  value,
-  onChange,
+  value, onChange, compact,
 }: {
-  label: string;
   value: string | null;
   onChange: (url: string | null) => void;
+  compact?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -74,7 +160,6 @@ function ImageField({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs text-neutral-400">{label}</Label>
       <input
         ref={inputRef}
         type="file"
@@ -97,7 +182,7 @@ function ImageField({
           type="button"
           variant="outline"
           size="sm"
-          className="h-9 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+          className="h-9 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700 shrink-0"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
         >
@@ -109,7 +194,7 @@ function ImageField({
             type="button"
             variant="outline"
             size="sm"
-            className="h-9 border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-red-400"
+            className="h-9 border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-red-400 shrink-0"
             onClick={() => onChange(null)}
           >
             <X className="size-3.5" />
@@ -121,13 +206,189 @@ function ImageField({
         <img
           src={value}
           alt="preview"
-          className="max-h-40 rounded border border-neutral-800 object-contain bg-neutral-950"
+          className={`${compact ? "max-h-24" : "max-h-48"} rounded border border-neutral-800 object-contain bg-neutral-950`}
         />
       )}
       {err && <p className="text-[11px] text-red-400">{err}</p>}
     </div>
   );
 }
+
+/* ─── ChallengeCard: collapsible challenge editor ──────────────────── */
+
+function ChallengeCard({
+  challenge, index, total, isOpen,
+  onToggle, onUpdate, onRemove, onMove,
+}: {
+  challenge: ChallengeRow;
+  index: number;
+  total: number;
+  isOpen: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: Partial<ChallengeRow>) => void;
+  onRemove: () => void;
+  onMove: (dir: -1 | 1) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <button type="button" onClick={onToggle} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+          {isOpen ? <ChevronDown className="size-3.5 text-neutral-500 shrink-0" /> : <ChevronRight className="size-3.5 text-neutral-500 shrink-0" />}
+          <span className={`text-sm truncate ${challenge.title ? "text-neutral-100 font-medium" : "text-neutral-500 italic"}`}>
+            {challenge.title || "Sem título"}
+          </span>
+          {challenge.detail && !isOpen && (
+            <span className="text-[11px] text-neutral-500 truncate">· {challenge.detail.slice(0, 80)}</span>
+          )}
+        </button>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-neutral-200 disabled:opacity-30" disabled={index === 0} onClick={() => onMove(-1)}>
+            <ArrowUp className="size-3" />
+          </Button>
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-neutral-200 disabled:opacity-30" disabled={index === total - 1} onClick={() => onMove(1)}>
+            <ArrowDown className="size-3" />
+          </Button>
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-red-400" onClick={onRemove}>
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="px-3 pb-3 space-y-2 border-t border-neutral-800/60">
+          <div className="pt-3">
+            <Label className="text-[11px] text-neutral-500 mb-1 block">Título do challenge</Label>
+            <Input
+              value={challenge.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Ex: SEO-first and highly performant catalog"
+              className="h-8 bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
+            />
+          </div>
+          <div>
+            <Label className="text-[11px] text-neutral-500 mb-1 block">Detalhe / solução</Label>
+            <Textarea
+              value={challenge.detail}
+              onChange={(e) => onUpdate({ detail: e.target.value })}
+              placeholder="Como você abordou esse desafio"
+              rows={3}
+              className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── SectionCard: collapsible rich section editor ─────────────────── */
+
+function SectionCard({
+  section, index, total, isOpen,
+  onToggle, onUpdate, onRemove, onMove,
+}: {
+  section: SectionRow;
+  index: number;
+  total: number;
+  isOpen: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: Partial<SectionRow>) => void;
+  onRemove: () => void;
+  onMove: (dir: -1 | 1) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <button type="button" onClick={onToggle} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+          {isOpen ? <ChevronDown className="size-3.5 text-neutral-500 shrink-0" /> : <ChevronRight className="size-3.5 text-neutral-500 shrink-0" />}
+          <span className={`text-sm truncate ${section.title ? "text-neutral-100 font-medium" : "text-neutral-500 italic"}`}>
+            {section.title || "Sem título"}
+          </span>
+          <span className="flex items-center gap-2 text-[10px] text-neutral-500 shrink-0">
+            <span>{section.body.length} ¶</span>
+            {section.subsections.length > 0 && <span>· {section.subsections.length} subs</span>}
+            {section.image && <ImageIcon className="size-3" />}
+            {section.video && <Film className="size-3" />}
+          </span>
+        </button>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-neutral-200 disabled:opacity-30" disabled={index === 0} onClick={() => onMove(-1)}>
+            <ArrowUp className="size-3" />
+          </Button>
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-neutral-200 disabled:opacity-30" disabled={index === total - 1} onClick={() => onMove(1)}>
+            <ArrowDown className="size-3" />
+          </Button>
+          <Button variant="ghost" size="icon" className="size-7 text-neutral-500 hover:text-red-400" onClick={onRemove}>
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="px-3 pb-3 space-y-3 border-t border-neutral-800/60 pt-3">
+          <div>
+            <Label className="text-[11px] text-neutral-500 mb-1 block">Título da section</Label>
+            <Input
+              value={section.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Ex: Architecture"
+              className="h-8 bg-neutral-800 border-neutral-700 text-neutral-100 text-sm font-medium"
+            />
+          </div>
+
+          <div>
+            <Label className="text-[11px] text-neutral-500 mb-1 block">Parágrafos (cada item vira um &lt;p&gt;)</Label>
+            <ListEditor
+              items={section.body}
+              onChange={(body) => onUpdate({ body })}
+              placeholder="Um parágrafo desta section…"
+              multiline
+            />
+          </div>
+
+          <div>
+            <Label className="text-[11px] text-neutral-500 mb-1 block">Subsections (cada item vira um &lt;h3&gt;)</Label>
+            <ListEditor
+              items={section.subsections}
+              onChange={(subsections) => onUpdate({ subsections })}
+              placeholder="Frontend"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-[11px] text-neutral-500 mb-1 block">Imagem (opcional)</Label>
+              <ImageField value={section.image || null} onChange={(v) => onUpdate({ image: v ?? "" })} compact />
+            </div>
+            <div>
+              <Label className="text-[11px] text-neutral-500 mb-1 block">Vídeo URL (opcional)</Label>
+              <Input
+                value={section.video}
+                onChange={(e) => onUpdate({ video: e.target.value })}
+                placeholder="https://cdn.afonsodev.com/projects/…mp4"
+                className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Page ─────────────────────────────────────────────────────────── */
+
+type Tab = "hero" | "content" | "challenges" | "sections";
+
+const TABS: { id: Tab; label: string; counter?: (s: State) => number }[] = [
+  { id: "hero",       label: "Hero" },
+  { id: "content",    label: "Conteúdo" },
+  { id: "challenges", label: "Challenges", counter: (s) => s.challenges.length },
+  { id: "sections",   label: "Sections",   counter: (s) => s.sections.length },
+];
+
+type State = {
+  challenges: ChallengeRow[];
+  sections: SectionRow[];
+};
 
 export default function ProjectEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -139,6 +400,7 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [tab, setTab] = useState<Tab>("hero");
 
   // editable fields
   const [title, setTitle] = useState("");
@@ -153,12 +415,14 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
   const [revenueNote, setRevenueNote] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [image2, setImage2] = useState<string | null>(null);
-  const [extraImages, setExtraImages] = useState("");
-  const [objectives, setObjectives] = useState("");
-  const [highlights, setHighlights] = useState("");
-  const [outcomes, setOutcomes] = useState("");
+  const [extraImages, setExtraImages] = useState<string[]>([]);
+  const [objectives, setObjectives] = useState<string[]>([]);
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [outcomes, setOutcomes] = useState<string[]>([]);
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
   const [sections, setSections] = useState<SectionRow[]>([]);
+  const [openChallenges, setOpenChallenges] = useState<Set<number>>(new Set());
+  const [openSections, setOpenSections] = useState<Set<number>>(new Set());
 
   const isAdmin = isAdminEmail(user?.email);
 
@@ -180,17 +444,17 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
         setRevenueNote(p.revenue_note ?? "");
         setImage(p.image);
         setImage2(p.image2);
-        setExtraImages(arrayToLines(parseJson<string[]>(p.extra_images, [])));
-        setObjectives(arrayToLines(parseJson<string[]>(p.objectives, [])));
-        setHighlights(arrayToLines(parseJson<string[]>(p.highlights, [])));
-        setOutcomes(arrayToLines(parseJson<string[]>(p.outcomes, [])));
+        setExtraImages(parseJson<string[]>(p.extra_images, []));
+        setObjectives(parseJson<string[]>(p.objectives, []));
+        setHighlights(parseJson<string[]>(p.highlights, []));
+        setOutcomes(parseJson<string[]>(p.outcomes, []));
         setChallenges(parseJson<ChallengeRow[]>(p.challenges, []));
         const secs = parseJson<{ title: string; body: string[]; subsections?: string[]; image?: string; video?: string }[]>(p.sections, []);
         setSections(
           secs.map((s) => ({
             title: s.title ?? "",
-            body: (s.body ?? []).join("\n"),
-            subsections: (s.subsections ?? []).join("\n"),
+            body: s.body ?? [],
+            subsections: s.subsections ?? [],
             image: s.image ?? "",
             video: s.video ?? "",
           })),
@@ -210,8 +474,8 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
         .filter((s) => s.title.trim() !== "")
         .map((s) => ({
           title: s.title.trim(),
-          body: linesToArray(s.body),
-          subsections: linesToArray(s.subsections),
+          body: s.body.filter((p) => p.trim()),
+          subsections: s.subsections.filter((p) => p.trim()),
           ...(s.image.trim() ? { image: s.image.trim() } : {}),
           ...(s.video.trim() ? { video: s.video.trim() } : {}),
         }));
@@ -226,10 +490,10 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
         story: story.trim() || null,
         image2: image2,
         revenue_note: revenueNote.trim() || null,
-        extra_images: JSON.stringify(linesToArray(extraImages)),
-        objectives: JSON.stringify(linesToArray(objectives)),
-        highlights: JSON.stringify(linesToArray(highlights)),
-        outcomes: JSON.stringify(linesToArray(outcomes)),
+        extra_images: JSON.stringify(extraImages.filter((x) => x.trim())),
+        objectives: JSON.stringify(objectives.filter((x) => x.trim())),
+        highlights: JSON.stringify(highlights.filter((x) => x.trim())),
+        outcomes: JSON.stringify(outcomes.filter((x) => x.trim())),
         challenges: JSON.stringify(challenges.filter((c) => c.title.trim() || c.detail.trim())),
         sections: JSON.stringify(sectionsPayload),
       });
@@ -240,6 +504,13 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
     } finally {
       setSaving(false);
     }
+  }
+
+  function toggleSet(s: Set<number>, i: number) {
+    const next = new Set(s);
+    if (next.has(i)) next.delete(i);
+    else next.add(i);
+    return next;
   }
 
   if (authLoading || loading)
@@ -264,40 +535,68 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
       </div>
     );
 
+  const state: State = { challenges, sections };
+
   return (
-    <div className="flex flex-col gap-6">
-      {/* sticky header */}
-      <div className="sticky top-14 z-20 -mx-6 flex flex-wrap items-center gap-3 border-b border-border/50 bg-background/95 px-6 py-3 backdrop-blur-sm">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 h-8 text-muted-foreground hover:text-foreground"
-          onClick={() => router.push("/dashboard/admin/projects")}
-        >
-          <ArrowLeft className="size-3.5" />
-          Projects
-        </Button>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-muted-foreground/60 font-mono truncate">{project.slug}</p>
-          <h1 className="text-sm font-semibold truncate">{title || "Untitled"}</h1>
+    <div className="flex flex-col gap-4">
+      {/* sticky toolbar */}
+      <div className="sticky top-14 z-20 -mx-6 border-b border-border/50 bg-background/95 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-3 px-6 py-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 h-8 text-muted-foreground hover:text-foreground"
+            onClick={() => router.push("/dashboard/admin/projects")}
+          >
+            <ArrowLeft className="size-3.5" />
+            Projects
+          </Button>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted-foreground/60 font-mono truncate">{project.slug}</p>
+            <h1 className="text-sm font-semibold truncate">{title || "Untitled"}</h1>
+          </div>
+          <Link
+            href={`/case-study/${project.slug}`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+          >
+            <ExternalLink className="size-3.5" />
+            Preview
+          </Link>
+          <Button
+            size="sm"
+            className="gap-2 h-8 bg-white text-neutral-900 hover:bg-neutral-200"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+            {saved ? "Salvo" : "Salvar"}
+          </Button>
         </div>
-        <Link
-          href={`/case-study/${project.slug}`}
-          target="_blank"
-          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-        >
-          <ExternalLink className="size-3.5" />
-          Preview
-        </Link>
-        <Button
-          size="sm"
-          className="gap-2 h-8 bg-white text-neutral-900 hover:bg-neutral-200"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
-          {saved ? "Salvo" : "Salvar"}
-        </Button>
+
+        {/* tabs */}
+        <div className="flex gap-1 px-6">
+          {TABS.map((t) => {
+            const count = t.counter?.(state);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+                  tab === t.id
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+                {count !== undefined && (
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{count}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {error && (
@@ -306,218 +605,212 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
         </p>
       )}
 
-      {/* Hero */}
-      <Section title="Hero" hint="Informações principais exibidas no topo do case-study.">
-        <Grid cols="2">
-          <Field label="Título"><Input value={title} disabled className="h-9 bg-neutral-800/50 border-neutral-700 text-neutral-400 text-xs italic" /></Field>
-          <Field label="Subtítulo"><Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" placeholder="Opcional" /></Field>
-          <Field label="Role"><Input value={role} onChange={(e) => setRole(e.target.value)} className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" placeholder="Ex: Full-stack Engineer" /></Field>
-          <Field label="Timeline"><Input value={timeline} onChange={(e) => setTimeline(e.target.value)} className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" placeholder="Ex: 2024–2025" /></Field>
-          <Field label="Live URL"><Input value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono" placeholder="https://…" /></Field>
-          <Field label="GitHub URL"><Input value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono" placeholder="https://github.com/…" /></Field>
-        </Grid>
-        <Field label="Stack (texto livre, separado por vírgulas)">
-          <Textarea value={stack} onChange={(e) => setStack(e.target.value)} rows={2} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-      </Section>
+      {/* ── HERO TAB ─────────────────────────────────────── */}
+      {tab === "hero" && (
+        <div className="space-y-5">
+          <Card title="Identidade" hint="Cargo, período e stack que aparecem logo abaixo do título.">
+            <Grid cols="2">
+              <Field label="Título" hint="Editado em Projects">
+                <Input value={title} disabled className="h-9 bg-neutral-800/50 border-neutral-700 text-neutral-400 text-sm italic" />
+              </Field>
+              <Field label="Subtítulo (opcional)">
+                <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Linha de apoio" className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" />
+              </Field>
+              <Field label="Role">
+                <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Ex: Full-stack Engineer" className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" />
+              </Field>
+              <Field label="Timeline">
+                <Input value={timeline} onChange={(e) => setTimeline(e.target.value)} placeholder="Ex: 2024–2025" className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100" />
+              </Field>
+            </Grid>
+            <Field label="Stack" hint="Texto livre, separado por vírgulas.">
+              <Textarea value={stack} onChange={(e) => setStack(e.target.value)} rows={2} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
+            </Field>
+          </Card>
 
-      {/* Imagens */}
-      <Section title="Imagens" hint="Imagem principal (thumb da home + hero) e secundária.">
-        <Grid cols="2">
-          <ImageField label="Imagem principal" value={image} onChange={setImage} />
-          <ImageField label="Imagem 2 (opcional)" value={image2} onChange={setImage2} />
-        </Grid>
-        <Field label="Extra images (uma URL por linha)">
-          <Textarea value={extraImages} onChange={(e) => setExtraImages(e.target.value)} rows={3} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono" />
-        </Field>
-      </Section>
+          <Card title="Links" hint="Botões que aparecem no topo do case-study.">
+            <Grid cols="2">
+              <Field label="Live URL">
+                <Input value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} placeholder="https://…" className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono" />
+              </Field>
+              <Field label="GitHub URL">
+                <Input value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} placeholder="https://github.com/…" className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono" />
+              </Field>
+            </Grid>
+          </Card>
 
-      {/* Conteúdo */}
-      <Section title="Conteúdo" hint="Story, descrição e bullets.">
-        <Field label="Description (parágrafo de abertura)">
-          <Textarea value={description} disabled rows={3} className="resize-none bg-neutral-800/50 border-neutral-700 text-neutral-400 text-xs italic" />
-          <p className="text-[10px] text-neutral-500 mt-1">Editado na tela anterior (Projects).</p>
-        </Field>
-        <Field label="Story (Vision & MVP)">
-          <Textarea value={story} onChange={(e) => setStory(e.target.value)} rows={4} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-        <Field label="Objectives (uma por linha)">
-          <Textarea value={objectives} onChange={(e) => setObjectives(e.target.value)} rows={5} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-        <Field label="Highlights (uma por linha)">
-          <Textarea value={highlights} onChange={(e) => setHighlights(e.target.value)} rows={5} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-        <Field label="Outcomes (uma por linha)">
-          <Textarea value={outcomes} onChange={(e) => setOutcomes(e.target.value)} rows={5} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-        <Field label="Revenue note (opcional)">
-          <Textarea value={revenueNote} onChange={(e) => setRevenueNote(e.target.value)} rows={2} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
-        </Field>
-      </Section>
+          <Card title="Imagens" hint="Hero (imagem principal) e uma secundária opcional que aparece abaixo.">
+            <Grid cols="2">
+              <Field label="Imagem principal"><ImageField value={image} onChange={setImage} /></Field>
+              <Field label="Imagem 2 (opcional)"><ImageField value={image2} onChange={setImage2} /></Field>
+            </Grid>
+            <Field label="Extra images" hint="Lista de URLs adicionais — não renderizadas ainda no view; ficam disponíveis pra reuso em sections.">
+              <ListEditor items={extraImages} onChange={setExtraImages} placeholder="https://cdn.afonsodev.com/projects/…" />
+            </Field>
+          </Card>
+        </div>
+      )}
 
-      {/* Challenges */}
-      <Section
-        title="Challenges & Solutions"
-        hint="Cada bloco tem um título e um detalhamento."
-        action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
-            onClick={() => setChallenges((cs) => [...cs, { title: "", detail: "" }])}
-          >
-            <Plus className="size-3" />
-            Adicionar
-          </Button>
-        }
-      >
-        {challenges.length === 0 ? (
-          <p className="text-xs text-neutral-500 italic">Nenhum challenge cadastrado.</p>
-        ) : (
-          <div className="space-y-3">
-            {challenges.map((c, idx) => (
-              <div key={idx} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 space-y-2">
-                <div className="flex items-start gap-2">
-                  <Input
-                    value={c.title}
-                    onChange={(e) => setChallenges((cs) => cs.map((x, i) => i === idx ? { ...x, title: e.target.value } : x))}
-                    placeholder="Título do challenge"
-                    className="h-8 bg-neutral-800 border-neutral-700 text-neutral-100 text-sm font-medium"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-neutral-500 hover:text-red-400 shrink-0"
-                    onClick={() => setChallenges((cs) => cs.filter((_, i) => i !== idx))}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-                <Textarea
-                  value={c.detail}
-                  onChange={(e) => setChallenges((cs) => cs.map((x, i) => i === idx ? { ...x, detail: e.target.value } : x))}
-                  placeholder="Como você resolveu / abordou esse desafio"
-                  rows={3}
-                  className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
+      {/* ── CONTENT TAB ──────────────────────────────────── */}
+      {tab === "content" && (
+        <div className="space-y-5">
+          <Card title="Descrição & Story">
+            <Field label="Description" hint="Parágrafo principal — editado em Projects.">
+              <Textarea value={description} disabled rows={3} className="resize-none bg-neutral-800/50 border-neutral-700 text-neutral-400 text-sm italic" />
+            </Field>
+            <Field label="Story (Vision & MVP)" hint="Primeira section narrada — aparece logo após o hero.">
+              <Textarea value={story} onChange={(e) => setStory(e.target.value)} rows={5} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
+            </Field>
+          </Card>
+
+          <Card title="Objectives" hint="Bullets que viram a section Objectives.">
+            <ListEditor items={objectives} onChange={setObjectives} placeholder="Um objetivo" multiline />
+          </Card>
+
+          <Card title="Highlights" hint="Pontos altos do projeto, renderizados como bullets.">
+            <ListEditor items={highlights} onChange={setHighlights} placeholder="Um highlight" multiline />
+          </Card>
+
+          <Card title="Outcomes" hint="Resultados que aparecem no fim do case.">
+            <ListEditor items={outcomes} onChange={setOutcomes} placeholder="Um resultado" multiline />
+          </Card>
+
+          <Card title="Revenue note (opcional)" hint="Bloco discreto ao final mostrando aspecto financeiro.">
+            <Textarea value={revenueNote} onChange={(e) => setRevenueNote(e.target.value)} rows={2} className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm" />
+          </Card>
+        </div>
+      )}
+
+      {/* ── CHALLENGES TAB ──────────────────────────────── */}
+      {tab === "challenges" && (
+        <Card
+          title="Challenges & Solutions"
+          hint="Blocos com título + detalhe. Clique numa linha pra expandir."
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+              onClick={() => {
+                setChallenges((cs) => {
+                  const next = [...cs, { title: "", detail: "" }];
+                  setOpenChallenges(new Set([next.length - 1]));
+                  return next;
+                });
+              }}
+            >
+              <Plus className="size-3" />
+              Adicionar
+            </Button>
+          }
+        >
+          {challenges.length === 0 ? (
+            <p className="text-xs text-neutral-500 italic">Nenhum challenge cadastrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {challenges.map((c, idx) => (
+                <ChallengeCard
+                  key={idx}
+                  challenge={c}
+                  index={idx}
+                  total={challenges.length}
+                  isOpen={openChallenges.has(idx)}
+                  onToggle={() => setOpenChallenges((s) => toggleSet(s, idx))}
+                  onUpdate={(patch) =>
+                    setChallenges((cs) => cs.map((x, i) => (i === idx ? { ...x, ...patch } : x)))
+                  }
+                  onRemove={() => setChallenges((cs) => cs.filter((_, i) => i !== idx))}
+                  onMove={(dir) =>
+                    setChallenges((cs) => {
+                      const t = idx + dir;
+                      if (t < 0 || t >= cs.length) return cs;
+                      const next = [...cs];
+                      [next[idx], next[t]] = [next[t], next[idx]];
+                      return next;
+                    })
+                  }
                 />
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
-      {/* Sections */}
-      <Section
-        title="Sections"
-        hint="Blocos extras que aparecem no case-study com TOC próprio."
-        action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
-            onClick={() => setSections((ss) => [...ss, { title: "", body: "", subsections: "", image: "", video: "" }])}
-          >
-            <Plus className="size-3" />
-            Adicionar
-          </Button>
-        }
-      >
-        {sections.length === 0 ? (
-          <p className="text-xs text-neutral-500 italic">Nenhuma section cadastrada.</p>
-        ) : (
-          <div className="space-y-4">
-            {sections.map((s, idx) => (
-              <div key={idx} className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 space-y-3">
-                <div className="flex items-start gap-2">
-                  <Input
-                    value={s.title}
-                    onChange={(e) => setSections((ss) => ss.map((x, i) => i === idx ? { ...x, title: e.target.value } : x))}
-                    placeholder="Título da section"
-                    className="h-8 bg-neutral-800 border-neutral-700 text-neutral-100 text-sm font-medium"
-                  />
-                  <div className="flex gap-1 shrink-0">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-neutral-500 hover:text-neutral-200 disabled:opacity-30"
-                      disabled={idx === 0}
-                      onClick={() => setSections((ss) => {
-                        const next = [...ss];
-                        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-                        return next;
-                      })}
-                      aria-label="Mover para cima"
-                    >↑</Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-neutral-500 hover:text-neutral-200 disabled:opacity-30"
-                      disabled={idx === sections.length - 1}
-                      onClick={() => setSections((ss) => {
-                        const next = [...ss];
-                        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-                        return next;
-                      })}
-                      aria-label="Mover para baixo"
-                    >↓</Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-neutral-500 hover:text-red-400"
-                      onClick={() => setSections((ss) => ss.filter((_, i) => i !== idx))}
-                      aria-label="Remover section"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field label="Body (um parágrafo por linha)">
-                    <Textarea
-                      value={s.body}
-                      onChange={(e) => setSections((ss) => ss.map((x, i) => i === idx ? { ...x, body: e.target.value } : x))}
-                      rows={5}
-                      className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
-                    />
-                  </Field>
-                  <Field label="Subsections (uma por linha)">
-                    <Textarea
-                      value={s.subsections}
-                      onChange={(e) => setSections((ss) => ss.map((x, i) => i === idx ? { ...x, subsections: e.target.value } : x))}
-                      rows={5}
-                      className="resize-none bg-neutral-800 border-neutral-700 text-neutral-100 text-sm"
-                    />
-                  </Field>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field label="Image URL">
-                    <Input
-                      value={s.image}
-                      onChange={(e) => setSections((ss) => ss.map((x, i) => i === idx ? { ...x, image: e.target.value } : x))}
-                      placeholder="https://cdn.afonsodev.com/projects/…"
-                      className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono"
-                    />
-                  </Field>
-                  <Field label="Video URL (mp4)">
-                    <Input
-                      value={s.video}
-                      onChange={(e) => setSections((ss) => ss.map((x, i) => i === idx ? { ...x, video: e.target.value } : x))}
-                      placeholder="https://cdn.afonsodev.com/projects/…mp4"
-                      className="h-9 bg-neutral-800 border-neutral-700 text-neutral-100 text-xs font-mono"
-                    />
-                  </Field>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
+      {/* ── SECTIONS TAB ────────────────────────────────── */}
+      {tab === "sections" && (
+        <Card
+          title="Sections"
+          hint="Blocos longos com parágrafos, subsections, imagem e vídeo. Cada um vira uma âncora no TOC."
+          action={
+            <div className="flex items-center gap-2">
+              {sections.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-neutral-400 hover:text-neutral-200"
+                  onClick={() =>
+                    setOpenSections(
+                      openSections.size === sections.length
+                        ? new Set()
+                        : new Set(sections.map((_, i) => i)),
+                    )
+                  }
+                >
+                  {openSections.size === sections.length ? "Recolher todas" : "Expandir todas"}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1.5 border-neutral-700 bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                onClick={() => {
+                  setSections((ss) => {
+                    const next = [...ss, { title: "", body: [], subsections: [], image: "", video: "" }];
+                    setOpenSections(new Set([next.length - 1]));
+                    return next;
+                  });
+                }}
+              >
+                <Plus className="size-3" />
+                Adicionar
+              </Button>
+            </div>
+          }
+        >
+          {sections.length === 0 ? (
+            <p className="text-xs text-neutral-500 italic">Nenhuma section cadastrada.</p>
+          ) : (
+            <div className="space-y-2">
+              {sections.map((s, idx) => (
+                <SectionCard
+                  key={idx}
+                  section={s}
+                  index={idx}
+                  total={sections.length}
+                  isOpen={openSections.has(idx)}
+                  onToggle={() => setOpenSections((set) => toggleSet(set, idx))}
+                  onUpdate={(patch) =>
+                    setSections((ss) => ss.map((x, i) => (i === idx ? { ...x, ...patch } : x)))
+                  }
+                  onRemove={() => setSections((ss) => ss.filter((_, i) => i !== idx))}
+                  onMove={(dir) =>
+                    setSections((ss) => {
+                      const t = idx + dir;
+                      if (t < 0 || t >= ss.length) return ss;
+                      const next = [...ss];
+                      [next[idx], next[t]] = [next[t], next[idx]];
+                      return next;
+                    })
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* footer save */}
       <div className="flex justify-end pt-2 pb-6">
@@ -535,9 +828,9 @@ export default function ProjectEditorPage({ params }: { params: Promise<{ id: st
   );
 }
 
-/* ─── small layout helpers ─────────────────────────── */
+/* ─── layout primitives ───────────────────────────────────────────── */
 
-function Section({
+function Card({
   title, hint, action, children,
 }: {
   title: string;
@@ -561,10 +854,13 @@ function Section({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs text-neutral-400">{label}</Label>
+      <div className="flex items-baseline justify-between gap-2">
+        <Label className="text-xs text-neutral-400">{label}</Label>
+        {hint && <span className="text-[10px] text-neutral-500">{hint}</span>}
+      </div>
       {children}
     </div>
   );
