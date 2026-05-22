@@ -76,6 +76,15 @@ export async function POST(req: NextRequest) {
       .where(eq(requests.id, requestId));
   }
 
+  // Extrai dados de PIX (qr_code + qr_code_base64 + ticket_url) pro front renderizar
+  const pix = paymentData.point_of_interaction?.transaction_data
+    ? {
+        qrCode: paymentData.point_of_interaction.transaction_data.qr_code,
+        qrCodeBase64: paymentData.point_of_interaction.transaction_data.qr_code_base64,
+        ticketUrl: paymentData.point_of_interaction.transaction_data.ticket_url,
+      }
+    : null;
+
   return NextResponse.json({
     // Sempre retorna pending: o front aguarda a webhook (via polling do verify)
     // pra confirmar de fato. Mesmo cartão aprovado sincronicamente passa pela webhook.
@@ -83,5 +92,6 @@ export async function POST(req: NextRequest) {
     mpStatus: status,
     paymentId,
     statusDetail: paymentData.status_detail,
+    pix,
   });
 }

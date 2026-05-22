@@ -65,6 +65,13 @@ export interface MpPaymentResponse {
   status: string;
   status_detail?: string;
   external_reference?: string;
+  point_of_interaction?: {
+    transaction_data?: {
+      qr_code?: string;
+      qr_code_base64?: string;
+      ticket_url?: string;
+    };
+  };
 }
 
 export function createPayment(body: Record<string, unknown>) {

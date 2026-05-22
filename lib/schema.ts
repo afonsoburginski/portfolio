@@ -77,6 +77,7 @@ export const requests = sqliteTable("requests", {
   mp_payment_id: text("mp_payment_id"),
   paid_at: text("paid_at"),
   paid_manually: integer("paid_manually", { mode: "boolean" }).notNull().default(false),
+  share_token: text("share_token").unique(),
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
   updated_at: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });

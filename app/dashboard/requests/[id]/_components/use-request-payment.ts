@@ -8,8 +8,15 @@ import type { Request } from "@/lib/schema";
 const PIX_POLL_INTERVAL_MS = 5_000;
 const PIX_POLL_TIMEOUT_MS  = 10 * 60_000;
 
-export type PayStep = "idle" | "method" | "paying";
+export type PayStep = "idle" | "method" | "paying" | "pix-qr";
 export type PayMethod = "pix" | "card";
+
+export interface PixData {
+  qrCode: string;
+  qrCodeBase64: string;
+  ticketUrl?: string;
+  amount: number;
+}
 
 interface Preference {
   id: string;
@@ -31,6 +38,7 @@ interface UseRequestPaymentResult {
   brickError: string | null;
   preference: Preference | null;
   activeStageId: string | null;
+  pixData: PixData | null;
   startPayment: (stageId?: string | null) => Promise<void>;
   selectMethod: (method: PayMethod) => Promise<void>;
   cancelPayment: () => Promise<void>;
@@ -53,6 +61,7 @@ export function useRequestPayment({
   const [brickError, setBrickError] = useState<string | null>(null);
   const [preference, setPreference] = useState<Preference | null>(null);
   const [activeStageId, setActiveStageId] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<PixData | null>(null);
 
   async function unmount() {
     await unmountPaymentBrick(brickMounted);
@@ -78,6 +87,7 @@ export function useRequestPayment({
         stopPolling();
         onApproved({ status: "approved", paid_at: new Date().toISOString() }, activeStageId);
         setPayStep("idle");
+        setPixData(null);
       }
     }, PIX_POLL_INTERVAL_MS);
   }
@@ -142,9 +152,19 @@ export function useRequestPayment({
               return;
             }
 
-            // O backend sempre retorna pending. Só a webhook do MP altera o estado.
-            // Mantém o brick montado pra mostrar o QR (PIX) ou recibo (cartão)
-            // e dispara polling — o verify lê o D1 e detecta quando a webhook aprovou.
+            // Backend sempre retorna pending — só a webhook do MP altera o estado.
+            // PIX: temos o QR pra renderizar dentro do site (não depende mais do email).
+            // Cartão: ficamos esperando a confirmação via polling.
+            if (json.pix?.qrCodeBase64 && preference) {
+              await unmount();
+              setPixData({
+                qrCode: json.pix.qrCode,
+                qrCodeBase64: json.pix.qrCodeBase64,
+                ticketUrl: json.pix.ticketUrl,
+                amount: preference.amount,
+              });
+              setPayStep("pix-qr");
+            }
             onPending();
             startPixPolling();
           } catch {
@@ -166,6 +186,7 @@ export function useRequestPayment({
     setBrickError(null);
     setPreference(null);
     setActiveStageId(null);
+    setPixData(null);
   }
 
   async function goBackToMethod() {
@@ -175,7 +196,7 @@ export function useRequestPayment({
   }
 
   return {
-    payStep, payMethod, brickLoading, brickError, preference, activeStageId,
+    payStep, payMethod, brickLoading, brickError, preference, activeStageId, pixData,
     startPayment, selectMethod, cancelPayment, goBackToMethod,
   };
 }

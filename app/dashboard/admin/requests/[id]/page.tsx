@@ -20,6 +20,7 @@ import {
   changeRequestClient,
 } from "@/lib/dashboard-data";
 import { RequestAttachments } from "@/components/dashboard/request-attachments";
+import { ShareQuoteButton } from "@/components/dashboard/share-quote-button";
 import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Profile, Request, RequestAttachment, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
@@ -521,6 +522,11 @@ export default function AdminRequestPlanningPage({
             <span className="truncate text-sm text-muted-foreground">{request.title}</span>
 
             <div className="ml-auto flex items-center gap-2">
+              <ShareQuoteButton
+                requestId={request.id}
+                requestTitle={request.title}
+                budget={request.budget ?? null}
+              />
               {confirmDelete ? (
                 <>
                   <span className="text-xs text-destructive">Deletar permanentemente?</span>

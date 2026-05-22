@@ -10,6 +10,7 @@ import { useRequestDetail } from "./_components/use-request-detail";
 import { useRequestPayment } from "./_components/use-request-payment";
 import { PaymentFeedbackBanner } from "./_components/payment-feedback";
 import { PaymentFlow } from "./_components/payment-flow";
+import { PixQr } from "./_components/pix-qr";
 import { RequestCard } from "./_components/request-card";
 import { QUOTE_STATUSES } from "./_components/constants";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -32,7 +33,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   }, [user, id]);
 
   const {
-    payStep, payMethod, brickLoading, brickError, preference, activeStageId,
+    payStep, payMethod, brickLoading, brickError, preference, activeStageId, pixData,
     startPayment, selectMethod, cancelPayment, goBackToMethod,
   } = useRequestPayment({
     requestId: id,
@@ -90,6 +91,20 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     const displayBudget = preference
       ? preference.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })
       : req.budget;
+
+    if (payStep === "pix-qr" && pixData) {
+      return (
+        <div className="mx-auto w-full max-w-md py-6">
+          <PixQr
+            qrCodeBase64={pixData.qrCodeBase64}
+            qrCode={pixData.qrCode}
+            amount={pixData.amount}
+            ticketUrl={pixData.ticketUrl}
+            onCancel={cancelPayment}
+          />
+        </div>
+      );
+    }
 
     return (
       <PaymentFlow
