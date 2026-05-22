@@ -17,8 +17,12 @@ import {
   rotateShareToken,
 } from "@/lib/services/quotes";
 
-function getAppUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+function getAppUrl(req: NextRequest) {
+  // Usa o host do request (atrás do Cloudflare): garante prod=afonsodev.com
+  // e local=localhost sem depender de NEXT_PUBLIC_* embutido em build time.
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  const host = req.headers.get("host") ?? "afonsodev.com";
+  return `${proto}://${host}`;
 }
 
 async function authorize(req: NextRequest, requestId: string) {
@@ -46,7 +50,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
   return NextResponse.json({
     token: auth.target.share_token,
-    url: buildPublicQuoteUrl(auth.target.share_token, getAppUrl()),
+    url: buildPublicQuoteUrl(auth.target.share_token, getAppUrl(req)),
   });
 }
 
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const token = rotate ? await rotateShareToken(id) : await ensureShareToken(id);
     return NextResponse.json({
       token,
-      url: buildPublicQuoteUrl(token, getAppUrl()),
+      url: buildPublicQuoteUrl(token, getAppUrl(req)),
       rotated: rotate,
     });
   } catch (err) {
