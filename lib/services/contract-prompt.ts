@@ -35,7 +35,8 @@ export interface ContractDocument {
 export interface ProviderInfo {
   name: string;
   email: string;
-  whatsapp?: string;
+  /** NÃO incluído no contrato por privacidade. Mantido na interface só por compat. */
+  whatsapp?: never;
 }
 
 export interface ContractGenerationInput {
@@ -136,7 +137,9 @@ Nome: ${request.client?.name ?? "(cliente)"}${request.client?.email ? `\nEmail: 
 
 ═══ CONTRATADO (você está representando) ═══
 Nome: ${provider.name}
-Email: ${provider.email}${provider.whatsapp ? `\nWhatsApp: ${provider.whatsapp}` : ""}
+Email: ${provider.email}
+
+IMPORTANTE: Use APENAS nome e email do CONTRATADO. NÃO inclua telefone, WhatsApp, endereço, CPF ou qualquer outro dado pessoal do CONTRATADO — privacidade do prestador. Para contato, só email.
 
 ═══ DATA ═══
 ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}

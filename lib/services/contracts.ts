@@ -27,7 +27,7 @@ function providerFromEnv(): ProviderInfo {
   return {
     name: process.env.PROVIDER_NAME ?? "Afonso Kevin Burginski",
     email: process.env.PROVIDER_EMAIL ?? "admin@afonsodev.com",
-    whatsapp: process.env.PROVIDER_WHATSAPP ?? "66 99621-2672",
+    // Telefone NÃO entra no contrato por privacidade. Quem precisar fica com email.
   };
 }
 
