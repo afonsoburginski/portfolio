@@ -14,11 +14,12 @@ export type PayMethod = "pix" | "card";
 interface Preference {
   id: string;
   amount: number;
+  stageId: string | null;
 }
 
 interface UseRequestPaymentOptions {
   requestId: string;
-  onApproved: (patch: Partial<Request>) => void;
+  onApproved: (patch: Partial<Request>, stageId: string | null) => void;
   onPending: () => void;
 }
 
@@ -28,7 +29,8 @@ interface UseRequestPaymentResult {
   brickLoading: boolean;
   brickError: string | null;
   preference: Preference | null;
-  startPayment: () => Promise<void>;
+  activeStageId: string | null;
+  startPayment: (stageId?: string | null) => Promise<void>;
   selectMethod: (method: PayMethod) => Promise<void>;
   cancelPayment: () => Promise<void>;
   goBackToMethod: () => Promise<void>;
@@ -48,6 +50,7 @@ export function useRequestPayment({
   const [brickLoading, setBrickLoading] = useState(false);
   const [brickError, setBrickError] = useState<string | null>(null);
   const [preference, setPreference] = useState<Preference | null>(null);
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
 
   async function unmount() {
     await unmountPaymentBrick(brickMounted);
@@ -68,30 +71,31 @@ export function useRequestPayment({
       const elapsed = Date.now() - pollStartedAt.current;
       if (elapsed >= PIX_POLL_TIMEOUT_MS) { stopPolling(); return; }
 
-      const status = await verifyPayment(requestId);
+      const status = await verifyPayment(requestId, activeStageId);
       if (status === "approved") {
         stopPolling();
-        onApproved({ status: "approved", paid_at: new Date().toISOString() });
+        onApproved({ status: "approved", paid_at: new Date().toISOString() }, activeStageId);
         setPayStep("idle");
       }
     }, PIX_POLL_INTERVAL_MS);
   }
 
-  async function startPayment() {
+  async function startPayment(stageId: string | null = null) {
     setBrickError(null);
     setPayStep("method");
+    setActiveStageId(stageId);
     try {
       const res = await fetch("/api/payments/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId }),
+        body: JSON.stringify({ requestId, stageId }),
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error ?? "Erro ao criar preferência");
       }
-      const { preferenceId, amount } = await res.json();
-      setPreference({ id: preferenceId, amount });
+      const { preferenceId, amount, stageId: returnedStageId } = await res.json();
+      setPreference({ id: preferenceId, amount, stageId: returnedStageId ?? null });
     } catch (err) {
       setBrickError(err instanceof Error ? err.message : "Erro desconhecido");
     }
@@ -127,13 +131,13 @@ export function useRequestPayment({
             const res = await fetch("/api/payments/process", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ requestId, formData }),
+              body: JSON.stringify({ requestId, stageId: activeStageId, formData }),
             });
             const json = await res.json();
 
             if (json.status === "approved") {
               await unmount();
-              onApproved({ status: "approved", paid_at: new Date().toISOString() });
+              onApproved({ status: "approved", paid_at: new Date().toISOString() }, activeStageId);
               setPayStep("idle");
             } else if (json.status === "pending" || json.status === "in_process") {
               await unmount();
@@ -161,6 +165,7 @@ export function useRequestPayment({
     setPayMethod(null);
     setBrickError(null);
     setPreference(null);
+    setActiveStageId(null);
   }
 
   async function goBackToMethod() {
@@ -170,7 +175,7 @@ export function useRequestPayment({
   }
 
   return {
-    payStep, payMethod, brickLoading, brickError, preference,
+    payStep, payMethod, brickLoading, brickError, preference, activeStageId,
     startPayment, selectMethod, cancelPayment, goBackToMethod,
   };
 }

@@ -2,7 +2,7 @@
 
 import { db } from "./db";
 import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user, projects } from "./schema";
-import { eq, desc, inArray, and, sql, asc } from "drizzle-orm";
+import { eq, desc, inArray, and, ne, sql, asc } from "drizzle-orm";
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import type { RequestStatus, RequestType, RequestTaskStatus, ProjectCategory, ProjectStatus } from "./schema";
@@ -559,10 +559,41 @@ export async function updateProjectCaseStudy(
   return row;
 }
 
-// ——— Payment helper (replaces Supabase RPC mark_payment_approved) ———
+// ——— Payment helpers ———
 
-export async function markPaymentApproved(requestId: string, paymentId: string) {
+function parseExternalReference(ref: string): { requestId: string; stageId: string | null } {
+  const [requestId, stageId] = ref.split(":");
+  return { requestId, stageId: stageId ?? null };
+}
+
+export async function markPaymentApproved(externalReference: string, paymentId: string) {
+  const { requestId, stageId } = parseExternalReference(externalReference);
   const now = new Date().toISOString();
+
+  if (stageId) {
+    // Paga apenas a etapa
+    await db
+      .update(request_stages)
+      .set({ status: "paid", paid_at: now, paid_method: "mp", mp_payment_id: paymentId, updated_at: now })
+      .where(and(eq(request_stages.id, stageId), eq(request_stages.request_id, requestId)));
+
+    // Se todas as stages do request agora estão pagas, marca o request como approved/paid
+    const remaining = await db
+      .select()
+      .from(request_stages)
+      .where(eq(request_stages.request_id, requestId));
+
+    const allPaid = remaining.length > 0 && remaining.every((s) => s.status === "paid" || s.status === "cancelled");
+    if (allPaid) {
+      await db
+        .update(requests)
+        .set({ status: "approved", approved_at: now, paid_at: now, updated_at: now })
+        .where(eq(requests.id, requestId));
+    }
+    return;
+  }
+
+  // Pagamento do request inteiro: marca request + todas as stages pendentes como pagas
   await db
     .update(requests)
     .set({
@@ -573,4 +604,9 @@ export async function markPaymentApproved(requestId: string, paymentId: string) 
       updated_at: now,
     })
     .where(eq(requests.id, requestId));
+
+  await db
+    .update(request_stages)
+    .set({ status: "paid", paid_at: now, paid_method: "mp", mp_payment_id: paymentId, updated_at: now })
+    .where(and(eq(request_stages.request_id, requestId), ne(request_stages.status, "paid")));
 }

@@ -4,7 +4,7 @@ import {
   ArrowLeft, CalendarClock, CheckCircle2, Clock,
   CreditCard, DollarSign, Loader2, MessageSquare, Trash2, Truck, XCircle,
 } from "lucide-react";
-import type { Request, RequestAttachment, RequestTask } from "@/lib/database.types";
+import type { Request, RequestAttachment, RequestStage, RequestTask } from "@/lib/database.types";
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
@@ -12,10 +12,11 @@ import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 interface Props {
   req: Request;
   tasks: RequestTask[];
+  stages?: RequestStage[];
   isPaid: boolean;
   hasQuote: boolean;
   declining: boolean;
-  onStartPayment: () => void;
+  onStartPayment: (stageId?: string | null) => void;
   onDecline: () => void;
   attachments?: RequestAttachment[];
   onAddAttachment?: (attachment: {
@@ -50,6 +51,7 @@ function legacyAttachment(req: Request): RequestAttachment | null {
 export function RequestCard({
   req,
   tasks,
+  stages = [],
   isPaid,
   hasQuote,
   declining,
@@ -59,6 +61,10 @@ export function RequestCard({
   onAddAttachment,
   onDeleteAttachment,
 }: Props) {
+  const pendingStages = stages.filter((s) => s.status !== "paid" && s.status !== "cancelled");
+  const hasStages = stages.length > 0;
+  const hasPendingStages = pendingStages.length > 0;
+  const canPay = !isPaid && (req.status === "quoted" || hasPendingStages);
   const allAttachments = attachments.length > 0 ? attachments : (legacyAttachment(req) ? [legacyAttachment(req)!] : []);
   const images = allAttachments.filter((a) => a.kind === "image" || isImageUrl(a.url));
   const files = allAttachments.filter((a) => a.kind !== "image" && !isImageUrl(a.url));
@@ -150,27 +156,78 @@ export function RequestCard({
           </div>
         )}
 
+        {/* Lista de etapas */}
+        {hasStages && (
+          <div className="border-t border-border/60 px-5 py-4">
+            <SectionLabel>Etapas de pagamento</SectionLabel>
+            <div className="space-y-2">
+              {stages.map((stage) => {
+                const stagePaid = stage.status === "paid";
+                const stageCancelled = stage.status === "cancelled";
+                return (
+                  <div
+                    key={stage.id}
+                    className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm leading-snug">{stage.title}</p>
+                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="font-semibold text-foreground">
+                          {stage.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })}
+                        </span>
+                        {stagePaid && (
+                          <span className="flex items-center gap-1 text-emerald-400">
+                            <CheckCircle2 className="size-3" />Pago
+                          </span>
+                        )}
+                        {stageCancelled && (
+                          <span className="flex items-center gap-1 text-neutral-400">
+                            <XCircle className="size-3" />Cancelado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {!stagePaid && !stageCancelled && (
+                      <Button
+                        onClick={() => onStartPayment(stage.id)}
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 shrink-0 border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
+                      >
+                        <CreditCard className="size-3.5" />Pagar etapa
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Ações de pagamento */}
-        {req.status === "quoted" && (
+        {canPay && (
           <div className="border-t border-border/60 px-5 py-4 flex gap-3">
             <Button
-              onClick={onStartPayment}
+              onClick={() => onStartPayment(null)}
               className="flex-1 gap-2 bg-purple-600 hover:bg-purple-700 text-white"
             >
-              <CreditCard className="size-4" />Pagar agora
+              <CreditCard className="size-4" />
+              {hasPendingStages && stages.length > 1 ? "Pagar tudo de uma vez" : "Pagar agora"}
             </Button>
-            <Button
-              onClick={onDecline}
-              disabled={declining}
-              variant="outline"
-              className="gap-2 border-destructive/50 text-destructive hover:bg-destructive/10"
-            >
-              {declining
-                ? <Loader2 className="size-4 animate-spin" />
-                : <XCircle className="size-4" />
-              }
-              Recusar
-            </Button>
+            {req.status === "quoted" && (
+              <Button
+                onClick={onDecline}
+                disabled={declining}
+                variant="outline"
+                className="gap-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+              >
+                {declining
+                  ? <Loader2 className="size-4 animate-spin" />
+                  : <XCircle className="size-4" />
+                }
+                Recusar
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -22,7 +22,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const { markRequestRead } = useNotifications();
 
   const {
-    req, tasks, attachments, setAttachments, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
+    req, tasks, stages, attachments, setStages, setAttachments, loading, paymentFeedback, dismissFeedback, decline, declining, updateReq,
   } = useRequestDetail({ id, userId: user?.id });
 
   // Marca notificações deste pedido como lidas ao abrir a página
@@ -32,11 +32,32 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   }, [user, id]);
 
   const {
-    payStep, payMethod, brickLoading, brickError, preference,
+    payStep, payMethod, brickLoading, brickError, preference, activeStageId,
     startPayment, selectMethod, cancelPayment, goBackToMethod,
   } = useRequestPayment({
     requestId: id,
-    onApproved: (patch) => { updateReq(patch); dismissFeedback(); setTimeout(() => updateReq({ status: "approved" }), 0); },
+    onApproved: (patch, stageId) => {
+      if (stageId) {
+        setStages((prev) =>
+          prev.map((s) =>
+            s.id === stageId ? { ...s, status: "paid", paid_at: new Date().toISOString() } : s,
+          ),
+        );
+        // Se todas as stages do request ficaram pagas, marca request como approved
+        setTimeout(() => {
+          setStages((current) => {
+            const allPaid = current.length > 0 && current.every((s) => s.status === "paid" || s.status === "cancelled");
+            if (allPaid) updateReq({ status: "approved", paid_at: new Date().toISOString() });
+            return current;
+          });
+        }, 0);
+      } else {
+        updateReq(patch);
+        setStages((prev) => prev.map((s) => (s.status === "paid" ? s : { ...s, status: "paid", paid_at: new Date().toISOString() })));
+        setTimeout(() => updateReq({ status: "approved" }), 0);
+      }
+      dismissFeedback();
+    },
     onPending: () => { /* feedback é controlado pelo banner */ },
   });
 
@@ -63,10 +84,16 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   // Tela de pagamento substitui o layout inteiro
   if (payStep !== "idle") {
+    const activeStage = activeStageId ? stages.find((s) => s.id === activeStageId) ?? null : null;
+    const displayTitle = activeStage ? `${req.title} — ${activeStage.title}` : req.title;
+    const displayBudget = preference
+      ? preference.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })
+      : req.budget;
+
     return (
       <PaymentFlow
-        title={req.title}
-        budget={req.budget}
+        title={displayTitle}
+        budget={displayBudget}
         requestType={req.type}
         payStep={payStep}
         payMethod={payMethod}
@@ -87,6 +114,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
       <RequestCard
         req={req}
         tasks={tasks}
+        stages={stages}
         isPaid={isPaid}
         hasQuote={hasQuote}
         declining={declining}
