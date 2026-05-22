@@ -54,7 +54,7 @@ function ensurePage(ctx: RenderCtx, neededHeight: number) {
 
 function drawHeader(ctx: RenderCtx) {
   // Linha discreta no topo + título do documento
-  const text = ctx.doc.title;
+  const text = sanitizeForWinAnsi(ctx.doc.title);
   ctx.page.drawText(text, {
     x: MARGIN_X,
     y: A4.height - MARGIN_Y + 18,
@@ -71,7 +71,7 @@ function drawHeader(ctx: RenderCtx) {
 }
 
 function drawFooter(ctx: RenderCtx) {
-  const txt = `${ctx.doc.metadata.contratado} · Página ${ctx.pageNumber}`;
+  const txt = sanitizeForWinAnsi(`${ctx.doc.metadata.contratado} · Página ${ctx.pageNumber}`);
   ctx.page.drawText(txt, {
     x: MARGIN_X,
     y: MARGIN_Y - 28,
@@ -81,10 +81,51 @@ function drawFooter(ctx: RenderCtx) {
   });
 }
 
+/**
+ * Helvetica (StandardFont em pdf-lib) usa WinAnsi/CP1252.
+ * Substitui caracteres Unicode comuns por equivalentes ASCII e remove
+ * qualquer coisa fora do range suportado pra não estourar no draw.
+ */
+function sanitizeForWinAnsi(input: string): string {
+  let s = input
+    // setas
+    .replace(/→/g, "->")
+    .replace(/←/g, "<-")
+    .replace(/↑/g, "^")
+    .replace(/↓/g, "v")
+    .replace(/⇒/g, "=>")
+    .replace(/⇐/g, "<=")
+    .replace(/↔/g, "<->")
+    // aspas tipográficas
+    .replace(/[‘’‚]/g, "'")
+    .replace(/[“”„]/g, '"')
+    // travessões / hifens especiais
+    .replace(/–/g, "-")
+    .replace(/—/g, "—") // travessão é 0x97 em CP1252, ok
+    .replace(/−/g, "-")
+    // bullets, ellipsis, etc.
+    .replace(/…/g, "...")
+    .replace(/•/g, "•") // bullet 0x95 em CP1252, ok
+    .replace(/·/g, "·") // 0xB7, ok
+    // espaços não-breaking
+    .replace(/[     ]/g, " ")
+    // checkmark / símbolos diversos comuns em LLM
+    .replace(/[✓✔]/g, "v")
+    .replace(/[✗✘×]/g, "x")
+    .replace(/[★☆]/g, "*")
+    // emoji range total
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+    .replace(/[\u{2600}-\u{27BF}]/gu, "");
+
+  // Strip qualquer coisa fora de Latin-1 supplement (CP1252 range típico).
+  // Mantém 0x09 (tab), 0x0A (LF), 0x20-0x7E (ASCII) e 0xA0-0xFF (Latin-1).
+  s = s.replace(/[^\t\n\x20-\x7E\xA0-\xFF€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/g, "");
+  return s;
+}
+
 /** Quebra o texto em linhas que cabem na largura, respeitando palavras. */
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
-  // Normaliza caracteres não suportados pela fonte Helvetica (apenas WinAnsi)
-  const normalized = text.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/—/g, "—").replace(/–/g, "-");
+  const normalized = sanitizeForWinAnsi(text);
   const paragraphs = normalized.split(/\n+/);
   const lines: string[] = [];
   for (const p of paragraphs) {
@@ -193,8 +234,9 @@ function drawBlock(ctx: RenderCtx, block: Block) {
       for (const row of block.rows) {
         const lh = SIZES.p * LINE_HEIGHT;
         ensurePage(ctx, lh);
+        const safeKey = sanitizeForWinAnsi(`${row.key}:`);
         // Key
-        ctx.page.drawText(`${row.key}:`, {
+        ctx.page.drawText(safeKey, {
           x: MARGIN_X + 2,
           y: ctx.y - SIZES.p,
           size: SIZES.p,
@@ -202,7 +244,7 @@ function drawBlock(ctx: RenderCtx, block: Block) {
           color: COLORS.muted,
         });
         // Value
-        const keyWidth = ctx.fontBold.widthOfTextAtSize(`${row.key}:`, SIZES.p) + 8;
+        const keyWidth = ctx.fontBold.widthOfTextAtSize(safeKey, SIZES.p) + 8;
         drawWrapped(ctx, row.value, { size: SIZES.p, indent: keyWidth + 2 });
       }
       ctx.y -= 4;
@@ -231,7 +273,7 @@ function drawBlock(ctx: RenderCtx, block: Block) {
         thickness: 0.7,
       });
       ctx.y -= 14;
-      ctx.page.drawText(block.party, {
+      ctx.page.drawText(sanitizeForWinAnsi(block.party), {
         x: MARGIN_X,
         y: ctx.y - SIZES.small,
         size: SIZES.small,
@@ -265,15 +307,17 @@ function drawMetadataHeader(ctx: RenderCtx) {
   for (const [k, v] of rows) {
     const lh = SIZES.meta * LINE_HEIGHT;
     ensurePage(ctx, lh);
-    ctx.page.drawText(`${k}:`, {
+    const safeKey = sanitizeForWinAnsi(`${k}:`);
+    const safeVal = sanitizeForWinAnsi(v);
+    ctx.page.drawText(safeKey, {
       x: MARGIN_X,
       y: ctx.y - SIZES.meta,
       size: SIZES.meta,
       font: ctx.fontBold,
       color: COLORS.muted,
     });
-    const keyWidth = ctx.fontBold.widthOfTextAtSize(`${k}:`, SIZES.meta) + 6;
-    ctx.page.drawText(v, {
+    const keyWidth = ctx.fontBold.widthOfTextAtSize(safeKey, SIZES.meta) + 6;
+    ctx.page.drawText(safeVal, {
       x: MARGIN_X + keyWidth,
       y: ctx.y - SIZES.meta,
       size: SIZES.meta,
