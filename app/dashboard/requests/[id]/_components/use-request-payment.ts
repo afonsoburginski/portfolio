@@ -119,9 +119,40 @@ export function useRequestPayment({
       return;
     }
     setPayMethod(method);
+    setBrickError(null);
+
+    // PIX: cria pagamento direto no backend (pula a tela de e-mail do brick)
+    // e renderiza o QR imediatamente. Só a webhook do MP marca como pago.
+    if (method === "pix") {
+      try {
+        const res = await fetch("/api/payments/pix/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ requestId, stageId: activeStageId }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          setBrickError(json?.error ?? "Erro ao gerar PIX.");
+          return;
+        }
+        setPixData({
+          qrCode: json.pix.qrCode,
+          qrCodeBase64: json.pix.qrCodeBase64,
+          ticketUrl: json.pix.ticketUrl,
+          amount: json.amount ?? preference.amount,
+        });
+        setPayStep("pix-qr");
+        onPending();
+        startPixPolling();
+      } catch {
+        setBrickError("Erro ao gerar PIX. Tente novamente.");
+      }
+      return;
+    }
+
+    // Cartão: usa o brick (precisa dos campos de número/cvv/validade)
     setPayStep("paying");
     setBrickLoading(true);
-    setBrickError(null);
     brickMounted.current = true;
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));

@@ -15,6 +15,7 @@ import { RequestCard } from "./_components/request-card";
 import { QUOTE_STATUSES } from "./_components/constants";
 import { useNotifications } from "@/hooks/use-notifications";
 import { createRequestAttachment, deleteRequestAttachment } from "@/lib/dashboard-data";
+import { ShareQuoteButton } from "@/components/dashboard/share-quote-button";
 
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -126,6 +127,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4">
       <PaymentFeedbackBanner feedback={paymentFeedback} onDismiss={dismissFeedback} />
+
+      <div className="flex items-center justify-end">
+        <ShareQuoteButton requestId={req.id} requestTitle={req.title} budget={req.budget ?? null} />
+      </div>
 
       <RequestCard
         req={req}

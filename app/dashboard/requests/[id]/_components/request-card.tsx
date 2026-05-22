@@ -16,8 +16,8 @@ interface Props {
   isPaid: boolean;
   hasQuote: boolean;
   declining: boolean;
-  onStartPayment: (stageId?: string | null) => void;
-  onDecline: () => void;
+  onStartPayment?: (stageId?: string | null) => void;
+  onDecline?: () => void;
   attachments?: RequestAttachment[];
   onAddAttachment?: (attachment: {
     url: string;
@@ -27,6 +27,10 @@ interface Props {
     kind: "image" | "file";
   }) => Promise<void>;
   onDeleteAttachment?: (id: string) => Promise<void>;
+  /** Modo público / read-only: esconde Pagar / Recusar e botões de gestão de anexos. */
+  readOnly?: boolean;
+  /** Override para o botão "voltar" sobreposto na imagem hero (default: /dashboard). */
+  backHref?: string;
 }
 
 function isImageUrl(url: string) {
@@ -60,11 +64,13 @@ export function RequestCard({
   attachments = [],
   onAddAttachment,
   onDeleteAttachment,
+  readOnly = false,
+  backHref = "/dashboard",
 }: Props) {
   const pendingStages = stages.filter((s) => s.status !== "paid" && s.status !== "cancelled");
   const hasStages = stages.length > 0;
   const hasPendingStages = pendingStages.length > 0;
-  const canPay = !isPaid && (req.status === "quoted" || hasPendingStages);
+  const canPay = !readOnly && !!onStartPayment && !isPaid && (req.status === "quoted" || hasPendingStages);
   const allAttachments = attachments.length > 0 ? attachments : (legacyAttachment(req) ? [legacyAttachment(req)!] : []);
   const images = allAttachments.filter((a) => a.kind === "image" || isImageUrl(a.url));
   const files = allAttachments.filter((a) => a.kind !== "image" && !isImageUrl(a.url));
@@ -78,7 +84,7 @@ export function RequestCard({
         <div className="relative md:w-[55%] shrink-0 border-b md:border-b-0 md:border-r border-border/60 bg-black/30 self-stretch">
           {/* Botão voltar sobreposto */}
           <Link
-            href="/dashboard"
+            href={backHref}
             className="absolute top-3 left-3 z-10 flex size-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-colors"
           >
             <ArrowLeft className="size-4" />
@@ -187,7 +193,7 @@ export function RequestCard({
                         )}
                       </div>
                     </div>
-                    {!stagePaid && !stageCancelled && (
+                    {!stagePaid && !stageCancelled && !readOnly && onStartPayment && (
                       <Button
                         onClick={() => onStartPayment(stage.id)}
                         size="sm"
@@ -205,7 +211,7 @@ export function RequestCard({
         )}
 
         {/* Ações de pagamento */}
-        {canPay && (
+        {canPay && onStartPayment && (
           <div className="border-t border-border/60 px-5 py-4 flex gap-3">
             <Button
               onClick={() => onStartPayment(null)}
@@ -214,7 +220,7 @@ export function RequestCard({
               <CreditCard className="size-4" />
               {hasPendingStages && stages.length > 1 ? "Pagar tudo de uma vez" : "Pagar agora"}
             </Button>
-            {req.status === "quoted" && (
+            {req.status === "quoted" && onDecline && (
               <Button
                 onClick={onDecline}
                 disabled={declining}
