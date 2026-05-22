@@ -47,6 +47,7 @@ function legacyAttachment(req: Request): RequestAttachment | null {
     mime_type: null,
     size: null,
     kind: isImageUrl(req.image_url) ? "image" : "file",
+    category: null,
     position: 0,
     created_at: req.created_at,
   };

@@ -99,6 +99,7 @@ export const request_attachments = sqliteTable("request_attachments", {
   mime_type: text("mime_type"),
   size: integer("size"),
   kind: text("kind", { enum: ["image", "file"] }).notNull().default("file"),
+  category: text("category"), // null | "contract" — distingue anexos especiais (contratos gerados por IA, etc.)
   position: real("position").notNull().default(0),
   created_at: text("created_at").notNull().default(sql`(datetime('now'))`),
 });

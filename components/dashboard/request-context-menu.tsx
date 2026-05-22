@@ -25,7 +25,10 @@ import {
   Banknote,
   AlertTriangle,
   Trash2,
+  FileSignature,
+  Loader2,
 } from "lucide-react";
+import { useState } from "react";
 import { updateRequestAsAdmin, deleteRequest } from "@/lib/dashboard-data";
 import type { Request, RequestStatus } from "@/lib/database.types";
 
@@ -67,6 +70,7 @@ interface Props {
 /* ── Component ─────────────────────────────────────────── */
 export function RequestContextMenu({ request, children, onUpdated, onDeleted }: Props) {
   const router = useRouter();
+  const [generatingContract, setGeneratingContract] = useState(false);
 
   async function changeStatus(status: RequestStatus) {
     if (status === request.status) return;
@@ -86,6 +90,21 @@ export function RequestContextMenu({ request, children, onUpdated, onDeleted }: 
     onDeleted?.(request.id);
   }
 
+  async function generateContract() {
+    if (generatingContract) return;
+    setGeneratingContract(true);
+    try {
+      const res = await fetch(`/api/requests/${request.id}/contract`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Falha ao gerar contrato");
+      window.open(json.url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao gerar contrato");
+    } finally {
+      setGeneratingContract(false);
+    }
+  }
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
@@ -103,6 +122,23 @@ export function RequestContextMenu({ request, children, onUpdated, onDeleted }: 
         >
           <ExternalLink className="size-3.5 text-muted-foreground" />
           Abrir detalhes
+        </ContextMenuItem>
+
+        {/* Gerar contrato com IA */}
+        <ContextMenuItem
+          className="gap-2"
+          disabled={generatingContract}
+          onSelect={(e) => {
+            e.preventDefault();
+            generateContract();
+          }}
+        >
+          {generatingContract ? (
+            <Loader2 className="size-3.5 animate-spin text-purple-400" />
+          ) : (
+            <FileSignature className="size-3.5 text-purple-400" />
+          )}
+          {generatingContract ? "Gerando contrato…" : "Gerar contrato com IA"}
         </ContextMenuItem>
 
         <ContextMenuSeparator />
