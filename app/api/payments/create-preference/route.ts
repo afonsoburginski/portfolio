@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MercadoPagoConfig, Preference } from "mercadopago";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { requests, request_stages } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin-helpers";
-
-const mp = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
-});
+import { createPreference } from "@/lib/mercadopago";
 
 function parseBudget(raw: string | null | undefined): number {
   if (!raw) return 0;
@@ -36,7 +32,6 @@ export async function POST(req: NextRequest) {
   const isAdmin = isAdminEmail(session.user.email) || (session.user as { isAdmin?: boolean }).isAdmin === true;
   if (!isAdmin && request.user_id !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Decide: pagar etapa única ou valor total restante
   let amount: number;
   let title: string;
   let externalReference: string;
@@ -57,7 +52,6 @@ export async function POST(req: NextRequest) {
   } else {
     if (request.paid_at) return NextResponse.json({ error: "Request already paid" }, { status: 400 });
 
-    // Conta as stages do request
     const allStages = await db
       .select()
       .from(request_stages)
@@ -83,9 +77,8 @@ export async function POST(req: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");
 
-  const preference = new Preference(mp);
-  const result = await preference.create({
-    body: {
+  try {
+    const result = await createPreference({
       items: [
         {
           id: stageId ?? request.id,
@@ -107,8 +100,11 @@ export async function POST(req: NextRequest) {
       }),
       external_reference: externalReference,
       statement_descriptor: "AFONSO BURGINSKI",
-    },
-  });
+    });
 
-  return NextResponse.json({ preferenceId: result.id, amount, stageId: stageId ?? null });
+    return NextResponse.json({ preferenceId: result.id, amount, stageId: stageId ?? null });
+  } catch (err) {
+    console.error("[MP create-preference]", err);
+    return NextResponse.json({ error: "Failed to create preference" }, { status: 502 });
+  }
 }

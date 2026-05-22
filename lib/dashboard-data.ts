@@ -294,6 +294,13 @@ export async function getRequestStages(requestId: string) {
     .orderBy(request_stages.position);
 }
 
+export async function getAllStages() {
+  return db
+    .select()
+    .from(request_stages)
+    .orderBy(request_stages.position);
+}
+
 export async function getUserPreference(key: string): Promise<string | null> {
   const u = await currentUser();
   if (!u) return null;

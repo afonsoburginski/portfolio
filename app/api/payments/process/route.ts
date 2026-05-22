@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MercadoPagoConfig, Payment } from "mercadopago";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { requests, request_stages } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
-import { markPaymentApproved } from "@/lib/dashboard-data";
 import { isAdminEmail } from "@/lib/admin-helpers";
+import { createPayment } from "@/lib/mercadopago";
 
-const mp = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
-});
+// Estado de pagamento NUNCA é mudado aqui — só pela webhook do MP.
+// Esta rota apenas cria o pagamento no MP e guarda mp_payment_id pra polling.
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers });
@@ -47,38 +45,42 @@ export async function POST(req: NextRequest) {
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");
   const externalReference = stageId ? `${requestId}:${stageId}` : requestId;
 
-  const payment = new Payment(mp);
-  const paymentData = await payment.create({
-    body: {
+  let paymentData;
+  try {
+    paymentData = await createPayment({
       ...formData,
       external_reference: externalReference,
       ...(isPublicUrl && {
         notification_url: `${appUrl}/api/payments/webhook`,
       }),
-    },
-  });
+    });
+  } catch (err) {
+    console.error("[MP process]", err);
+    return NextResponse.json({ error: "Failed to create payment" }, { status: 502 });
+  }
 
   const status = paymentData.status;
   const paymentId = String(paymentData.id);
 
-  if (status === "approved") {
-    await markPaymentApproved(externalReference, paymentId);
-  } else if (status === "pending" || status === "in_process") {
-    if (stageId) {
-      await db
-        .update(request_stages)
-        .set({ mp_payment_id: paymentId, updated_at: new Date().toISOString() })
-        .where(eq(request_stages.id, stageId));
-    } else {
-      await db
-        .update(requests)
-        .set({ mp_payment_id: paymentId, updated_at: new Date().toISOString() })
-        .where(eq(requests.id, requestId));
-    }
+  // Apenas guarda o mp_payment_id pra polling/webhook poder encontrar.
+  // NÃO marca como aprovado — quem faz isso é a webhook do MP exclusivamente.
+  if (stageId) {
+    await db
+      .update(request_stages)
+      .set({ mp_payment_id: paymentId, updated_at: new Date().toISOString() })
+      .where(eq(request_stages.id, stageId));
+  } else {
+    await db
+      .update(requests)
+      .set({ mp_payment_id: paymentId, updated_at: new Date().toISOString() })
+      .where(eq(requests.id, requestId));
   }
 
   return NextResponse.json({
-    status,
+    // Sempre retorna pending: o front aguarda a webhook (via polling do verify)
+    // pra confirmar de fato. Mesmo cartão aprovado sincronicamente passa pela webhook.
+    status: "pending",
+    mpStatus: status,
     paymentId,
     statusDetail: paymentData.status_detail,
   });

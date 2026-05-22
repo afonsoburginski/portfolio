@@ -36,6 +36,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     startPayment, selectMethod, cancelPayment, goBackToMethod,
   } = useRequestPayment({
     requestId: id,
+    payerEmail: user?.email,
     onApproved: (patch, stageId) => {
       if (stageId) {
         setStages((prev) =>

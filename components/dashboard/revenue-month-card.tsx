@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from "recharts";
-import type { Request, RequestType } from "@/lib/database.types";
-import { getReceivedRequests, fmtBRL } from "./revenue-chart";
+import type { Request, RequestStage, RequestType } from "@/lib/database.types";
+import { fmtBRL } from "./revenue-chart";
 import {
   ChartContainer,
   ChartTooltip,
@@ -31,16 +31,23 @@ const TYPE_COLORS: Record<string, string> = {
   other:       "hsl(0 0% 55%)",
 };
 
-function parseBudget(raw: string | null | undefined): number {
+function requestDate(r: Request): Date {
+  // Usa a melhor data disponível: paid > approved > quoted > created
+  const raw = r.paid_at ?? r.approved_at ?? r.quoted_at ?? r.updated_at ?? r.created_at;
+  return new Date(raw || 0);
+}
+
+function parseBudgetLocal(raw: string | null | undefined): number {
   if (!raw) return 0;
   const s = raw.replace(/[R$\s]/g, "");
   if (/,\d{1,2}$/.test(s)) return parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
   return parseFloat(s.replace(/\./g, "")) || 0;
 }
 
-function revenueDate(r: Request): Date {
-  const raw = r.paid_at ?? r.approved_at ?? r.delivered_at ?? r.updated_at;
-  return new Date(raw || 0);
+function requestValue(r: Request, stages: RequestStage[]): number {
+  const reqStages = stages.filter((s) => s.request_id === r.id);
+  if (reqStages.length > 0) return reqStages.reduce((s, st) => s + st.amount, 0);
+  return parseBudgetLocal(r.budget);
 }
 
 function lastMonths(n: number) {
@@ -58,39 +65,41 @@ function lastMonths(n: number) {
 
 interface Props {
   requests: Request[];
+  stages?: RequestStage[];
 }
 
-export function RevenueMonthCard({ requests }: Props) {
-  const received = getReceivedRequests(requests);
+export function RevenueMonthCard({ requests, stages = [] }: Props) {
+  // Inclui TODOS os requests com valor — quoted, approved, in_progress, delivered.
+  // Assim tipos como "bug_fix" aparecem mesmo antes de virarem receita confirmada.
+  const valued = requests.filter((r) => requestValue(r, stages) > 0);
 
   const { chartData, activeTypes, totalReceita, totalPedidos, legendItems } = React.useMemo(() => {
     const periods = lastMonths(6);
 
     // Descobre os tipos presentes
     const typeSet = new Set<string>();
-    for (const r of received) typeSet.add(r.type ?? "other");
+    for (const r of valued) typeSet.add(r.type ?? "other");
     const types = Array.from(typeSet);
 
     // Monta dados: uma linha por mês, uma coluna por tipo
-    // { month: "jan", feature: 1200, bug_fix: 400, ... }
     const data = periods.map(({ month, start, end }) => {
       const row: Record<string, string | number> = { month };
       for (const t of types) {
-        const inPeriod = received.filter((r) => {
-          const d = revenueDate(r);
+        const inPeriod = valued.filter((r) => {
+          const d = requestDate(r);
           return (r.type ?? "other") === t && d >= start && d <= end;
         });
-        row[t] = inPeriod.reduce((s, r) => s + parseBudget(r.budget), 0);
+        row[t] = inPeriod.reduce((s, r) => s + requestValue(r, stages), 0);
       }
       return row;
     });
 
     // Legenda (totais por tipo)
     const totalByType: Record<string, { Receita: number; Pedidos: number }> = {};
-    for (const r of received) {
+    for (const r of valued) {
       const t = r.type ?? "other";
       if (!totalByType[t]) totalByType[t] = { Receita: 0, Pedidos: 0 };
-      totalByType[t].Receita += parseBudget(r.budget);
+      totalByType[t].Receita += requestValue(r, stages);
       totalByType[t].Pedidos += 1;
     }
     const total = Object.values(totalByType).reduce((s, v) => s + v.Receita, 0);
@@ -114,7 +123,7 @@ export function RevenueMonthCard({ requests }: Props) {
       totalPedidos: totalP,
       legendItems: legend,
     };
-  }, [received]);
+  }, [valued, stages]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const c: ChartConfig = {};

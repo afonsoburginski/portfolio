@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { LoginOverlay } from "@/components/dashboard/login-overlay";
-import { getAllRequests, getUserPreference, setUserPreference } from "@/lib/dashboard-data";
+import { getAllRequests, getAllStages, getUserPreference, setUserPreference } from "@/lib/dashboard-data";
 import { isAdminEmail } from "@/lib/admin-helpers";
-import type { Request, RequestStatus } from "@/lib/database.types";
+import type { Request, RequestStage, RequestStatus } from "@/lib/database.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -440,6 +440,7 @@ function GroupedList({ requests: initialRequests }: { requests: Request[] }) {
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
+  const [stages, setStages]     = useState<RequestStage[]>([]);
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState<RequestStatus | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -453,9 +454,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    Promise.all([getAllRequests(), getUserPreference("admin_dashboard_cards")])
-      .then(([reqs, pref]) => {
+    Promise.all([getAllRequests(), getAllStages(), getUserPreference("admin_dashboard_cards")])
+      .then(([reqs, allStages, pref]) => {
         setRequests(reqs);
+        setStages(allStages as RequestStage[]);
         if (pref) {
           try {
             const parsed = JSON.parse(pref) as Partial<typeof cardVisibility>;
@@ -644,13 +646,13 @@ export default function AdminPage() {
               <CardTitle className="text-sm font-semibold">Receita — últimos 12 meses</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
-              <RevenueChart requests={requests} months={12} />
+              <RevenueChart requests={requests} stages={stages} months={12} />
             </CardContent>
           </Card>
         )}
         {cardVisibility.revenueMonth && (
           <div className={`min-h-[200px] lg:min-h-0 ${cardVisibility.revenue ? "" : "lg:col-span-4"}`}>
-            <RevenueMonthCard requests={requests} />
+            <RevenueMonthCard requests={requests} stages={stages} />
           </div>
         )}
       </div>

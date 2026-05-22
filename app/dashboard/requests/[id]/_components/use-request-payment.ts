@@ -19,6 +19,7 @@ interface Preference {
 
 interface UseRequestPaymentOptions {
   requestId: string;
+  payerEmail?: string;
   onApproved: (patch: Partial<Request>, stageId: string | null) => void;
   onPending: () => void;
 }
@@ -38,6 +39,7 @@ interface UseRequestPaymentResult {
 
 export function useRequestPayment({
   requestId,
+  payerEmail,
   onApproved,
   onPending,
 }: UseRequestPaymentOptions): UseRequestPaymentResult {
@@ -119,7 +121,7 @@ export function useRequestPayment({
         preferenceId: preference.id,
         amount: preference.amount,
         method,
-        payerEmail: undefined,
+        payerEmail,
         onReady: () => setBrickLoading(false),
         onError: (err) => {
           console.error("[MP Brick]", err);
@@ -135,18 +137,16 @@ export function useRequestPayment({
             });
             const json = await res.json();
 
-            if (json.status === "approved") {
-              await unmount();
-              onApproved({ status: "approved", paid_at: new Date().toISOString() }, activeStageId);
-              setPayStep("idle");
-            } else if (json.status === "pending" || json.status === "in_process") {
-              await unmount();
-              onPending();
-              setPayStep("idle");
-              startPixPolling();
-            } else {
-              setBrickError("Pagamento não aprovado. Verifique os dados e tente novamente.");
+            if (!res.ok) {
+              setBrickError(json?.error ?? "Erro ao processar pagamento.");
+              return;
             }
+
+            // O backend sempre retorna pending. Só a webhook do MP altera o estado.
+            // Mantém o brick montado pra mostrar o QR (PIX) ou recibo (cartão)
+            // e dispara polling — o verify lê o D1 e detecta quando a webhook aprovou.
+            onPending();
+            startPixPolling();
           } catch {
             setBrickError("Erro ao processar. Tente novamente.");
           }
