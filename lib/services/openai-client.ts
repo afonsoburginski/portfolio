@@ -31,16 +31,27 @@ export async function generateJSON<T>({
   maxOutputTokens = 4096,
 }: JsonOptions): Promise<T> {
   const client = getClient();
-  const response = await client.chat.completions.create({
+  // GPT-5+ usa `max_completion_tokens` no lugar de `max_tokens`.
+  const isModernModel = /^(gpt-5|o\d|gpt-4\.\d)/i.test(model);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const params: any = {
     model,
-    temperature,
-    max_tokens: maxOutputTokens,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-  });
+  };
+  if (isModernModel) {
+    params.max_completion_tokens = maxOutputTokens;
+    // gpt-5+ não aceita temperature !== 1 — só deixa o default.
+  } else {
+    params.max_tokens = maxOutputTokens;
+    params.temperature = temperature;
+  }
+
+  const response = await client.chat.completions.create(params);
 
   const raw = response.choices[0]?.message?.content ?? "";
   if (!raw) throw new Error("OpenAI returned empty response");
