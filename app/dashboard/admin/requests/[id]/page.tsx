@@ -21,6 +21,7 @@ import {
 } from "@/lib/dashboard-data";
 import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { ShareQuoteButton } from "@/components/dashboard/share-quote-button";
+import { DiscountEditor } from "@/components/dashboard/discount-editor";
 import { isAdminEmail } from "@/lib/admin-helpers";
 import type { Profile, Request, RequestAttachment, RequestStage, RequestStatus, RequestTask, RequestType } from "@/lib/database.types";
 import { RequestChat } from "@/components/dashboard/request-chat";
@@ -880,6 +881,28 @@ export default function AdminRequestPlanningPage({
               placeholder="Descreva o escopo, entregas, critérios de aceite..."
               rows={9}
               className="resize-y text-sm font-mono"
+            />
+          </div>
+
+          {/* Desconto comercial — admin */}
+          <div className="mb-7">
+            <DiscountEditor
+              requestId={request.id}
+              discountAmount={request.discount_amount ?? 0}
+              discountReason={request.discount_reason ?? null}
+              grossTotal={(() => {
+                const stagesTotal = stages
+                  .filter((s) => s.status !== "cancelled")
+                  .reduce((sum, s) => sum + s.amount, 0);
+                if (stagesTotal > 0) return stagesTotal;
+                const b = (request.budget ?? "").replace(/[^0-9.,]/g, "").replace(/\./g, "").replace(",", ".");
+                return parseFloat(b) || 0;
+              })()}
+              onSaved={(next) => {
+                setRequest((prev) =>
+                  prev ? { ...prev, discount_amount: next.discount_amount, discount_reason: next.discount_reason } : prev,
+                );
+              }}
             />
           </div>
 

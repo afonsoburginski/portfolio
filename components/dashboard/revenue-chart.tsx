@@ -13,6 +13,7 @@ import {
 import type { Request, RequestStage } from "@/lib/database.types";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { computeRequestPricing } from "@/lib/services/pricing";
 
 /* ── parse "R$ 5.000,50" / "5000" / "5.000" → number ── */
 function parseBudget(raw: string | null | undefined): number {
@@ -62,21 +63,22 @@ function quotedDate(r: Request): Date {
 
 /**
  * Computa receita REALMENTE recebida vs. a receber (pendente) por request,
- * usando as stages como fonte de verdade quando existirem.
+ * usando o pricing service (com desconto comercial aplicado).
  */
 function splitRequestValue(req: Request, stages: RequestStage[]) {
   const reqStages = stages.filter((s) => s.request_id === req.id);
-  const budget = parseBudget(req.budget);
 
   if (reqStages.length > 0) {
-    const paid = reqStages.filter((s) => s.status === "paid").reduce((sum, s) => sum + s.amount, 0);
-    const pending = reqStages.filter((s) => s.status === "pending").reduce((sum, s) => sum + s.amount, 0);
-    return { paid, pending, stages: reqStages };
+    const pricing = computeRequestPricing(req, reqStages);
+    return { paid: pricing.paidNet, pending: pricing.pendingNet, stages: reqStages };
   }
 
-  // Sem stages: a marca legacy `paid_at` define se está paga
-  if (req.paid_at || req.paid_manually) return { paid: budget, pending: 0, stages: [] as RequestStage[] };
-  if (isApproved(req)) return { paid: 0, pending: budget, stages: [] as RequestStage[] };
+  // Sem stages: aplica desconto direto no budget
+  const budget = parseBudget(req.budget);
+  const discount = Math.max(0, req.discount_amount ?? 0);
+  const net = Math.max(0, budget - discount);
+  if (req.paid_at || req.paid_manually) return { paid: net, pending: 0, stages: [] as RequestStage[] };
+  if (isApproved(req)) return { paid: 0, pending: net, stages: [] as RequestStage[] };
   return { paid: 0, pending: 0, stages: [] as RequestStage[] };
 }
 
@@ -104,12 +106,16 @@ export function RevenueChart({ requests, stages = [], months = 12 }: RevenueChar
     for (const req of requests) {
       const { paid, pending, stages: reqStages } = splitRequestValue(req, stages);
 
-      // Recebida: stages pagas (ou request legacy paid_at) cujo paid_at cai no período
+      // Recebida: stages pagas (com desconto aplicado) cujo paid_at cai no período
       if (reqStages.length > 0) {
+        const pr = computeRequestPricing(req, reqStages);
         for (const stage of reqStages) {
           if (stage.status !== "paid") continue;
           const d = paidDate(stage, req);
-          if (d >= start && d <= end) recebida += stage.amount;
+          if (d >= start && d <= end) {
+            const net = pr.stages.find((s) => s.id === stage.id)?.netAmount ?? stage.amount;
+            recebida += net;
+          }
         }
       } else if (req.paid_at) {
         const d = new Date(req.paid_at);
@@ -122,11 +128,12 @@ export function RevenueChart({ requests, stages = [], months = 12 }: RevenueChar
         if (d >= start && d <= end) aReceber += pending;
       }
 
-      // Orçada: total do request quoted (não aprovado ainda)
+      // Orçada: total do request quoted (não aprovado ainda) — c/ desconto
       if (req.status === "quoted") {
         const d = quotedDate(req);
         if (d >= start && d <= end) {
-          orcada += parseBudget(req.budget);
+          const pr = computeRequestPricing(req, reqStages);
+          orcada += pr.netTotal;
           pedidos += 1;
         }
       }

@@ -8,6 +8,7 @@ import type { Request, RequestAttachment, RequestStage, RequestTask } from "@/li
 import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
+import { computeRequestPricing } from "@/lib/services/pricing";
 
 interface Props {
   req: Request;
@@ -72,6 +73,10 @@ export function RequestCard({
   const hasStages = stages.length > 0;
   const hasPendingStages = pendingStages.length > 0;
   const canPay = !readOnly && !!onStartPayment && !isPaid && (req.status === "quoted" || hasPendingStages);
+  // Pricing com desconto aplicado (fonte única de verdade pra valores na UI)
+  const pricing = computeRequestPricing(req, stages);
+  const hasDiscount = pricing.discount > 0;
+  const stageNetById = new Map(pricing.stages.map((s) => [s.id, s] as const));
   const allAttachments = attachments.length > 0 ? attachments : (legacyAttachment(req) ? [legacyAttachment(req)!] : []);
   const images = allAttachments.filter((a) => a.kind === "image" || isImageUrl(a.url));
   const files = allAttachments.filter((a) => a.kind !== "image" && !isImageUrl(a.url));
@@ -163,6 +168,27 @@ export function RequestCard({
           </div>
         )}
 
+        {/* Desconto comercial (banner) */}
+        {hasDiscount && (
+          <div className="border-t border-border/60 bg-emerald-500/5 px-5 py-3">
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <div>
+                <p className="font-semibold text-emerald-300">Desconto comercial aplicado</p>
+                {req.discount_reason && (
+                  <p className="mt-0.5 text-emerald-300/70">{req.discount_reason}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-emerald-300">− {pricing.discount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                <p className="text-[10px] text-emerald-300/70">
+                  Total: <s>{pricing.gross.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</s>{" "}
+                  → <span className="font-semibold">{pricing.netTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Lista de etapas */}
         {hasStages && (
           <div className="border-t border-border/60 px-5 py-4">
@@ -171,6 +197,8 @@ export function RequestCard({
               {stages.map((stage) => {
                 const stagePaid = stage.status === "paid";
                 const stageCancelled = stage.status === "cancelled";
+                const net = stageNetById.get(stage.id);
+                const hasStageDiscount = !!net && net.discountShare > 0;
                 return (
                   <div
                     key={stage.id}
@@ -178,10 +206,21 @@ export function RequestCard({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm leading-snug">{stage.title}</p>
-                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="font-semibold text-foreground">
-                          {stage.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })}
-                        </span>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                        {hasStageDiscount && net ? (
+                          <>
+                            <s className="text-muted-foreground/60">
+                              {stage.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })}
+                            </s>
+                            <span className="font-semibold text-emerald-300">
+                              {net.netAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-semibold text-foreground">
+                            {(net?.netAmount ?? stage.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 })}
+                          </span>
+                        )}
                         {stagePaid && (
                           <span className="flex items-center gap-1 text-emerald-400">
                             <CheckCircle2 className="size-3" />Pago
