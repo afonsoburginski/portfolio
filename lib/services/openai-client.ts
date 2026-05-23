@@ -14,6 +14,8 @@ const DEFAULT_MODEL = process.env.OPENAI_MODEL ?? "gpt-5.2";
 interface JsonOptions {
   systemPrompt: string;
   userPrompt: string;
+  /** URLs de imagens para passar pro modelo via visão multimodal. */
+  imageUrls?: string[];
   model?: string;
   temperature?: number;
   maxOutputTokens?: number;
@@ -26,6 +28,7 @@ interface JsonOptions {
 export async function generateJSON<T>({
   systemPrompt,
   userPrompt,
+  imageUrls,
   model = DEFAULT_MODEL,
   temperature = 0.4,
   maxOutputTokens = 4096,
@@ -34,13 +37,25 @@ export async function generateJSON<T>({
   // GPT-5+ usa `max_completion_tokens` no lugar de `max_tokens`.
   const isModernModel = /^(gpt-5|o\d|gpt-4\.\d)/i.test(model);
 
+  // Monta o conteúdo do user em forma multi-modal quando houver imagens
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userContent: any = imageUrls && imageUrls.length > 0
+    ? [
+        { type: "text", text: userPrompt },
+        ...imageUrls.map((url) => ({
+          type: "image_url" as const,
+          image_url: { url },
+        })),
+      ]
+    : userPrompt;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const params: any = {
     model,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
+      { role: "user", content: userContent },
     ],
   };
   if (isModernModel) {

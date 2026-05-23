@@ -39,9 +39,20 @@ export interface ProviderInfo {
   whatsapp?: never;
 }
 
+export interface TextAttachment {
+  name: string;
+  /** ex.: "text/markdown", "text/plain" */
+  mimeType: string | null;
+  content: string;
+}
+
 export interface ContractGenerationInput {
   request: QuoteRecord;
   provider: ProviderInfo;
+  /** Conteúdo textual dos anexos (markdown, txt) já fetched do R2. */
+  textAttachments?: TextAttachment[];
+  /** URLs de imagens dos anexos pra IA enxergar (visão multimodal). */
+  imageUrls?: string[];
 }
 
 /* ── Prompts ───────────────────────────────────────────────────────── */
@@ -96,7 +107,12 @@ function fmtDate(d?: string | null) {
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export function buildContractUserPrompt({ request, provider }: ContractGenerationInput): string {
+export function buildContractUserPrompt({
+  request,
+  provider,
+  textAttachments,
+  imageUrls,
+}: ContractGenerationInput): string {
   const stagesBlock = request.stages.length
     ? request.stages
         .map(
@@ -144,6 +160,27 @@ IMPORTANTE: Use APENAS nome e email do CONTRATADO. NÃO inclua telefone, WhatsAp
 ═══ DATA ═══
 ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
 
+${
+  textAttachments && textAttachments.length > 0
+    ? `═══ ANEXOS TEXTUAIS DO PEDIDO (use como fonte primária do escopo se houver conflito com a descrição curta acima) ═══
+${textAttachments
+  .map(
+    (a, i) =>
+      `\n--- Anexo ${i + 1}: ${a.name} (${a.mimeType ?? "text"}) ---\n${
+        // Limita cada anexo pra não estourar o contexto
+        a.content.slice(0, 20000)
+      }${a.content.length > 20000 ? "\n... [truncado em 20kB]" : ""}\n--- fim do Anexo ${i + 1} ---`,
+  )
+  .join("\n")}
+`
+    : ""
+}${
+  imageUrls && imageUrls.length > 0
+    ? `═══ IMAGENS ANEXADAS AO PEDIDO ═══
+${imageUrls.length} imagem(ns) foram enviadas separadamente no payload — analise-as e use o que for relevante (ex.: mockups, telas, fluxos) na hora de detalhar o escopo e as entregas.
+`
+    : ""
+}
 Gere agora o JSON do documento. Lembre: ordem dos blocos é fixa, cláusulas adaptadas ao serviço, sem placeholders.`;
 }
 

@@ -15,9 +15,68 @@ import {
   CONTRACT_SYSTEM_PROMPT,
   type ContractDocument,
   type ProviderInfo,
+  type TextAttachment,
 } from "./contract-prompt";
 import { renderContractToPdf } from "./contract-renderer";
 import { generateJSON } from "./openai-client";
+
+const MAX_TEXT_ATTACHMENT_BYTES = 100_000; // 100kB por anexo, conservador
+const TEXT_MIME_PATTERNS = [
+  /^text\//i,
+  /\/markdown$/i,
+  /\/json$/i,
+  /\/xml$/i,
+  /\/csv$/i,
+];
+const TEXT_FILENAME_PATTERN = /\.(md|markdown|txt|rtf|csv|json|xml|yml|yaml|log)$/i;
+
+function isTextAttachment(name: string, mime: string | null): boolean {
+  if (mime && TEXT_MIME_PATTERNS.some((re) => re.test(mime))) return true;
+  return TEXT_FILENAME_PATTERN.test(name);
+}
+
+async function fetchTextAttachments(
+  attachments: { name: string; url: string; mime_type: string | null; kind: string }[],
+): Promise<TextAttachment[]> {
+  const candidates = attachments.filter(
+    (a) => a.kind === "file" && isTextAttachment(a.name, a.mime_type),
+  );
+
+  const fetched: TextAttachment[] = [];
+  await Promise.all(
+    candidates.map(async (a) => {
+      try {
+        const res = await fetch(a.url, {
+          headers: { "User-Agent": "afonsodev-contract-generator" },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!res.ok) {
+          console.warn(`[contracts] failed to fetch ${a.url}: ${res.status}`);
+          return;
+        }
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength > MAX_TEXT_ATTACHMENT_BYTES) {
+          console.warn(`[contracts] attachment ${a.name} too big (${buf.byteLength}b), skipping`);
+          return;
+        }
+        const content = new TextDecoder("utf-8").decode(buf);
+        fetched.push({ name: a.name, mimeType: a.mime_type, content });
+      } catch (err) {
+        console.warn(`[contracts] error fetching attachment ${a.name}:`, err);
+      }
+    }),
+  );
+  return fetched;
+}
+
+function pickImageUrls(
+  attachments: { kind: string; url: string; category: string | null }[],
+): string[] {
+  return attachments
+    .filter((a) => a.kind === "image" && a.category !== "contract")
+    .map((a) => a.url)
+    .slice(0, 6); // proteção contra explosão de custo
+}
 
 export class ContractGenerationError extends Error {
   constructor(message: string, public step: string) { super(message); this.name = "ContractGenerationError"; }
@@ -58,12 +117,22 @@ export async function generateContractForRequest(requestId: string): Promise<Gen
 
   const provider = providerFromEnv();
 
-  // 1. Chama OpenAI pedindo o doc estruturado
+  // 1a. Coleta os anexos relevantes pro contexto da IA
+  const textAttachments = await fetchTextAttachments(quote.attachments);
+  const imageUrls = pickImageUrls(quote.attachments);
+
+  // 1b. Chama OpenAI pedindo o doc estruturado (com anexos no contexto)
   let doc: ContractDocument;
   try {
     doc = await generateJSON<ContractDocument>({
       systemPrompt: CONTRACT_SYSTEM_PROMPT,
-      userPrompt: buildContractUserPrompt({ request: quote, provider }),
+      userPrompt: buildContractUserPrompt({
+        request: quote,
+        provider,
+        textAttachments,
+        imageUrls,
+      }),
+      imageUrls,
       temperature: 0.45,
       maxOutputTokens: 6000,
     });
