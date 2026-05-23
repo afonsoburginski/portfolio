@@ -393,25 +393,25 @@ Já existe o padrão `*-adaptive.tsx` no projeto. Aplicar:
 | Frente | h dev |
 | --- | --- |
 | Schema + migrações + seeds | 3 |
-| API: `service-quotes` + extensão `catalog` | 6 |
+| API: `service-quotes` + extensão `catalog` | 5 |
 | API: `pricing-engine` + presets | 5 |
-| Web: `/servicos` landing + categorias + catálogo | 7 |
-| Web: perfil profissional estendido + cadastro | 5 |
-| Web: solicitação de orçamento (dialog + dashboard) | 6 |
-| Web: wizard de orçamento inteligente + PDF + share | 8 |
-| **Total dev** | **40 h** |
+| Web: `/servicos` landing + categorias + catálogo | 6 |
+| Web: perfil profissional estendido + cadastro | 4 |
+| Web: solicitação de orçamento (dialog + dashboard) | 5 |
+| Web: wizard de orçamento inteligente + PDF + share | 7 |
+| **Total dev** | **35 h** |
 
-**Total: 40 h × R$ 120 = R$ 4.800,00**
+**Total: 35 h × R$ 120 = R$ 4.200,00**
 
 Testes (mobile pass, a11y, Cypress e2e, QA) estão **inclusos** na entrega — não geram cobrança extra.
 
 ---
 
-## 10. Etapas de pagamento (2 × R$ 2.400)
+## 10. Etapas de pagamento (2 × R$ 2.100)
 
 Cobrança em duas etapas iguais, cada uma amarrada a entregas concretas e auditáveis (sobe pra `master` da `saas-cotacoes` no fim de cada etapa).
 
-### Etapa 1 — Marketplace de Serviços · R$ 2.400 (20 h) · pago no kickoff
+### Etapa 1 — Marketplace de Serviços · R$ 2.100 (20 h) · pago no kickoff
 
 Entregas (tudo navegável e funcional em staging ao final):
 
@@ -437,7 +437,7 @@ Entregas (tudo navegável e funcional em staging ao final):
 
 ---
 
-### Etapa 2 — Orçamento Inteligente + Contratação · R$ 2.400 (20 h) · pago na entrega
+### Etapa 2 — Orçamento Inteligente + Contratação · R$ 2.100 (20 h) · pago na entrega
 
 Entregas:
 

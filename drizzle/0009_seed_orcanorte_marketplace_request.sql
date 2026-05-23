@@ -1,6 +1,6 @@
 -- Seed: request "OrçaNorte — Marketplace de Serviços + Orçamento Inteligente"
--- Valor: R$ 4.800 (40h dev × R$ 120). Testes/QA inclusos sem cobrança extra.
--- Stages: 2 × R$ 2.400 (kickoff 50% + entrega final 50%).
+-- Valor: R$ 4.200 (35h dev × R$ 120). Testes/QA inclusos sem cobrança extra.
+-- Stages: 2 × R$ 2.100 (kickoff 50% + entrega final 50%).
 -- Plano detalhado em /orcanorte-marketplace-servicos-implementacao.md
 --
 -- ATENÇÃO: ajuste o e-mail do cliente OrçaNorte abaixo (procurar `CLIENT_EMAIL_AQUI`).
@@ -24,7 +24,7 @@ SELECT
 
 (2) ORÇAMENTO INTELIGENTE AUTOMÁTICO — wizard de 5 steps (Categoria → Serviço → Medidas → Acabamento → Resultado) que calcula faixa de preço, tempo estimado, materiais e profissionais disponíveis com base em presets regionais. Inclui export PDF e link compartilhável.
 
-Esforço (desenvolvimento): 40h × R$ 120 = R$ 4.800. Testes (mobile pass, a11y, Cypress e2e, QA) inclusos sem cobrança extra.
+Esforço (desenvolvimento): 35h × R$ 120 = R$ 4.200. Testes (mobile pass, a11y, Cypress e2e, QA) inclusos sem cobrança extra.
 
 Stack reaproveitada do saas-cotacoes: Next.js 15, Postgres + Drizzle, Hono API, react-hook-form, zod, react-query, Tailwind. ~60% da fundação (tabelas services, categories, reviews, favorites, orders, stores) já existe.
 
@@ -32,11 +32,11 @@ Plano completo: /orcanorte-marketplace-servicos-implementacao.md',
   'full_system',
   2,
   'quoted',
-  'R$ 4.800,00',
+  'R$ 4.200,00',
   'https://cdn.afonsodev.com/requests/orcanorte-marketplace-servicos.jpeg',
   'Cobrança apenas das horas de desenvolvimento. Testes (mobile pass, a11y, Cypress e2e, QA) são executados pelo dev e estão inclusos sem cobrança extra.
 
-Quebra (40h):
+Quebra (35h):
 - Schema + migrações + seeds (3h)
 - API service-quotes + catalog (6h)
 - API pricing-engine + presets (5h)
@@ -74,8 +74,8 @@ INSERT OR IGNORE INTO "request_stages" (
   (
     'stg-orcanorte-kickoff',
     'req-orcanorte-marketplace-servicos',
-    'Etapa 1 — Marketplace de Serviços (R$ 2.400): schema + 17 categorias; API catalog/service-quotes; página /servicos com grid de categorias + catálogo de profissionais; perfil público do profissional com portfólio, badges e disponibilidade',
-    2400.00,
+    'Etapa 1 — Marketplace de Serviços (R$ 2.100): schema + 17 categorias; API catalog/service-quotes; página /servicos com grid de categorias + catálogo de profissionais; perfil público do profissional com portfólio, badges e disponibilidade',
+    2100.00,
     1,
     0,
     'pending',
@@ -86,8 +86,8 @@ INSERT OR IGNORE INTO "request_stages" (
   (
     'stg-orcanorte-entrega',
     'req-orcanorte-marketplace-servicos',
-    'Etapa 2 — Orçamento Inteligente + Contratação (R$ 2.400): API pricing-engine + presets; wizard de orçamento em 5 steps (categoria → serviço → medidas → acabamento → resultado); dialog Solicitar Orçamento + dashboard de propostas do prestador; export PDF + link compartilhável + mobile pass',
-    2400.00,
+    'Etapa 2 — Orçamento Inteligente + Contratação (R$ 2.100): API pricing-engine + presets; wizard de orçamento em 5 steps (categoria → serviço → medidas → acabamento → resultado); dialog Solicitar Orçamento + dashboard de propostas do prestador; export PDF + link compartilhável + mobile pass',
+    2100.00,
     2,
     0,
     'pending',
