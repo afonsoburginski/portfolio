@@ -22,8 +22,17 @@ jobs:
           TOKEN: ${{ secrets.DOKPLOY_TOKEN }}
         run: |
           set -e
-          echo "== GET /api/project.all (nomes/ids, sem segredos) =="
-          curl -s -m 20 -H "x-api-key: $TOKEN" "$DOKPLOY_URL/api/project.all" > projects.json
+          fetch() { # $1=url -> grava em $2, retorna code; retry 5x (conexao GH->VPS é flaky)
+            for i in 1 2 3 4 5; do
+              code=$(curl -s -o "$2" -w "%{http_code}" -m 25 -H "x-api-key: $TOKEN" "$1" || echo 000)
+              echo "  attempt $i -> $code"
+              [ "$code" = "200" ] && return 0
+              sleep 10
+            done
+            return 1
+          }
+          echo "== GET /api/project.all =="
+          fetch "$DOKPLOY_URL/api/project.all" projects.json || { echo "::error::project.all falhou"; head -c 500 projects.json; exit 1; }
           python3 - <<'PY'
           import json
           d=json.load(open("projects.json"))
@@ -45,7 +54,7 @@ jobs:
           PY
           echo ""
           echo "== GET /api/compose.one (orcanorte) — só as CHAVES e tipos, valores redigidos =="
-          curl -s -m 20 -H "x-api-key: $TOKEN" "$DOKPLOY_URL/api/compose.one?composeId=$ORCANORTE_COMPOSE_ID" > compose.json
+          fetch "$DOKPLOY_URL/api/compose.one?composeId=$ORCANORTE_COMPOSE_ID" compose.json || { echo "::error::compose.one falhou"; head -c 500 compose.json; exit 1; }
           python3 - <<'PY'
           import json
           d=json.load(open("compose.json"))

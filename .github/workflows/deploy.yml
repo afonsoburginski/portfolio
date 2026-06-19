@@ -3,6 +3,8 @@ name: Deploy
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - ".github/workflows/dokploy-provision.yml"
   workflow_dispatch:
 
 concurrency:
