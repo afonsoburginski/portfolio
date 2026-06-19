@@ -1,0 +1,64 @@
+name: Dokploy Provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: "discovery | create"
+        required: true
+        default: discovery
+
+env:
+  DOKPLOY_URL: "http://31.97.253.138:3000"
+  ORCANORTE_COMPOSE_ID: "NIsvOjcR9BMsLsL8MW_RZ"
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discovery — confirm token + learn API shape
+        if: ${{ inputs.step == 'discovery' }}
+        env:
+          TOKEN: ${{ secrets.DOKPLOY_TOKEN }}
+        run: |
+          set -e
+          echo "== GET /api/project.all (nomes/ids, sem segredos) =="
+          curl -s -m 20 -H "x-api-key: $TOKEN" "$DOKPLOY_URL/api/project.all" > projects.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open("projects.json"))
+          def projects(x):
+            out=[]
+            stack=[x]
+            while stack:
+              c=stack.pop()
+              if isinstance(c,dict):
+                if "projectId" in c and "name" in c:
+                  svc=len(c.get("compose") or [])+len(c.get("applications") or [])
+                  out.append((c.get("projectId"),c.get("name"),svc))
+                stack.extend(c.values())
+              elif isinstance(c,list):
+                stack.extend(c)
+            return out
+          for pid,name,svc in projects(d):
+            print(f"PROJECT id={pid} name={name} services={svc}")
+          PY
+          echo ""
+          echo "== GET /api/compose.one (orcanorte) — só as CHAVES e tipos, valores redigidos =="
+          curl -s -m 20 -H "x-api-key: $TOKEN" "$DOKPLOY_URL/api/compose.one?composeId=$ORCANORTE_COMPOSE_ID" > compose.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open("compose.json"))
+          if not isinstance(d,dict):
+            print("resposta nao-dict:",type(d).__name__); raise SystemExit
+          for k,v in d.items():
+            t=type(v).__name__
+            if isinstance(v,(str,int,float,bool)) or v is None:
+              # mostra valor só pra campos claramente nao-sensiveis
+              safe = k.lower() in {"composetype","sourcetype","providertype","name","appname","composestatus","composepath","branch","triggertype","autodeploy","isolateddeployment","randomize","projectid","composeid","refreshtoken","watchpaths"}
+              shown = v if (safe and k.lower()!="refreshtoken") else f"<{t}>"
+              print(f"{k}: {shown}")
+            else:
+              n = len(v) if hasattr(v,'__len__') else '?'
+              print(f"{k}: <{t} len={n}>")
+          PY
