@@ -6,7 +6,7 @@
 //   5) cria registro em request_attachments com category="contract"
 //   6) devolve o registro pra UI inserir no feed sem refetch
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { putObject, r2PublicUrl } from "@/lib/r2";
 import { db } from "@/lib/db";
 import { request_attachments } from "@/lib/schema";
 import { loadQuoteByRequestId } from "@/lib/repos/quotes";
@@ -90,10 +90,6 @@ function providerFromEnv(): ProviderInfo {
   };
 }
 
-function r2PublicUrl(): string {
-  return process.env.R2_PUBLIC_URL ?? "https://cdn.afonsodev.com";
-}
-
 function slugify(s: string) {
   return s
     .normalize("NFD")
@@ -164,11 +160,8 @@ export async function generateContractForRequest(requestId: string): Promise<Gen
   // 3. Upload no R2
   const fileName = `Contrato — ${quote.title.slice(0, 40)}.pdf`;
   const key = `contracts/${requestId}/${Date.now()}-${slugify(quote.title)}.pdf`;
-  const { env } = getCloudflareContext({ async: false });
   try {
-    await env.R2.put(key, pdfBytes, {
-      httpMetadata: { contentType: "application/pdf" },
-    });
+    await putObject(key, pdfBytes, "application/pdf");
   } catch (err) {
     console.error("[contracts] R2 upload failure:", err);
     throw new ContractGenerationError(

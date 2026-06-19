@@ -1,9 +1,9 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { isAdminEmail } from "@/lib/admin-helpers";
+import { putObject, deleteObject, r2PublicUrl } from "@/lib/r2";
 
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL ?? "https://cdn.afonsodev.com";
+const R2_PUBLIC_URL = r2PublicUrl();
 const USER_UPLOAD_FOLDERS = new Set(["requests", "comments"]);
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
@@ -44,14 +44,8 @@ export async function POST(req: Request) {
   const originalName = safeFileName(file.name);
   const key = `${folder}/${crypto.randomUUID()}-${originalName}`;
 
-  const { env } = getCloudflareContext({ async: false });
-
-  await env.R2.put(key, file.stream(), {
-    httpMetadata: {
-      contentType: file.type,
-      contentDisposition: `inline; filename="${originalName}"`,
-    },
-  });
+  const body = Buffer.from(await file.arrayBuffer());
+  await putObject(key, body, file.type, `inline; filename="${originalName}"`);
 
   return Response.json({
     url: `${R2_PUBLIC_URL}/${key}`,
@@ -73,8 +67,7 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "No key provided" }, { status: 400 });
   }
 
-  const { env } = getCloudflareContext({ async: false });
-  await env.R2.delete(key);
+  await deleteObject(key);
 
   return Response.json({ success: true });
 }

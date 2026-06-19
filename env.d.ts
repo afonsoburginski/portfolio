@@ -10,9 +10,19 @@ declare namespace NodeJS {
     RESEND_API_KEY: string;
     ADMIN_EMAIL?: string;
 
-    BLOB_READ_WRITE_TOKEN?: string;
-
     DASHBOARD_ADMIN_SECRET?: string;
+
+    // Postgres
+    DATABASE_URL: string;
+
+    // Cloudflare R2 (S3-compatible API)
+    R2_ACCOUNT_ID: string;
+    R2_ACCESS_KEY_ID: string;
+    R2_SECRET_ACCESS_KEY: string;
+    R2_BUCKET?: string;
+    R2_PUBLIC_URL?: string;
+
+    OPENAI_API_KEY?: string;
 
     NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY?: string;
     MERCADOPAGO_ACCESS_TOKEN?: string;
@@ -20,9 +30,4 @@ declare namespace NodeJS {
     MERCADOPAGO_CLIENT_SECRET?: string;
     MERCADOPAGO_WEBHOOK_SECRET?: string;
   }
-}
-
-interface CloudflareEnv {
-  DB: D1Database;
-  R2: R2Bucket;
 }

@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-
-void initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
+  // Build a self-contained server (.next/standalone/server.js) for the Docker image.
+  output: "standalone",
   async redirects() {
     return [
       { source: "/dashboard/new", destination: "/dashboard", permanent: false },

@@ -2,9 +2,10 @@ import { defineConfig } from "drizzle-kit";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-// Load .env manually (drizzle-kit runs outside Next.js)
-const envPath = join(process.cwd(), ".env");
-if (existsSync(envPath)) {
+// Load .env manually (drizzle-kit runs outside Next.js).
+for (const file of [".env", ".env.local"]) {
+  const envPath = join(process.cwd(), file);
+  if (!existsSync(envPath)) continue;
   for (const line of readFileSync(envPath, "utf-8").split("\n")) {
     const t = line.trim();
     if (!t || t.startsWith("#")) continue;
@@ -16,15 +17,11 @@ if (existsSync(envPath)) {
   }
 }
 
-const url = process.env.TURSO_DATABASE_URL!;
-const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
-const isLocal = url?.startsWith("file:");
-
 export default defineConfig({
   out: "./drizzle",
   schema: "./lib/schema.ts",
-  dialect: isLocal ? "sqlite" : "turso",
-  dbCredentials: isLocal
-    ? { url }
-    : { url, authToken },
+  dialect: "postgresql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+  },
 });

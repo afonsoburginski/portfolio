@@ -2,7 +2,7 @@
 
 import { db } from "./db";
 import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user, projects } from "./schema";
-import { eq, desc, inArray, and, ne, sql, asc } from "drizzle-orm";
+import { eq, desc, inArray, and, ne, asc, sql } from "drizzle-orm";
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import type { RequestStatus, RequestType, RequestTaskStatus, ProjectCategory, ProjectStatus } from "./schema";
@@ -320,7 +320,7 @@ export async function setUserPreference(key: string, value: string): Promise<voi
     .values({ user_id: u.id, key, value })
     .onConflictDoUpdate({
       target: [user_preferences.user_id, user_preferences.key],
-      set: { value, updated_at: sql`(datetime('now'))` },
+      set: { value, updated_at: new Date().toISOString() },
     });
 }
 
@@ -502,7 +502,7 @@ export async function updateProject(
   const [row] = await db
     .update(projects)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set({ ...(patch as any), updated_at: sql`datetime('now')` })
+    .set({ ...(patch as any), updated_at: new Date().toISOString() })
     .where(eq(projects.id, id))
     .returning();
   return row;
@@ -519,7 +519,7 @@ export async function reorderProjects(orderedIds: string[]) {
     orderedIds.map((id, idx) =>
       db
         .update(projects)
-        .set({ sort_order: (idx + 1) * 10, updated_at: sql`datetime('now')` })
+        .set({ sort_order: (idx + 1) * 10, updated_at: new Date().toISOString() })
         .where(eq(projects.id, id)),
     ),
   );
@@ -560,7 +560,7 @@ export async function updateProjectCaseStudy(
   const [row] = await db
     .update(projects)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set({ ...(patch as any), updated_at: sql`datetime('now')` })
+    .set({ ...(patch as any), updated_at: new Date().toISOString() })
     .where(eq(projects.id, id))
     .returning();
   return row;

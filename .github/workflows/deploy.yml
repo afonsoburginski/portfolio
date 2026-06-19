@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers
+name: Deploy
 
 on:
   push:
@@ -9,38 +9,74 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  IMAGE: afonsoburginski/portfolio:latest
+  DOCKERHUB_USERNAME: afonsoburginski
+  # Deploy é feito pelo Dokploy (Traefik + Cloudflare). O CI builda+push a imagem e dispara o redeploy via API.
+  DOKPLOY_URL: "http://31.97.253.138:3000"
+  # ⚠️ Preencher com o composeId do recurso "Compose" do portfolio no Dokploy.
+  DOKPLOY_COMPOSE_ID: "REPLACE_WITH_PORTFOLIO_COMPOSE_ID"
+  HEALTH_URL: "https://afonsodev.com/api/health"
+
 jobs:
-  deploy:
+  build:
+    name: Build & Push · web
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      deployments: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
         with:
-          node-version: 20
-          cache: npm
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Build & push (Dockerfile)
+        uses: docker/build-push-action@v6
         with:
-          bun-version: latest
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha,scope=portfolio
+          cache-to: type=gha,mode=max,scope=portfolio
+          build-args: |
+            NEXT_PUBLIC_APP_URL=https://afonsodev.com
+            NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY }}
 
-      - run: npm ci
+  deploy:
+    name: Deploy · Dokploy
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Disparar redeploy do compose no Dokploy
+        run: |
+          echo "▸ Acionando deploy no Dokploy (pull ${IMAGE} + recreate)…"
+          # retry: a conexao GitHub->VPS:3000 ocasionalmente da timeout transitorio
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL -X POST -m 30 \
+              -H "x-api-key: ${{ secrets.DOKPLOY_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              "${{ env.DOKPLOY_URL }}/api/compose.deploy" \
+              -d "{\"composeId\":\"${{ env.DOKPLOY_COMPOSE_ID }}\"}"; then
+              echo " ✓ deploy acionado (tentativa $attempt)"; exit 0
+            fi
+            echo "tentativa $attempt falhou; retry em 15s…"; sleep 15
+          done
+          echo "::error::nao consegui acionar o deploy apos 5 tentativas"; exit 1
 
-      - name: Build (OpenNext + Cloudflare)
-        run: npm run cf:build
-        env:
-          NEXT_PUBLIC_APP_URL: https://afonsodev.com
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-
-      - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+      - name: Checar saúde pública (via Cloudflare)
+        run: |
+          echo "▸ Aguardando o serviço estabilizar…"
+          for i in $(seq 1 20); do
+            sleep 15
+            code=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "${{ env.HEALTH_URL }}" || true)
+            echo "tentativa $i: /api/health -> $code"
+            [ "$code" = "200" ] && echo "✅ Portfolio no ar via Dokploy" && exit 0
+          done
+          echo "⚠️ não confirmou 200 a tempo — verifique o deploy no painel do Dokploy"
+          exit 1

@@ -1,17 +1,25 @@
-import { drizzle } from "drizzle-orm/d1";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./schema";
 
 type Database = ReturnType<typeof drizzle<typeof schema>>;
 
-let _db: Database | null = null;
+// Lazily resolved so DATABASE_URL is only needed at request time, not at module
+// import / `next build` time. Cached on globalThis so Next.js dev HMR doesn't
+// open a new pool on every reload (which would exhaust Postgres connections).
+const globalForDb = globalThis as unknown as {
+  _pgClient?: ReturnType<typeof postgres>;
+  _db?: Database;
+};
 
 function getDb(): Database {
-  if (_db) return _db;
-  const d1 = getCloudflareContext({ async: false }).env.DB;
-  if (!d1) throw new Error("Cloudflare D1 binding 'DB' not found. Run via `wrangler dev` or `next dev` with initOpenNextCloudflareForDev().");
-  _db = drizzle(d1, { schema });
-  return _db;
+  if (globalForDb._db) return globalForDb._db;
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is not set.");
+  const client = globalForDb._pgClient ?? postgres(url, { prepare: false });
+  globalForDb._pgClient = client;
+  globalForDb._db = drizzle(client, { schema });
+  return globalForDb._db;
 }
 
 export const db = new Proxy({} as Database, {
