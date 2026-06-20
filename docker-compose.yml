@@ -23,8 +23,12 @@ services:
   web:
     image: afonsoburginski/portfolio:latest
     pull_policy: always
-    ports:
-      - "3000:3000"
+    # No host port published: Dokploy/Traefik routes to this service's container
+    # port 3000 over the internal network via the configured domain. Publishing
+    # 3000:3000 collides with Dokploy itself (which owns host :3000). For local
+    # `docker compose up`, add a docker-compose.override.yml with a `ports` map.
+    expose:
+      - "3000"
     mem_limit: 1g
     mem_reservation: 512m
     cpus: "1.5"

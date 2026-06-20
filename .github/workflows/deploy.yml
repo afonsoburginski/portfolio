@@ -16,7 +16,7 @@ env:
   # Deploy é feito pelo Dokploy (Traefik + Cloudflare). O CI builda+push a imagem e dispara o redeploy via API.
   DOKPLOY_URL: "http://31.97.253.138:3000"
   # ⚠️ Preencher com o composeId do recurso "Compose" do portfolio no Dokploy.
-  DOKPLOY_COMPOSE_ID: "REPLACE_WITH_PORTFOLIO_COMPOSE_ID"
+  DOKPLOY_COMPOSE_ID: "K66BsH5I70okW5ddMPahc"
   HEALTH_URL: "https://afonsodev.com/api/health"
 
 jobs:

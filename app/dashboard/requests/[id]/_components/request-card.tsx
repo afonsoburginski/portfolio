@@ -137,7 +137,7 @@ export function RequestCard({
       {/* ── Painel direito ── */}
       <div className="flex flex-col flex-1 min-w-0">
         <RequestHeader req={req} isPaid={isPaid} showBackButton={!heroImage} />
-        {hasQuote && <QuoteBar req={req} tasks={tasks} isPaid={isPaid} />}
+        {hasQuote && <QuoteBar req={req} tasks={tasks} stages={stages} isPaid={isPaid} />}
 
         {/* Descrição */}
         <div className="px-5 py-4 flex-1 overflow-y-auto">
@@ -321,7 +321,7 @@ function RequestHeader({
   );
 }
 
-function QuoteBar({ req, tasks, isPaid }: { req: Request; tasks: RequestTask[]; isPaid: boolean }) {
+function QuoteBar({ req, tasks, stages, isPaid }: { req: Request; tasks: RequestTask[]; stages: RequestStage[]; isPaid: boolean }) {
   const fmtBRL = (v: number) =>
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
 
@@ -331,18 +331,27 @@ function QuoteBar({ req, tasks, isPaid }: { req: Request; tasks: RequestTask[]; 
     return isNaN(n) ? 0 : n;
   };
 
-  const budgetBase  = parseBudget(req.budget);
-  const extrasTotal = tasks.reduce((acc, t) => acc + ((t.value as number | null) ?? 0), 0);
-  const totalGeral  = budgetBase + extrasTotal;
-  const paidValue   = isPaid ? totalGeral : 0;
-  const remaining   = totalGeral - paidValue;
+  // Quando há etapas (plano parcelado), os valores vêm das etapas — pago/restante
+  // são a soma real das etapas pagas/pendentes, não o tudo-ou-nada do flag isPaid.
+  const pricing     = computeRequestPricing(req, stages);
+  const hasStages   = stages.some((s) => s.status !== "cancelled");
+  const budgetBase  = hasStages
+    ? pricing.stages.filter((s) => !s.is_extra && !s.cancelled).reduce((a, s) => a + s.netAmount, 0)
+    : parseBudget(req.budget);
+  const extrasTotal = hasStages
+    ? pricing.stages.filter((s) => s.is_extra && !s.cancelled).reduce((a, s) => a + s.netAmount, 0)
+    : tasks.reduce((acc, t) => acc + ((t.value as number | null) ?? 0), 0);
+  const totalGeral  = hasStages ? pricing.netTotal : budgetBase + extrasTotal;
+  const paidValue   = hasStages ? pricing.paidNet : isPaid ? totalGeral : 0;
+  const remaining   = hasStages ? pricing.pendingNet : totalGeral - paidValue;
+  const hasPaid     = paidValue > 0;
 
   return (
     <div className="border-b border-border/60 bg-muted/20">
       {/* linha 1: valores */}
       <div className="flex items-center gap-5 px-5 py-2.5 flex-wrap">
         <MetaItem icon={<DollarSign className="size-3 text-purple-400" />} label="Orçamento base">
-          <span className="text-sm font-bold">{req.budget ?? "—"}</span>
+          <span className="text-sm font-bold">{hasStages ? fmtBRL(budgetBase) : (req.budget ?? "—")}</span>
         </MetaItem>
 
         {extrasTotal > 0 && (
@@ -380,7 +389,7 @@ function QuoteBar({ req, tasks, isPaid }: { req: Request; tasks: RequestTask[]; 
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="size-3 text-emerald-400" />
             <span className="text-[11px] text-muted-foreground">Pago</span>
-            <span className={`text-xs font-semibold ${isPaid ? "text-emerald-400" : "text-muted-foreground/60"}`}>
+            <span className={`text-xs font-semibold ${hasPaid ? "text-emerald-400" : "text-muted-foreground/60"}`}>
               {fmtBRL(paidValue)}
             </span>
           </div>
