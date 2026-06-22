@@ -1,0 +1,2 @@
+ALTER TABLE "request_tasks" ADD COLUMN "stage_id" text;--> statement-breakpoint
+ALTER TABLE "request_tasks" ADD CONSTRAINT "request_tasks_stage_id_request_stages_id_fk" FOREIGN KEY ("stage_id") REFERENCES "public"."request_stages"("id") ON DELETE set null ON UPDATE no action;

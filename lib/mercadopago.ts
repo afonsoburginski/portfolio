@@ -9,12 +9,16 @@ function token() {
   return t;
 }
 
-async function mpFetch<T>(path: string, init: RequestInit & { idempotencyKey?: string } = {}): Promise<T> {
-  const { idempotencyKey, headers, ...rest } = init;
+async function mpFetch<T>(
+  path: string,
+  init: RequestInit & { idempotencyKey?: string; accessToken?: string } = {},
+): Promise<T> {
+  const { idempotencyKey, accessToken, headers, ...rest } = init;
   const res = await fetch(`${MP_BASE}${path}`, {
     ...rest,
     headers: {
-      Authorization: `Bearer ${token()}`,
+      // Split: usa o token do vendedor conectado quando fornecido; senão, o da plataforma.
+      Authorization: `Bearer ${accessToken ?? token()}`,
       "Content-Type": "application/json",
       ...(idempotencyKey ? { "X-Idempotency-Key": idempotencyKey } : {}),
       ...(headers ?? {}),
@@ -45,6 +49,39 @@ export interface MpPreferenceBody {
   notification_url?: string;
   external_reference?: string;
   statement_descriptor?: string;
+  /**
+   * Split de pagamento (modelo marketplace MP): comissão retida pela plataforma.
+   * A preferência precisa ser criada com o access token do VENDEDOR conectado
+   * (MP Connect/OAuth); a plataforma recebe `marketplace_fee` do valor.
+   * Quando ausente/0, é um pagamento normal de coletor único (comportamento atual).
+   */
+  marketplace_fee?: number;
+  marketplace?: string;
+}
+
+/**
+ * Split de pagamento — divisão de uma parcela entre destinatários.
+ * `sellerAccessToken` (opcional): token do vendedor conectado (MP Connect). Sem ele,
+ * o split não pode ser efetivado pelo MP e a cobrança cai no coletor único.
+ */
+export interface SplitConfig {
+  /** Comissão da plataforma sobre o valor (em BRL). */
+  marketplaceFee: number;
+  /** Token do vendedor conectado (MP Connect/OAuth); ausente → sem split efetivo. */
+  sellerAccessToken?: string;
+  /** Identificador do marketplace (app id), quando aplicável. */
+  marketplace?: string;
+}
+
+/** Calcula a comissão da plataforma a partir de % e/ou valor fixo (clamp em [0, amount]). */
+export function computeMarketplaceFee(
+  amount: number,
+  opts: { pct?: number; fixed?: number },
+): number {
+  const pct = Number.isFinite(opts.pct) ? Math.max(0, opts.pct ?? 0) : 0;
+  const fixed = Number.isFinite(opts.fixed) ? Math.max(0, opts.fixed ?? 0) : 0;
+  const fee = (amount * pct) / 100 + fixed;
+  return Math.min(Math.max(0, Math.round(fee * 100) / 100), amount);
 }
 
 export interface MpPreferenceResponse {
@@ -53,10 +90,20 @@ export interface MpPreferenceResponse {
   sandbox_init_point?: string;
 }
 
-export function createPreference(body: MpPreferenceBody) {
+export function createPreference(body: MpPreferenceBody, split?: SplitConfig) {
+  const finalBody: MpPreferenceBody =
+    split && split.marketplaceFee > 0
+      ? {
+          ...body,
+          marketplace_fee: split.marketplaceFee,
+          ...(split.marketplace ? { marketplace: split.marketplace } : {}),
+        }
+      : body;
   return mpFetch<MpPreferenceResponse>("/checkout/preferences", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify(finalBody),
+    // Split efetivo exige o token do vendedor conectado (MP Connect); senão, coletor único.
+    ...(split?.sellerAccessToken ? { accessToken: split.sellerAccessToken } : {}),
   });
 }
 

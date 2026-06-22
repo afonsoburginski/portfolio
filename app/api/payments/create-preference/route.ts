@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { requests, request_stages } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin-helpers";
-import { createPreference } from "@/lib/mercadopago";
+import { createPreference, computeMarketplaceFee, type SplitConfig } from "@/lib/mercadopago";
 import { computeRequestPricing } from "@/lib/services/pricing";
 
 export async function POST(req: NextRequest) {
@@ -60,6 +60,21 @@ export async function POST(req: NextRequest) {
 
   if (amount <= 0) return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
 
+  // Split de pagamento (opcional, via env). Comissão da plataforma sobre a parcela; só ativa
+  // quando configurado — sem env, é o coletor único de sempre (comportamento inalterado).
+  const marketplaceFee = computeMarketplaceFee(amount, {
+    pct: Number(process.env.MERCADOPAGO_MARKETPLACE_FEE_PCT ?? 0),
+    fixed: Number(process.env.MERCADOPAGO_MARKETPLACE_FEE_FIXED ?? 0),
+  });
+  const split: SplitConfig | undefined =
+    marketplaceFee > 0
+      ? {
+          marketplaceFee,
+          sellerAccessToken: process.env.MERCADOPAGO_SELLER_ACCESS_TOKEN || undefined,
+          marketplace: process.env.MERCADOPAGO_MARKETPLACE_ID || undefined,
+        }
+      : undefined;
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const isPublicUrl = !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1");
 
@@ -86,9 +101,14 @@ export async function POST(req: NextRequest) {
       }),
       external_reference: externalReference,
       statement_descriptor: "AFONSO BURGINSKI",
-    });
+    }, split);
 
-    return NextResponse.json({ preferenceId: result.id, amount, stageId: stageId ?? null });
+    return NextResponse.json({
+      preferenceId: result.id,
+      amount,
+      stageId: stageId ?? null,
+      marketplaceFee: split?.marketplaceFee ?? 0,
+    });
   } catch (err) {
     console.error("[MP create-preference]", err);
     return NextResponse.json({ error: "Failed to create preference" }, { status: 502 });

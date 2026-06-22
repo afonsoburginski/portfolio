@@ -118,6 +118,9 @@ export const request_attachments = pgTable("request_attachments", {
 export const request_tasks = pgTable("request_tasks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   request_id: text("request_id").notNull().references(() => requests.id, { onDelete: "cascade" }),
+  // Amarração etapa ↔ parcela: cada etapa (task) pertence a uma parcela (stage) de pagamento.
+  // onDelete set null para a etapa sobreviver se a parcela for removida.
+  stage_id: text("stage_id").references((): import("drizzle-orm/pg-core").AnyPgColumn => request_stages.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   position: doublePrecision("position").notNull().default(0),
   due_date: text("due_date"),
