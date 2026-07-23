@@ -27,20 +27,20 @@ const tools = [
 
 const experiences = [
   {
-    role: "Senior Mobile Engineer",
+    role: "Senior Software Engineer",
     company: "Atman Systems",
-    period: "2026 - Present",
-    description: "Mobile architecture and delivery for enterprise products. React Native with native modules in Swift and Kotlin, performance and release pipelines (EAS Build, Fastlane), and end-to-end ownership of the mobile stack.",
+    period: "Mar 2026 - Present",
+    description: "Owns the camera/video domain of a large-scale smart-city video monitoring platform — 27 NestJS microservices (Kafka, Kong, Kubernetes). Low-latency streaming (WebRTC/LL-HLS, codec negotiation), real-time video analytics, event correlation and alarms, telemetry over time-partitioned PostgreSQL, CI/CD quality gates. Selected to lead the platform's upcoming mobile application.",
     highlights: [
-      { text: "React Native + native", icon: Code },
-      { text: "Mobile architecture", icon: Star },
-      { text: "App Store & Play Store", icon: Trophy }
+      { text: "WebRTC / LL-HLS streaming", icon: Star },
+      { text: "NestJS microservices", icon: Code },
+      { text: "Kubernetes & CI/CD", icon: Trophy }
     ]
   },
   {
     role: "Full Stack Engineer",
     company: "JHONROB Silos e Secadores",
-    period: "Nov 2023 - Present",
+    period: "Nov 2023 - Mar 2026",
     description: "Built and scaled internal sales solution in Next.js — 80% reduction in commercial proposal errors, ~14% increase in monthly profit. Kotlin Multiplatform and native tooling (GEM Exportador — CAD export with real-time WebSocket queue, Android modules for factory operators). Led GEM ERP (Next.js + Supabase): real-time Kanban, corporate chat, dashboards. TypeScript, Next.js, Node.js, Prisma, PostgreSQL (Docker).",
     highlights: [
       { text: "80% error reduction", icon: TrendingUp },

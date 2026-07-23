@@ -17,15 +17,15 @@ const skills = [
 
 const experiences = [
   {
-    role: "Senior Mobile Engineer",
+    role: "Senior Software Engineer",
     company: "Atman Systems",
-    period: "2026 - Present",
+    period: "Mar 2026 - Present",
     icon: Trophy
   },
   {
     role: "Full Stack Engineer",
     company: "JHONROB Silos",
-    period: "Nov 2023 - Present",
+    period: "Nov 2023 - Mar 2026",
     icon: Star
   },
   {

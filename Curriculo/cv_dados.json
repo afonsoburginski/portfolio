@@ -1,8 +1,8 @@
 {
   "pessoal": {
     "nome_completo": "Afonso Kevin Burginski",
-    "titulo": "Senior Mobile & Full-Stack Engineer",
-    "subtitulo": "React Native / Kotlin / Swift / Next.js",
+    "titulo": "Senior Software Engineer",
+    "subtitulo": "Full-Stack & Mobile · Distributed Systems · Video Streaming",
     "email": "afonsoburginski@gmail.com",
     "portfolio": "afonsodev.com",
     "portfolio_url": "https://afonsodev.com",
@@ -13,23 +13,53 @@
     "localizacao": "Brazil"
   },
 
-  "resumo": "Senior Mobile & Full-Stack Engineer with 6+ years of experience building production-grade mobile and web applications. Specialized in React Native (Expo), Kotlin and Swift for native/cross-platform mobile development, with strong full-stack background in Next.js, TypeScript, Supabase (Auth/DB/Realtime) and PostgreSQL. Led mission-critical systems in agribusiness ERP, subscription streaming, B2B marketplaces and hospital management — from discovery and system design to App Store/Play Store deployment and long-term maintenance.",
+  "resumo": "Senior Software Engineer with 7 years of market experience architecting and shipping production systems across distributed backends, web and mobile. Currently owns the camera/video domain of a large-scale smart-city video monitoring and urban traffic platform (27 NestJS microservices, Kafka, Kong, Kubernetes), with deep specialization in end-to-end video streaming — WebRTC, LL-HLS, FFmpeg, codec strategy and adaptive bitrate — from encoding pipelines to hardware-accelerated players. Founder of a subscription streaming platform shipped to the App Store and Google Play. Track record of raising engineering standards through CI/CD quality gates, integration-testing culture, observability and platform architecture.",
 
   "habilidades": {
+    "Backend & Microservices": ["NestJS", "Node.js", "Go", "Kotlin (Ktor)", "Kafka", "Redis", "BullMQ", "Kong API Gateway", "CQRS", "Event-Driven Architecture", "DDD", "REST APIs", "WebSockets (Socket.IO)"],
+    "Video & Streaming": ["FFmpeg/NVENC", "WebRTC", "HLS / LL-HLS", "Adaptive Bitrate (ABR)", "H.264/H.265 codec strategy", "ONVIF", "LiveKit (WebRTC SFU)", "Cloudflare R2/CDN"],
     "Mobile": ["React Native", "Kotlin", "Swift", "Kotlin Multiplatform", "Compose Multiplatform", "Jetpack Compose", "SwiftUI", "Android SDK", "iOS SDK", "Expo Router", "React Native Video", "React Native Reanimated", "WebRTC"],
     "Languages": ["TypeScript", "JavaScript", "Kotlin", "Swift", "Go", "SQL"],
-    "Frameworks & Libraries": ["React Native", "React", "Next.js (App Router, RSC)", "Node.js", "Ktor", "Express.js"],
-    "Backend & Data": ["Supabase (Auth/DB/Realtime/Storage)", "PostgreSQL", "Prisma ORM", "Drizzle ORM", "SQLDelight", "REST APIs"],
-    "Architecture & Patterns": ["Clean Architecture", "SOLID", "MVVM", "MVI", "real-time systems", "offline-first", "HLS video pipelines", "RBAC"],
-    "DevOps & Cloud": ["Docker", "AWS EC2", "Nginx", "Vercel", "Cloudflare R2/CDN", "CI/CD", "EAS Build", "Fastlane", "Tauri", "Linux/VPS"],
-    "Tools & Platforms": ["Git/GitHub", "Android Studio", "Xcode", "VSCode", "Figma", "Stripe", "Mercado Pago", "LiveKit", "Firebase", "WebSockets", "App Store Connect", "Google Play Console"]
+    "Frontend": ["Next.js (App Router, RSC)", "React", "Angular", "TailwindCSS", "Zustand", "TanStack React Query", "SWR"],
+    "Backend & Data": ["PostgreSQL (time partitioning, zero-downtime indexing)", "Prisma ORM", "Drizzle ORM", "Supabase (Auth/DB/Realtime/Storage)", "SQLDelight"],
+    "Architecture & Patterns": ["Microservices", "CQRS", "Event-Driven", "DDD", "Clean Architecture", "SOLID", "real-time systems", "offline-first", "HLS video pipelines", "RBAC/ABAC", "Multi-tenancy"],
+    "Quality & Observability": ["Jest", "Testcontainers", "Supertest", "Prometheus", "Pino structured logging", "Health checks (liveness/readiness)"],
+    "DevOps & Cloud": ["Docker", "Kubernetes (RKE2)", "Helm", "Terraform", "GitHub Actions", "Nx monorepo (remote caching)", "AWS EC2", "Nginx", "Vercel", "Cloudflare R2/CDN", "CI/CD", "EAS Build", "Fastlane", "Tauri", "Linux/VPS"],
+    "Tools & Platforms": ["Git/GitHub", "Android Studio", "Xcode", "Figma", "Stripe", "Mercado Pago", "Firebase", "App Store Connect", "Google Play Console"]
   },
 
   "experiencia": [
     {
+      "cargo": "Senior Software Engineer",
+      "empresa": "Atman Systems",
+      "periodo": "Mar 2026 – Present",
+      "local": "Brazil",
+      "descricao_empresa": "Technology company building a large-scale smart-city video monitoring and urban traffic management platform (project name confidential)",
+      "atividades": [
+        "Own the camera and video domain of a large-scale smart-city video monitoring platform composed of 27 NestJS microservices (Nx monorepo, Kafka, Kong API Gateway, PostgreSQL/Prisma, Redis, CQRS/DDD), driving architecture decisions from system design through production operation.",
+        "Architected the platform's low-latency adaptive streaming stack: WebRTC with automatic LL-HLS fallback (~250ms), dynamic H.265/H.264 codec negotiation with client capability detection, and adaptive quality leveraging native camera substreams (Axis/Hikvision) — keeping infrastructure cost per camera rather than per viewer.",
+        "Built a real-time embedded video analytics pipeline integrated with edge devices: per-frame detections rendered as bounding boxes in the live player, on-device Kafka producers to minimize network overhead, and an idempotent reconciler that restores analytics automatically after device reboots.",
+        "Designed a multi-camera event correlation engine: 60-second sliding-window clustering, deterministic alarm emission with UUIDv5 deduplication, 4-tier severity mapping (CRITICAL/HIGH/MEDIUM/LOW) and automatic resolution policies.",
+        "Implemented camera health and telemetry at scale: 5-minute availability windows with 90-day rollups over time-partitioned PostgreSQL, latency/bitrate/packet-loss/TTFF metrics exposed via Prometheus, and zero-downtime index deployments (CREATE INDEX CONCURRENTLY).",
+        "Designed and delivered the platform's notification gateway microservice from scratch — email, WhatsApp, WebSocket and push channels backed by BullMQ (retry with exponential backoff, dead-letter queue), multi-locale Handlebars templates and a full PostgreSQL audit trail.",
+        "Implemented vendor-agnostic PTZ camera control over ONVIF Profile S: relative/absolute/continuous REST commands, driver load balancing and complete command auditing.",
+        "Raised the platform's engineering bar: integration-test CI gate with Testcontainers (real PostgreSQL), artifact hash filtering to eliminate false rebuild fan-out, self-hosted remote Nx cache (MinIO), and production Kubernetes provisioning (RKE2 + Terraform + Helm, 22 deployments).",
+        "Selected to lead the architecture and delivery of the platform's upcoming mobile application.",
+        "Shipped 75+ merged pull requests across seven domains (streaming, video analytics, alarms, PTZ, telemetry, notifications, CI/CD) within the first five months."
+      ],
+      "metricas": {
+        "prs_merged": "75+",
+        "latencia_streaming": "~250ms",
+        "rollup_telemetria": "90 days",
+        "microsservicos_plataforma": "27",
+        "deployments_k8s": "22"
+      },
+      "tecnologias": ["NestJS 11", "TypeScript", "Nx", "Kafka", "Redis", "BullMQ", "Kong", "PostgreSQL (time partitioning)", "Prisma ORM", "Socket.IO", "Angular", "WebRTC", "LL-HLS", "FFmpeg", "ONVIF", "Docker", "Kubernetes (RKE2)", "Helm", "Terraform", "GitHub Actions", "Testcontainers", "Prometheus", "Pino"]
+    },
+    {
       "cargo": "Full Stack Engineer",
       "empresa": "JHONROB Silos e Secadores",
-      "periodo": "Nov 2023 – Present",
+      "periodo": "Nov 2023 – Mar 2026",
       "local": "Brazil",
       "descricao_empresa": "201-500 employees, Agricultural storage equipment (silos, dryers, grain handling)",
       "atividades": [
@@ -55,18 +85,18 @@
       "tecnologias": ["Next.js 15", "React 19", "TypeScript", "Kotlin", "Kotlin Multiplatform", "Compose Multiplatform", "Ktor", "SQLDelight", "Supabase (Auth/DB/Realtime)", "PostgreSQL", "Prisma ORM", "TanStack Query", "Zustand", "TailwindCSS", "Framer Motion", "Docker", "Nginx", "Tauri", "dnd-kit"]
     },
     {
-      "cargo": "Senior Mobile Developer",
+      "cargo": "Senior Software Engineer & Product Founder",
       "empresa": "afonsodev.com",
       "periodo": "Jan 2020 – Present",
       "local": "Remote",
-      "descricao_empresa": "Independent software consultant — enterprise-grade mobile and web applications",
+      "descricao_empresa": "Independent software consultancy and product studio — founder and owner of Stormzplus",
       "atividades": [
         "Deliver end-to-end mobile and web solutions for multiple clients using React Native, Kotlin, Swift, Next.js, Supabase and PostgreSQL, from requirements and UX collaboration to App Store/Play Store deployment and monitoring."
       ],
       "projetos": [
         {
-          "nome": "Stormzplus – Subscription Streaming Platform (Mobile + Web + Admin)",
-          "descricao": "Designed and built a full-stack subscription-based VOD platform with Netflix-style UX spanning mobile (React Native + Expo), web (Next.js 15), real-time Watch Party (LiveKit/WebRTC), admin CMS and GPU-accelerated video pipeline.",
+          "nome": "Stormzplus – Subscription Streaming Platform (Founder · Mobile + Web + Admin)",
+          "descricao": "Founded, designed and built a full-stack subscription-based VOD platform with Netflix-style UX spanning mobile (React Native + Expo), web (Next.js 15), real-time Watch Party (LiveKit/WebRTC), admin CMS and GPU-accelerated video pipeline. Sole owner and lead engineer.",
           "url": "https://www.stormzplus.com/",
           "detalhes_mobile": [
             "Built production React Native app (RN 0.81 + Expo SDK 54) published on iOS App Store and Google Play Store — multi-profile accounts, HLS video playback via react-native-video and expo-video, offline downloads with file system APIs and intelligent cache management.",

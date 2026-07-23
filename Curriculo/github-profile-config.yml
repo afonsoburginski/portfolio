@@ -1,0 +1,94 @@
+username: afonsoburginski
+
+profile:
+  name: "Afonso Burginski"
+  tagline: "Senior Software Engineer · Video Streaming · Distributed Systems · Mobile"
+  company: "Atman Systems"
+  location: "Brazil"
+  bio: |
+    Senior engineer on a large-scale smart-city video platform — owning streaming (WebRTC / LL-HLS), microservices and CI/CD.
+    7 years shipping production systems with NestJS, Next.js, React Native and Go. Founder of Stormz+.
+  philosophy: '"The challenge moves me."'
+
+social:
+  email: "afonsoburginski@gmail.com"
+  linkedin: "afonsoburginski"
+  website: "https://afonsodev.com"
+
+galaxy_arms:
+  - name: "Mobile"
+    color: "dendrite_violet"
+    items:
+      - "React Native"
+      - "Expo"
+      - "Kotlin"
+      - "Swift"
+  - name: "Full Stack"
+    color: "synapse_cyan"
+    items:
+      - "NestJS"
+      - "Next.js"
+      - "TypeScript"
+      - "PostgreSQL"
+      - "Kafka"
+  - name: "Infra & Streaming"
+    color: "axon_amber"
+    items:
+      - "FFmpeg / NVENC"
+      - "WebRTC / LL-HLS"
+      - "Kubernetes"
+      - "Docker"
+      - "Go"
+
+projects:
+  - repo: "afonsoburginski/stormzplus"
+    arm: 1
+    description: "Full-stack VoD streaming platform (web + mobile). Netflix-style UX with HLS on Cloudflare R2, Stripe subscriptions, and a GPU-accelerated FFmpeg pipeline."
+  - repo: "afonsoburginski/stormzplus-mobile"
+    arm: 0
+    description: "React Native / Expo app for Stormz+. Multi-profile, offline downloads, native HLS player, i18n (PT/EN), iOS & Android — published to both stores."
+  - repo: "afonsoburginski/nextjs-ffmpeg-transcoder"
+    arm: 2
+    description: "HLS video ingestion service in Go with GPU-accelerated FFmpeg/NVENC transcoding and Cloudflare R2 storage."
+
+stats:
+  metrics:
+    - "commits"
+    - "stars"
+    - "prs"
+    - "issues"
+    - "repos"
+  # Real numbers from private + public work — API only sees public repos
+  manual:
+    commits: 3200
+    stars: 42
+    prs: 180
+    issues: 95
+    repos: 38
+
+languages:
+  exclude:
+    - "HTML"
+    - "CSS"
+    - "SCSS"
+    - "Shell"
+    - "Makefile"
+    - "Dockerfile"
+    - "CMake"
+    - "C++"
+    - "C"
+    - "Dart"
+    - "Ruby"
+    - "Objective-C"
+  max_display: 8
+  # Real language distribution across all projects (public + private)
+  # Weights are proportional — higher = bigger bar
+  manual:
+    TypeScript: 900000
+    Kotlin: 420000
+    JavaScript: 280000
+    Python: 180000
+    Go: 140000
+    Swift: 90000
+    SQL: 60000
+    Java: 30000
