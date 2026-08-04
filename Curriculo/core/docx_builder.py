@@ -32,6 +32,9 @@ DATE_SIZE = Pt(9.5)
 BODY_SIZE = Pt(10)
 SKILL_SIZE = Pt(10)
 
+PAGE_WIDTH = Cm(21.0)   # A4
+PAGE_HEIGHT = Cm(29.7)  # A4
+
 MARGIN_TOP = Cm(1.27)
 MARGIN_BOTTOM = Cm(1.27)
 MARGIN_LEFT = Cm(1.91)
@@ -151,15 +154,21 @@ def add_bullet(doc, text):
 
 def add_skill_line(doc, category, values):
     p = _para(doc, space_before=0.5, space_after=0.5, line_spacing=1.08)
-    _run(p, category + ':', size=SKILL_SIZE, bold=True)
-    _run(p, ' ' + values.strip(), size=SKILL_SIZE)
+    if '**' in category or '**' in values:
+        _format_inline(p, (category + ':' + values).strip(), size=SKILL_SIZE)
+    else:
+        _run(p, category + ':', size=SKILL_SIZE, bold=True)
+        _run(p, ' ' + values.strip(), size=SKILL_SIZE)
     return p
 
 
 def add_language_line(doc, language, level):
     p = _para(doc, space_before=0.5, space_after=0.5, line_spacing=1.08)
-    _run(p, language + ':', size=BODY_SIZE, bold=True)
-    _run(p, ' ' + level.strip(), size=BODY_SIZE)
+    if '**' in language or '**' in level:
+        _format_inline(p, (language + ':' + level).strip(), size=BODY_SIZE)
+    else:
+        _run(p, language + ':', size=BODY_SIZE, bold=True)
+        _run(p, ' ' + level.strip(), size=BODY_SIZE)
     return p
 
 
@@ -177,6 +186,8 @@ def create_resume(input_file, output_file):
     doc = Document()
 
     for section in doc.sections:
+        section.page_width = PAGE_WIDTH
+        section.page_height = PAGE_HEIGHT
         section.top_margin = MARGIN_TOP
         section.bottom_margin = MARGIN_BOTTOM
         section.left_margin = MARGIN_LEFT
@@ -280,7 +291,8 @@ def create_resume(input_file, output_file):
             continue
 
         # ── Skills ───────────────────────────────────────────────────────
-        if current_section and 'SKILL' in current_section and ':' in s:
+        if current_section and (('SKILL' in current_section)
+                                or ('HABILIDADE' in current_section)) and ':' in s:
             cat, vals = s.split(':', 1)
             add_skill_line(doc, cat.strip(), vals)
             i += 1

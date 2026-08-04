@@ -4,57 +4,59 @@
 
 Email: afonsoburginski@gmail.com • Portfolio: afonsodev.com • GitHub: github.com/afonsoburginski • LinkedIn: linkedin.com/in/afonsoburginski
 
-## SUMMARY
+## PROFESSIONAL SUMMARY
 
-Senior Mobile Engineer with 7 years of market experience shipping production apps to the App Store and Google Play. Rare depth in media and streaming — from FFmpeg pipelines and codec strategy to hardware-accelerated players and native Swift modules (PiP, AirPlay). Currently owns the streaming architecture of a large-scale smart-city video platform and selected to lead its upcoming mobile application.
+Senior Mobile Engineer and media and streaming specialist, with 7 years of market experience and consumer apps designed, built and shipped end to end to the App Store and Google Play. My specialty spans from FFmpeg pipelines and codec strategy to hardware-accelerated players and native Swift modules such as PiP and AirPlay. I currently own the streaming architecture of a large-scale smart-city video platform, where I am also the lead engineer responsible for the mobile application, and I work daily with Spec-Driven Development (SDD) and AI coding agents.
 
 ## SKILLS
 
-**Mobile:** React Native (New Architecture), Kotlin, Swift, Kotlin Multiplatform, Compose Multiplatform, Jetpack Compose, SwiftUI, Android SDK, iOS SDK
+**Mobile:** React Native (New Architecture), Expo (EAS, expo-router), Kotlin, Swift, Kotlin/Compose Multiplatform, Jetpack Compose, SwiftUI
 **Media & Streaming:** HLS/LL-HLS, WebRTC, FFmpeg/NVENC, ABR, H.264/H.265, React Native Video, expo-video, LiveKit, native PiP/AirPlay (Swift)
-**State & Data:** Zustand, SWR, AsyncStorage, SQLDelight, Supabase, PostgreSQL
-**Real-time:** WebSockets (Socket.IO), Supabase Realtime, Kafka-backed pipelines, Firebase Push
-**Release & Quality:** EAS Build, Fastlane, App Store Connect, Google Play Console, GitHub Actions, Testcontainers, Docker
+**State & Data:** Zustand, SWR, TanStack Query, AsyncStorage, SQLDelight, Supabase, PostgreSQL
+**Real-time & Release:** WebSockets (Socket.IO), Supabase Realtime, push notifications, OTA updates, EAS Build, Fastlane, App Store Connect, Google Play Console
+**AI-Assisted Engineering:** Spec-Driven Development (SDD), AI coding agents (Claude Code), MCP servers, LLM-powered product features (OpenAI GPT)
+**Quality & DevOps:** GitHub Actions, Testcontainers, Docker, observability with Prometheus and Pino
 
-## EXPERIENCE
+## PROFESSIONAL EXPERIENCE
 
 ### Senior Software Engineer — Atman Systems
 Mar 2026 – Present | Brazil
 
-- Owns the end-to-end streaming architecture of a large-scale smart-city video platform: WebRTC with LL-HLS fallback (~250ms), dynamic H.265/H.264 codec negotiation per client capability, adaptive quality via native camera substreams.
-- Designed the real-time layer consumed by client applications: Socket.IO room-based subscriptions with JWT auth at handshake, pushing live stream status, camera health and analytics events.
-- Built the live video analytics experience: per-frame bounding-box overlays in the player fed by an on-device Kafka pipeline with idempotent reconciliation after device reboots.
-- Selected to lead the architecture and delivery of the platform's upcoming mobile application; 75+ merged PRs in 5 months; CI quality gates (Testcontainers), Prometheus/Pino observability, production K8s (RKE2 + Terraform + Helm).
+- Own the end-to-end streaming architecture of a large-scale smart-city video platform, which combines WebRTC with LL-HLS fallback (~250 ms), dynamic H.265/H.264 codec negotiation based on client capability and adaptive quality through native camera substreams.
+- Designed the real-time layer consumed by client applications, in which JWT-authenticated Socket.IO room subscriptions push live stream status, camera health and analytics events, and built the live analytics overlay, which renders per-frame bounding boxes fed by an on-device Kafka pipeline.
+- Own the platform's mobile application, the mobile version of the web product, driving its architecture and delivery as lead engineer; merged 75+ pull requests in 5 months, with CI quality gates (Testcontainers) and Kubernetes in production.
+- Work with Spec-Driven Development (SDD) and AI coding agents (Claude Code) in the delivery workflow, in which features are specified before implementation and executed under human review and CI gates.
 
 ### Senior Mobile Engineer — afonsodev.com (Founder & Independent Consultant)
 Jan 2020 – Present | Remote
 
-**Stormzplus — Subscription Streaming Platform (Founder & Lead Engineer)** · App Store · Google Play
-- Production React Native app (New Architecture): multi-profile accounts, subscription management, EAS Build/Fastlane, Universal Links (iOS) + App Links (Android).
-- Custom HLS player with hardware-accelerated ABR (240p–4K), buffer tuning, chapter detection, subtitle support, background playback, native Swift modules for PiP and AirPlay.
-- Watch Party via LiveKit: custom signaling protocol over data channels, host/viewer sync broadcast, 5-retry backoff for late joiners.
-- Owns the full media backend: Go + FFmpeg/NVENC transcoding pipeline, Cloudflare R2/CDN, Stripe + Mercado Pago PIX subscriptions with idempotent webhooks.
+**Stormzplus — Subscription Streaming Platform (Founder)** · mobile, web and admin
+- Built and maintain in production a React Native app (New Architecture) with multi-profile accounts, subscription management, an EAS Build/Fastlane pipeline, Universal Links on iOS and App Links on Android.
+- Developed a custom HLS player with hardware-accelerated ABR (240p to 4K), subtitles, background playback and native Swift modules for PiP and AirPlay, as well as a Watch Party feature via LiveKit with custom signaling over data channels.
+- Built and operate the entire media backend, with a Go transcoding pipeline using FFmpeg/NVENC, Cloudflare R2/CDN, and Stripe and Mercado Pago (PIX) subscriptions with idempotent webhooks.
 
-### Full Stack Engineer — JHONROB Silos e Secadores
+**Orça Norte — Construction Materials Marketplace (Founder)** · App Store · orcanorte.com.br
+- Designed, built and shipped the consumer app solo, using Expo with expo-router, TanStack Query, Sign in with Apple, push notifications and OTA updates (expo-updates), with in-app PDF quote generation and sharing.
+- Own the entire product behind the app: a multi-tenant marketplace built with Next.js and PostgreSQL that serves 500+ registered companies, with subscription plans and operational dashboards.
+
+### Full-Stack Engineer — JHONROB Silos e Secadores
 Nov 2023 – Mar 2026 | Brazil
 
-- Built GEM Exportador in Kotlin Multiplatform (Compose + Ktor + SQLDelight): automated CAD export (PDF/DWG/DXF/STEP/IGES) with real-time WebSocket queue; Android field-ops modules for factory workers.
-- Led GEM ERP (Next.js + Supabase/PostgreSQL): real-time Kanban, corporate chat, GPT assistant; 80% reduction in proposal errors, sub-200ms real-time sync.
+- Built the GEM ERP mobile app in React Native, the mobile version of the Next.js web ERP I also developed, bringing production orders, Kanban and shop-floor tracking to factory workers with real-time sync via Supabase.
+- Built GEM Exportador in Kotlin Multiplatform (Compose, Ktor and SQLDelight), an automated CAD export system (PDF, DWG, DXF, STEP and IGES) with a real-time WebSocket queue, plus Android modules for factory floor operators.
+- Led the GEM ERP web platform (Next.js and Supabase/PostgreSQL), with real-time Kanban, corporate chat and a GPT-powered assistant, achieving an 80% reduction in proposal errors and sub-200 ms real-time sync.
 
 ### Mobile Developer — Centro America Tecnologia
 Sep 2022 – Apr 2023 | Brazil
-- React Native hospital management app: biometric auth, real-time dashboards, offline-first patient records and scheduling; virtualized lists and memoized components for large datasets.
+- Developed a React Native hospital management app with biometric authentication, real-time dashboards and offline-first patient records and scheduling, using virtualized lists and memoized components for large datasets.
 
 ## OPEN SOURCE
 
 **Next.js FFmpeg Transcoder** (MIT) · github.com/afonsoburginski/nextjs-ffmpeg-transcoder
-Production-grade video ingestion with FFmpeg/NVENC GPU acceleration, HLS transcoding and Cloudflare R2 storage.
+Go video ingestion service with GPU acceleration (FFmpeg/NVENC), HLS transcoding and Cloudflare R2 storage.
 
-## EDUCATION & CERTIFICATIONS
+## EDUCATION & LANGUAGES
 
-**B.Sc. Information Systems** — Unemat Sinop · 2020–2024
-Developing Mobile Apps with React Native (Meta) · Kotlin for Java Developers (JetBrains)
-
-## LANGUAGES
-
-Portuguese: Native · English: B2 — technical communication and client meetings
+**B.Sc. in Information Systems** — Unemat Sinop · 2020–2024
+Certifications: Developing Mobile Apps with React Native (Meta) · Kotlin for Java Developers (JetBrains)
+Languages: Portuguese (native) · English (B2 — technical communication and client meetings)
