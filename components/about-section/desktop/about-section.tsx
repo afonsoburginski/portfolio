@@ -173,7 +173,7 @@ export function AboutSectionDesktop() {
               {/* Timeline Container */}
               <div className="relative">
                 {/* Vertical gradient line */}
-                <div className="absolute left-[7px] 2xl:left-1/2 top-2 bottom-2 w-px bg-gradient-to-b from-[#1f6feb] via-[#8957e5] to-[#1f6feb]/20" />
+                <div className="absolute left-[7px] 2xl:left-1/2 top-2 bottom-2 w-px bg-gradient-to-b from-[#1f6feb] via-[#2dd4bf] to-[#1f6feb]/20" />
 
                 {/* Timeline Items */}
                 <div className="flex flex-col gap-6">
@@ -231,7 +231,7 @@ export function AboutSectionDesktop() {
                         </div>
                       </div>
 
-                      <span className={`absolute left-0 2xl:left-1/2 2xl:-translate-x-1/2 top-5 size-3.5 rounded-full border-2 border-black ring-[3px] ring-black ${index === 0 ? "bg-[#1f6feb] shadow-[0_0_0_4px_#1f6feb44] motion-safe:animate-pulse" : "bg-[#8957e5]"}`} aria-hidden="true" />
+                      <span className={`absolute left-0 2xl:left-1/2 2xl:-translate-x-1/2 top-5 size-3.5 rounded-full border-2 border-black ring-[3px] ring-black ${index === 0 ? "bg-[#1f6feb] shadow-[0_0_0_4px_#1f6feb44] motion-safe:animate-pulse" : "bg-[#2dd4bf]"}`} aria-hidden="true" />
                     </motion.div>
                   ))}
                 </div>

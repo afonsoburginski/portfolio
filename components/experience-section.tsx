@@ -70,7 +70,7 @@ export function ExperienceSection() {
         {/* Timeline */}
         <div className="relative">
           {/* Line */}
-          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-blue-500" />
+          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-cyan-400 to-blue-500" />
 
           {/* Experience Items */}
           <div className="space-y-12">
@@ -95,7 +95,7 @@ export function ExperienceSection() {
                       <h3 className="text-2xl font-bold text-white mt-1">
                         {exp.role}
                       </h3>
-                      <p className="text-purple-400 font-medium">
+                      <p className="text-cyan-300 font-medium">
                         {exp.company}
                       </p>
                     </div>
@@ -120,7 +120,7 @@ export function ExperienceSection() {
                 </div>
 
                 {/* Center Dot */}
-                <div className="absolute left-8 md:left-1/2 w-4 h-4 -ml-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-4 border-black z-10" />
+                <div className="absolute left-8 md:left-1/2 w-4 h-4 -ml-2 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 border-4 border-black z-10" />
 
                 {/* Spacer for alternate layout */}
                 <div className="hidden md:block w-5/12" />

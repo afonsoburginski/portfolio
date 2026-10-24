@@ -16,31 +16,31 @@ const experiences = [
     role: "Senior Software Engineer",
     company: "JHONROB Silos",
     period: "Nov 2023 - Mar 2026",
-    color: "#8957e5"
+    color: "#2dd4bf"
   },
   {
     role: "Senior Software Engineer",
     company: "afonsodev.com",
     period: "Jan 2020 - Mar 2026",
-    color: "#8957e5"
+    color: "#2dd4bf"
   },
   {
     role: "Mobile Engineer",
     company: "Centro America Tecnologia",
     period: "Sep 2022 - Apr 2023",
-    color: "#8957e5"
+    color: "#2dd4bf"
   },
   {
     role: "Mobile Developer",
     company: "TopSapp",
     period: "Jan 2021 - Sep 2022",
-    color: "#8957e5"
+    color: "#2dd4bf"
   },
   {
     role: "Systems Developer",
     company: "Ecocentauro",
     period: "Jan 2019 - Oct 2020",
-    color: "#8957e5"
+    color: "#2dd4bf"
   }
 ];
 
@@ -146,7 +146,7 @@ export function AboutSectionMobile() {
           viewport={{ once: true }}
         >
           <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-4 text-white/60">Experience</h3>
-          <div className="relative flex flex-col gap-3 before:absolute before:left-[7px] before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-[#1f6feb] before:via-[#8957e5] before:to-[#1f6feb]/20">
+          <div className="relative flex flex-col gap-3 before:absolute before:left-[7px] before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-[#1f6feb] before:via-[#2dd4bf] before:to-[#1f6feb]/20">
             {experiences.map((exp, index) => {
               return (
                 <motion.div

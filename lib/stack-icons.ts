@@ -37,7 +37,7 @@ export const stackIcons = {
   nextjs: { icon: SiNextdotjs, color: "#FFFFFF" },
   react: { icon: SiReact, color: "#61DAFB" },
   reactNative: { icon: SiReact, color: "#61DAFB" },
-  kotlin: { icon: SiKotlin, color: "#7F52FF" },
+  kotlin: { icon: SiKotlin, color: "#F88909" },
   swift: { icon: SiSwift, color: "#F05138" },
   streaming: { icon: Radio, color: "#61DAFB" },
 } as const;
