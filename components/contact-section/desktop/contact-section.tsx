@@ -5,8 +5,10 @@ import { Spotlight } from "../../ui/spotlight-new";
 import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import { SiLinkedin, SiGithub, SiInstagram } from "react-icons/si";
 import { getCalApi } from "@calcom/embed-react";
+import { SocialFeed } from "../social-feed";
+import type { SocialPost } from "@/lib/schema";
 
-export function ContactSectionDesktop() {
+export function ContactSectionDesktop({ posts }: { posts: SocialPost[] }) {
 
   return (
     <section id="social" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
@@ -59,6 +61,8 @@ export function ContactSectionDesktop() {
           >
             Book a Free Call
           </HoverBorderGradient>
+
+          <SocialFeed posts={posts} />
 
           {/* Social Row */}
           <div className="flex items-center gap-6 mt-2 text-white/80">

@@ -7,11 +7,12 @@ import { FaqSection } from "@/components/faq-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { getHomeProjects } from "@/lib/dashboard-data";
+import { getSocialPosts } from "@/lib/social-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const projects = await getHomeProjects();
+  const [projects, posts] = await Promise.all([getHomeProjects(), getSocialPosts(6, "linkedin")]);
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
@@ -22,7 +23,7 @@ export default async function Home() {
         <AboutSection />
         <ServicesShowcase />
         <FaqSection />
-        <ContactSection />
+        <ContactSection posts={posts} />
         <Footer />
       </div>
     </div>

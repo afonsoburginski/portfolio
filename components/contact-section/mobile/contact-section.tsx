@@ -4,8 +4,10 @@ import { motion } from "motion/react";
 import { Spotlight } from "../../ui/spotlight-new";
 import { SiLinkedin, SiGithub, SiInstagram } from "react-icons/si";
 import { getCalApi } from "@calcom/embed-react";
+import { SocialFeed } from "../social-feed";
+import type { SocialPost } from "@/lib/schema";
 
-export function ContactSectionMobile() {
+export function ContactSectionMobile({ posts }: { posts: SocialPost[] }) {
 
   return (
     <section id="social" className="relative min-h-[60vh] flex items-center justify-center py-20 px-4 overflow-visible">
@@ -55,6 +57,8 @@ export function ContactSectionMobile() {
           >
             Book a Free Call
           </button>
+
+          <SocialFeed posts={posts} />
 
           {/* Social Row */}
           <div className="flex items-center gap-5 mt-2 text-white/80">
