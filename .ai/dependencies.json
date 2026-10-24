@@ -1,0 +1,9 @@
+{
+  "services": {
+    "portfolio": {
+      "entrypoints": ["app/", "scripts/"],
+      "dependencies": ["next", "react", "drizzle-orm", "postgres"],
+      "relations": ["projects -> case-study route"]
+    }
+  }
+}
