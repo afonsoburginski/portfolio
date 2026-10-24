@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/dashboard/new", destination: "/dashboard", permanent: false },
-      { source: "/case-study/orbit", destination: "/en/case-study/orbit", permanent: true },
     ];
   },
   images: {
