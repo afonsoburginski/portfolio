@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function sitemap(): MetadataRoute.Sitemap { const base = "https://afonsodev.com"; return ["en", "pt"].flatMap((locale) => [{ url: `${base}/${locale}`, lastModified: new Date(), alternates: { languages: { en: `${base}/en`, pt: `${base}/pt` } } }, ...["orbit", "studio-stormz"].map((slug) => ({ url: `${base}/${locale}/case-study/${slug}`, lastModified: new Date(), alternates: { languages: { en: `${base}/en/case-study/${slug}`, pt: `${base}/pt/case-study/${slug}` } } }))]); }
