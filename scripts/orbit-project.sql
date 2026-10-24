@@ -23,7 +23,7 @@ BEGIN
     '["Deployments","Releases","Environments","Observability","Access control"]', '[]', NULL, TRUE, next_order,
     'A GitOps delivery platform for Kubernetes and Docker Compose', 'Creator and developer', 'Ongoing',
     'Node.js, React, Vite, TypeScript, Docker, Kubernetes, Argo CD, GitHub Actions, Docker Hub, and GitOps',
-    NULL, 'https://github.com/atmanadmin/orbit',
+    NULL, NULL,
     'Orbit is designed around a simple boundary: development produces releases, while the GitOps repository describes what should run. The platform turns deployment and infrastructure actions into Git commits, then relies on Argo CD to apply the desired state to Kubernetes. It also includes a Docker Compose path for smaller or single-server environments.',
     NULL, NULL, '[]',
     $orbit_json$["Connect CI builds and container releases to the environments where services run.","Use a GitOps repository as the source of truth for deployments, rollbacks, and environment configuration.","Give operators one place to manage releases, services, environments, servers, observability, access, and infrastructure.","Detect runtime components and external dependencies from infrastructure data instead of fixed service names."]$orbit_json$,

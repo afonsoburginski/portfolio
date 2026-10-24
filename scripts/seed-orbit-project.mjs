@@ -23,7 +23,7 @@ export const orbitProject = {
   timeline: "Ongoing",
   stack: "Node.js, React, Vite, TypeScript, Docker, Kubernetes, Argo CD, GitHub Actions, Docker Hub, and GitOps",
   live_url: null,
-  github_url: "https://github.com/atmanadmin/orbit",
+  github_url: null,
   story: "Orbit is designed around a simple boundary: development produces releases, while the GitOps repository describes what should run. The platform turns deployment and infrastructure actions into Git commits, then relies on Argo CD to apply the desired state to Kubernetes. It also includes a Docker Compose path for smaller or single-server environments.",
   image2: null,
   revenue_note: null,
