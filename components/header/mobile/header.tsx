@@ -10,7 +10,7 @@ export const HeaderMobile = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isCaseStudy = pathname?.startsWith('/case-study/');
+  const isCaseStudy = (pathname?.startsWith('/case-study/') || pathname?.startsWith('/articles/'));
 
   useEffect(() => {
     (async () => {

@@ -42,6 +42,7 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/content ./content
 
 # Migrations run on startup (entrypoint → migrate.mjs → server.js).
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
