@@ -1,104 +1,19 @@
 "use client";
 import { motion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Masonry, { type MasonryItem } from "@/components/ui/masonry";
 import type { Project } from "@/lib/schema";
-
-const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
-  const [isInFocus, setIsInFocus] = useState(false);
-  const cardRef = useRef<HTMLAnchorElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          setIsInFocus(entry.isIntersecting && entry.intersectionRatio >= 0.6);
-        });
-      },
-      {
-        threshold: [0, 0.25, 0.5, 0.6, 0.75, 1],
-        rootMargin: "-20% 0px -20% 0px",
-      }
-    );
-
-    const el = cardRef.current;
-    if (el) observer.observe(el);
-
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, []);
-
-  return (
-    <motion.a
-      ref={cardRef}
-      href={project.link ?? "#"}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group relative overflow-hidden rounded-lg cursor-pointer block"
-      style={{
-        height: '400px',
-      }}
-    >
-      {/* Image with zoom when in focus */}
-      <motion.div
-        className="absolute inset-0"
-        animate={{ scale: isInFocus ? 1.05 : 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        {project.image && (
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            sizes="100vw"
-            className="object-contain"
-            priority={index < 2}
-            style={{ filter: 'grayscale(0)' }}
-          />
-        )}
-      </motion.div>
-
-      {/* Gradient overlay for better text visibility - appears when in focus */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"
-        animate={{ opacity: isInFocus ? 1 : 0 }}
-        transition={{ duration: 0.4 }}
-      />
-
-      {/* Top shadow for title legibility - always visible */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/50 via-black/20 to-transparent z-10" />
-
-      {/* Project Title - Top - appears when in focus */}
-      <motion.div
-        className="absolute top-4 left-4 right-4 z-20"
-        animate={{ opacity: isInFocus ? 1 : 0, y: isInFocus ? 0 : 10 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h3 className="text-white text-2xl font-medium font-satoshi drop-shadow-2xl">
-          {project.title}
-        </h3>
-      </motion.div>
-
-      {/* Bottom CTA bar — só aparece quando o card está em foco (centro da tela) */}
-      <motion.div
-        className="absolute left-2 right-2 bottom-2 z-30"
-        animate={{ opacity: isInFocus ? 1 : 0, y: isInFocus ? 0 : 8 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="w-full flex items-center justify-center gap-2 text-white text-sm font-normal font-sans backdrop-blur-md bg-white/20 border !border-white shadow-lg transition-all duration-300 px-4 py-2.5 rounded-full">
-          <span>View Case Study</span>
-          <ArrowUpRight size={14} />
-        </div>
-      </motion.div>
-    </motion.a>
-  );
-};
+import { toMasonryItems } from "../to-masonry-items";
 
 export const ProjectsSectionMobile = ({ projects }: { projects: Project[] }) => {
+  const router = useRouter();
+
+  const openCaseStudy = (item: MasonryItem, _index: number, event: React.MouseEvent<HTMLElement>) => {
+    if (!item.url?.startsWith("/")) return;
+    event.preventDefault();
+    router.push(item.url);
+  };
+
   return (
     <section id="projects" className="relative pt-8 pb-12 px-4">
       <div className="w-full">
@@ -118,12 +33,18 @@ export const ProjectsSectionMobile = ({ projects }: { projects: Project[] }) => 
           </p>
         </motion.div>
 
-        {/* Single column stack */}
-        <div className="flex flex-col gap-4">
-          {projects.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} />
-          ))}
-        </div>
+        <Masonry
+          items={toMasonryItems(projects)}
+          columns={1}
+          gap={12}
+          radius={8}
+          hoverEffect="none"
+          captions="always"
+          revealOnScroll
+          lightbox={false}
+          draggable={false}
+          onItemClick={openCaseStudy}
+        />
       </div>
     </section>
   );
