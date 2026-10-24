@@ -1,56 +1,46 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Trophy, Zap, Star, Code, Shield } from "lucide-react";
-import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiNestjs, SiPostgresql } from "react-icons/si";
+import { coreSkills, toolsAndPlatforms } from "@/lib/stack-icons";
 import Image from "next/image";
-
-const skills = [
-  { name: "WebRTC", icon: SiWebrtc },
-  { name: "FFmpeg", icon: SiFfmpeg },
-  { name: "Kafka", icon: SiApachekafka },
-  { name: "Kubernetes", icon: SiKubernetes },
-  { name: "Redis", icon: SiRedis },
-  { name: "NestJS", icon: SiNestjs },
-  { name: "PostgreSQL", icon: SiPostgresql },
-];
+import type { CSSProperties } from "react";
 
 const experiences = [
   {
     role: "Senior Software Engineer",
     company: "Atman Systems",
     period: "Mar 2026 - Present",
-    icon: Trophy
+    color: "#1f6feb"
   },
   {
     role: "Senior Software Engineer",
     company: "JHONROB Silos",
     period: "Nov 2023 - Mar 2026",
-    icon: Star
+    color: "#8957e5"
   },
   {
     role: "Senior Software Engineer",
     company: "afonsodev.com",
     period: "Jan 2020 - Mar 2026",
-    icon: Trophy
+    color: "#8957e5"
   },
   {
     role: "Mobile Engineer",
     company: "Centro America Tecnologia",
     period: "Sep 2022 - Apr 2023",
-    icon: Code
+    color: "#8957e5"
   },
   {
     role: "Mobile Developer",
     company: "TopSapp",
     period: "Jan 2021 - Sep 2022",
-    icon: Zap
+    color: "#8957e5"
   },
   {
     role: "Systems Developer",
     company: "Ecocentauro",
     period: "Jan 2019 - Oct 2020",
-    icon: Shield
+    color: "#8957e5"
   }
 ];
 
@@ -103,7 +93,7 @@ export function AboutSectionMobile() {
         >
           <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-4 text-white/60">Core Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => {
+            {coreSkills.map((skill, index) => {
               const IconComponent = skill.icon;
               return (
                 <motion.div
@@ -112,9 +102,10 @@ export function AboutSectionMobile() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   viewport={{ once: true }}
-                  className="px-3 py-2 bg-[#0d0d0d] rounded-lg text-white text-xs font-sans flex items-center gap-2"
+                  style={{ "--brand-glow": `${skill.color}55` } as CSSProperties}
+                  className="px-3 py-2 bg-[#0d0d0d] rounded-lg border border-white/10 text-white/80 text-xs font-sans flex items-center gap-2 hover:shadow-[0_0_14px_var(--brand-glow)] transition-shadow duration-200"
                 >
-                  <IconComponent size={12} className="text-white/60" />
+                  <IconComponent size={12} style={{ color: skill.color }} aria-hidden="true" />
                   <span>{skill.name}</span>
                 </motion.div>
               );
@@ -122,7 +113,32 @@ export function AboutSectionMobile() {
           </div>
         </motion.div>
 
-        {/* Experience - Simple List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          viewport={{ once: true }}
+          className="mb-12"
+        >
+          <h3 className="mb-4 text-xs font-semibold font-sans uppercase tracking-wider text-white/60">Tools & Platforms</h3>
+          <div className="flex flex-wrap gap-2">
+            {toolsAndPlatforms.map((tool) => {
+              const IconComponent = tool.icon;
+              return (
+                <div
+                  key={tool.name}
+                  style={{ "--brand-glow": `${tool.color}55` } as CSSProperties}
+                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#0d0d0d] px-3 py-2 text-xs font-sans text-white/80 hover:shadow-[0_0_14px_var(--brand-glow)] transition-shadow duration-200"
+                >
+                  <IconComponent size={12} style={{ color: tool.color }} aria-hidden="true" />
+                  <span>{tool.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Experience timeline */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -130,27 +146,22 @@ export function AboutSectionMobile() {
           viewport={{ once: true }}
         >
           <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-4 text-white/60">Experience</h3>
-          <div className="space-y-3">
+          <div className="relative flex flex-col gap-3 before:absolute before:left-[7px] before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-[#1f6feb] before:via-[#8957e5] before:to-[#1f6feb]/20">
             {experiences.map((exp, index) => {
-              const IconComponent = exp.icon;
               return (
                 <motion.div
-                  key={index}
+                  key={exp.company}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.08 }}
                   viewport={{ once: true }}
-                  className="p-3 bg-[#0d0d0d] rounded-lg border border-white/5"
+                  className="relative ml-9 p-3 bg-[#0d0d0d] rounded-lg border border-white/10"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <IconComponent size={14} className="text-white/60" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm font-satoshi mb-0.5">{exp.role}</p>
-                      <p className="text-white/50 text-xs font-sans mb-1">{exp.company}</p>
-                      <p className="text-white/40 text-xs font-sans">{exp.period}</p>
-                    </div>
+                  <span className={`absolute -left-9 top-5 size-3.5 rounded-full border-2 border-black ring-[3px] ring-black ${index === 0 ? "motion-safe:animate-pulse shadow-[0_0_0_4px_#1f6feb44]" : ""}`} style={{ backgroundColor: exp.color }} aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm font-satoshi mb-0.5">{exp.role}</p>
+                    <p className="text-white/50 text-xs font-sans mb-1">{exp.company}</p>
+                    <p className={`text-xs font-sans ${index === 0 ? "text-[#79adff]" : "text-white/50"}`}>{exp.period}</p>
                   </div>
                 </motion.div>
               );
