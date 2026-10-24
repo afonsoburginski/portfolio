@@ -45,7 +45,7 @@ export const HeroDesktop = () => {
           className="text-white/70 max-w-[600px] mx-auto mb-6"
         >
           <p className="text-base md:text-lg leading-relaxed tracking-wide font-sans">
-            Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. I design, build, and operate media platforms and infrastructure with end-to-end ownership.
+            Senior Software Engineer specializing in video streaming, real-time media, and distributed systems. I design, build, and operate software end to end, connecting backend architecture, platform engineering, and user-facing applications with a focus on reliability, performance, and sustainable complexity.
           </p>
         </motion.div>
 

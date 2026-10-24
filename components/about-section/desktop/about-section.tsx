@@ -28,7 +28,7 @@ const experiences = [
     role: "Senior Software Engineer",
     company: "Atman Systems",
     period: "Mar 2026 - Present",
-    description: "Owns the camera and video domain of an urban video-monitoring platform: WebRTC and LL-HLS streaming, NestJS microservices, Kafka, Redis, BullMQ, PostgreSQL, real-time video analytics, edge-device integrations, Kubernetes, integration testing, and mobile real-time experiences.",
+    description: "Architecture and delivery of real-time video streaming and distributed video analytics in a large-scale video monitoring platform: low-latency delivery with WebRTC and HLS / LL-HLS, event-driven analytics on Kafka, and NestJS, PostgreSQL, Redis / BullMQ and WebSocket services with integration testing and quality gates.",
     highlights: [
       { text: "WebRTC / LL-HLS streaming", icon: Star },
       { text: "NestJS microservices", icon: Code },
@@ -36,25 +36,25 @@ const experiences = [
     ]
   },
   {
-    role: "Full Stack Engineer",
+    role: "Senior Software Engineer",
     company: "JHONROB Silos e Secadores",
     period: "Nov 2023 - Mar 2026",
-    description: "Built internal sales and operations systems with Next.js, TypeScript, Node.js, PostgreSQL, Docker, real-time workflows, dashboards, chat, and Kotlin Multiplatform tooling for factory operators.",
+    description: "Designed and delivered business systems and mobile workflows with Next.js, React Native, PostgreSQL / Supabase and near-real-time operations, plus operational tooling for factory processes, including Kotlin Multiplatform components and automated CAD export.",
     highlights: [
-      { text: "80% error reduction", icon: TrendingUp },
+      { text: "Near-real-time operations", icon: TrendingUp },
       { text: "Kotlin Multiplatform", icon: Code },
       { text: "GEM ERP", icon: Star }
     ]
   },
   {
-    role: "Senior Mobile Engineer",
+    role: "Senior Software Engineer",
     company: "afonsodev.com",
-    period: "Jan 2020 - Present",
-    description: "Built and operated production mobile products with React Native, Swift, Kotlin, HLS, LiveKit, offline-first flows, and release automation. When required, also owned the backend and web layers for end-to-end delivery.",
+    period: "Jan 2020 - Mar 2026",
+    description: "Designed and built Stormzplus, an independent video streaming product with a React Native mobile app, a Next.js web app and a Tauri / Vite desktop tool for administration and media processing, including the pipeline from chunked uploads and FFmpeg transcoding to multi-bitrate HLS on Cloudflare R2 and CDN. Also designed and delivered full-stack systems for external clients, with end-to-end technical ownership.",
     highlights: [
-      { text: "HLS & LiveKit streaming", icon: Trophy },
-      { text: "React Native + native", icon: Star },
-      { text: "Backend when needed", icon: Zap }
+      { text: "Stormzplus streaming pipeline", icon: Trophy },
+      { text: "Web, mobile & desktop", icon: Star },
+      { text: "Full-stack client systems", icon: Zap }
     ]
   },
   {

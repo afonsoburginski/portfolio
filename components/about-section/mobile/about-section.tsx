@@ -23,15 +23,15 @@ const experiences = [
     icon: Trophy
   },
   {
-    role: "Full Stack Engineer",
+    role: "Senior Software Engineer",
     company: "JHONROB Silos",
     period: "Nov 2023 - Mar 2026",
     icon: Star
   },
   {
-    role: "Senior Mobile Engineer",
+    role: "Senior Software Engineer",
     company: "afonsodev.com",
-    period: "Jan 2020 - Present",
+    period: "Jan 2020 - Mar 2026",
     icon: Trophy
   },
   {

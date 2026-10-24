@@ -44,7 +44,7 @@ export const HeroMobile = () => {
           className="text-white/70 max-w-[420px] mx-auto mb-6 px-4"
         >
           <p className="text-sm leading-relaxed tracking-wide font-sans">
-            Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. I design, build, and operate media platforms and infrastructure end-to-end.
+            Senior Software Engineer specializing in video streaming, real-time media, and distributed systems. I design, build, and operate software end to end, connecting backend architecture, platform engineering, and user-facing applications with a focus on reliability, performance, and sustainable complexity.
           </p>
         </motion.div>
 
