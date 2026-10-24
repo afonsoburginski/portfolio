@@ -5,67 +5,58 @@ import { getCalApi } from "@calcom/embed-react";
 import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import Image from "next/image";
 import { 
-  Smartphone,
   Server,
   Code,
-  Database as Db,
   GitBranch,
   Rocket,
   Zap,
 } from "lucide-react";
-import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiExpo, SiTypescript, SiNodedotjs, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiPostgresql, SiDocker, SiTypescript, SiNodedotjs, SiReact } from "react-icons/si";
 
 const tags = [
-  "Mobile App Development",
-  "React Native & Native (Swift · Kotlin)",
-  "App Store & Play Store",
-  "Backend when the product needs it",
-  "Technical Consulting",
+  "Video Streaming & Media Systems",
+  "Distributed Systems & Backend",
+  "Platform Engineering",
+  "Product Engineering",
+  "Technical Ownership",
 ];
 
 const services = [
   {
-    title: "Mobile Architecture & Consulting",
-    desc: "Technical consulting on app architecture, performance, and release strategy. From stack and state management decisions to store delivery—EAS Build, Fastlane, scalable component design. Senior mobile perspective without the generic agency pitch.",
+    title: "Video Streaming & Media Systems",
+    desc: "Architecture and engineering for WebRTC, HLS, LL-HLS, FFmpeg pipelines, custom players, and real-time video analytics.",
     icon: Rocket
   },
   {
-    title: "Mobile Apps",
-    desc: "Cross‑platform React Native apps with native performance and polished UX: offline‑first data, push notifications, secure auth, and smooth 60fps animations. Release automation with EAS Build and Fastlane for fast, reliable App Store and Play Store delivery.",
-    icon: Smartphone
-  },
-  {
-    title: "Native Modules & Integrations",
-    desc: "When React Native isn't enough: custom Swift (PiP, AirPlay, advanced playback) and Kotlin modules. Native bridges, hardware acceleration, and platform-specific UX—one codebase without compromising quality.",
-    icon: Code
-  },
-  {
-    title: "Backend & APIs for Mobile",
-    desc: "When the product needs full ownership: Supabase + PostgreSQL, REST APIs, auth, real-time. Dockerized pipelines, CI/CD, zero‑downtime releases. Built so the app and the system ship together—not generic full‑stack, backend in service of the app.",
+    title: "Distributed Systems & Backend",
+    desc: "Event-driven services and APIs with NestJS, Node.js, Kafka, Redis, BullMQ, PostgreSQL, WebSockets, and clear operational boundaries.",
     icon: Server
+  },
+  {
+    title: "Platform Engineering",
+    desc: "Delivery and infrastructure workflows with Kubernetes, Docker, GitOps, CI/CD, observability, and reliability-minded automation.",
+    icon: Rocket
+  },
+  {
+    title: "Product Engineering",
+    desc: "End-to-end product work across backend, web, and mobile. React, TypeScript, and React Native remain practical strengths when the system requires them.",
+    icon: Code
   },
 ];
 
 const bottomTags = [
-  // Mobile
-  { name: "React Native", icon: SiReact },
-  { name: "iOS", icon: SiApple },
-  { name: "Android", icon: SiAndroid },
-  { name: "Kotlin", icon: SiKotlin },
-  { name: "Swift", icon: SiSwift },
-  { name: "Expo", icon: SiExpo },
-  // Backend
+  { name: "WebRTC", icon: SiWebrtc },
+  { name: "FFmpeg", icon: SiFfmpeg },
+  { name: "Kafka", icon: SiApachekafka },
+  { name: "Kubernetes", icon: SiKubernetes },
+  { name: "Redis", icon: SiRedis },
   { name: "TypeScript", icon: SiTypescript },
   { name: "Node.js", icon: SiNodedotjs },
   { name: "PostgreSQL", icon: SiPostgresql },
-  { name: "Supabase", icon: SiSupabase },
   { name: "Docker", icon: SiDocker },
-  { name: "REST APIs", icon: Server },
-  // Key capabilities
-  { name: "Real‑time", icon: Zap },
-  { name: "Offline‑first", icon: Db },
+  { name: "React Native", icon: SiReact },
+  { name: "Real-time", icon: Zap },
   { name: "CI/CD", icon: GitBranch },
-  { name: "App Store & Play Store", icon: Rocket },
 ];
 
 // Split into two alternating rows to reduce visible repetition
@@ -119,7 +110,7 @@ export function ServicesShowcaseDesktop() {
               className="mb-8"
             >
               <p className="text-white/70 text-lg leading-relaxed font-sans max-w-xl">
-                Transforming ideas into powerful digital solutions with modern technologies and best practices for mobile and web development.
+                I build and operate complex media systems, distributed backends, and platform infrastructure with end-to-end ownership.
               </p>
             </motion.div>
 

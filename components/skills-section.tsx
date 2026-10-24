@@ -4,33 +4,33 @@ import { motion } from "framer-motion";
 
 const skillCategories = [
   {
-    title: "Frontend",
+    title: "Streaming & Media",
     skills: [
-      { name: "React", level: 95 },
-      { name: "Next.js", level: 90 },
-      { name: "TypeScript", level: 88 },
-      { name: "Tailwind CSS", level: 92 },
-      { name: "HTML/CSS", level: 95 },
+      { name: "WebRTC", level: 95 },
+      { name: "HLS / LL-HLS", level: 90 },
+      { name: "FFmpeg", level: 88 },
+      { name: "Video analytics", level: 92 },
+      { name: "Custom players", level: 95 },
     ]
   },
   {
-    title: "Backend",
+    title: "Distributed Systems",
     skills: [
-      { name: "Node.js", level: 85 },
-      { name: "Express", level: 82 },
-      { name: "PostgreSQL", level: 80 },
-      { name: "MongoDB", level: 78 },
-      { name: "REST APIs", level: 88 },
+      { name: "NestJS / Node.js", level: 85 },
+      { name: "Kafka", level: 82 },
+      { name: "Redis / BullMQ", level: 80 },
+      { name: "PostgreSQL", level: 78 },
+      { name: "WebSockets", level: 88 },
     ]
   },
   {
-    title: "Ferramentas & Outros",
+    title: "Platform Engineering",
     skills: [
-      { name: "Git & GitHub", level: 90 },
+      { name: "Kubernetes", level: 90 },
       { name: "Docker", level: 75 },
-      { name: "Vercel/Netlify", level: 85 },
-      { name: "Figma", level: 80 },
-      { name: "VS Code", level: 95 },
+      { name: "GitOps / Argo CD", level: 85 },
+      { name: "CI/CD", level: 80 },
+      { name: "TypeScript", level: 95 },
     ]
   }
 ];
@@ -48,13 +48,13 @@ export function SkillsSection() {
           className="text-center mb-16"
         >
           <span className="text-blue-500 font-semibold text-sm uppercase tracking-wider">
-            Habilidades
+            Engineering capabilities
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mt-3 mb-4">
-            Tecnologias que domino
+            Systems I build and operate
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Experiência com as principais tecnologias do mercado de desenvolvimento web
+            Practical depth in media systems, distributed backends, and platform infrastructure
           </p>
         </motion.div>
 
@@ -114,7 +114,7 @@ export function SkillsSection() {
               Tech Stack
             </h3>
             <div className="flex flex-wrap justify-center items-center gap-6">
-              {["React", "Next.js", "TypeScript", "Node.js", "Tailwind", "PostgreSQL", "MongoDB", "Docker", "Git"].map((tech) => (
+              {["WebRTC", "HLS", "FFmpeg", "Kafka", "Kubernetes", "PostgreSQL", "Redis", "Docker", "React Native"].map((tech) => (
                 <div
                   key={tech}
                   className="px-6 py-3 rounded-full bg-white/5 border border-white/10 text-gray-300 font-medium hover:bg-white/10 hover:border-blue-500/50 hover:text-white transition-all cursor-default"

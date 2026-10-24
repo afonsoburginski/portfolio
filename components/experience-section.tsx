@@ -5,26 +5,14 @@ import { motion } from "framer-motion";
 const experiences = [
   {
     id: 1,
-    role: "Desenvolvedor Full Stack",
-    company: "Freelancer",
-    period: "2020 - Presente",
-    description: "Desenvolvimento de aplicações web completas, desde o planejamento até a entrega, utilizando tecnologias modernas como React, Next.js, Node.js e bancos de dados SQL e NoSQL.",
+    role: "Senior Software Engineer",
+    company: "Atman Systems",
+    period: "Mar 2026 - Present",
+    description: "Owns the camera and video domain of an urban video-monitoring platform: WebRTC and LL-HLS streaming, NestJS microservices, Kafka, Redis, BullMQ, PostgreSQL, real-time video analytics, edge-device integrations, Kubernetes, integration testing, and mobile real-time experiences.",
     achievements: [
-      "Desenvolvimento de +20 projetos web",
-      "Melhoria de performance em até 70%",
-      "Implementação de soluções escaláveis"
-    ]
-  },
-  {
-    id: 2,
-    role: "Desenvolvedor Frontend",
-    company: "Projetos Pessoais",
-    period: "2019 - 2020",
-    description: "Criação de interfaces modernas e responsivas, focando em experiência do usuário e performance. Trabalho com React, TypeScript e Tailwind CSS.",
-    achievements: [
-      "Criação de componentes reutilizáveis",
-      "Implementação de design systems",
-      "Otimização de SEO e acessibilidade"
+      "WebRTC and LL-HLS streaming",
+      "Event-driven services with Kafka and Redis",
+      "Video analytics and edge integrations"
     ]
   }
 ];
@@ -45,13 +33,13 @@ export function ExperienceSection() {
           className="text-center mb-16"
         >
           <span className="text-blue-500 font-semibold text-sm uppercase tracking-wider">
-            Experiência
+            Experience
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mt-3 mb-4">
-            Minha jornada
+            Engineering in production
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Experiência em desenvolvimento de soluções completas e inovadoras
+            Ownership across streaming systems, distributed services, and platform infrastructure
           </p>
         </motion.div>
 

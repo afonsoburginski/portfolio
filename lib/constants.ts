@@ -2,9 +2,9 @@ import { SocialLink } from "@/types";
 
 export const SITE_CONFIG = {
   name: "Afonso Burginski",
-  title: "Afonso Burginski - Desenvolvedor Full Stack",
+  title: "Afonso Burginski — Senior Software Engineer | Video Streaming & Platform Engineering",
   description:
-    "Portfolio de Afonso Burginski - Desenvolvedor Full Stack especializado em Next.js, React e tecnologias modernas",
+    "Afonso Burginski is a Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering.",
   url: "https://www.afonsodev.com",
   locale: "pt-BR",
 };

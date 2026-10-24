@@ -11,33 +11,33 @@ import {
 const faqs = [
   {
     id: "faq-1",
-    question: "What makes you different as a mobile engineer?",
-    answer: "6+ years, apps on App Store and Google Play. React Native plus native—Swift (PiP, AirPlay), Kotlin and Kotlin Multiplatform. Full cycle: architecture, performance, release (EAS, Fastlane), store submission. When the product needed backend or end-to-end, I've shipped that too—database, APIs, app in the store.",
+    question: "What is your main engineering focus?",
+    answer: "Video streaming, distributed systems, and platform engineering, with mobile and frontend as complementary strengths.",
   },
   {
     id: "faq-2",
-    question: "What's your experience with React Native and native?",
-    answer: "Production apps on both stores; native modules in Swift (PiP, AirPlay) and Kotlin; Kotlin Multiplatform. Offline-first, real-time, HLS streaming, full release pipelines. I own the mobile lifecycle from architecture to store submission.",
+    question: "What is your hands-on video experience?",
+    answer: "WebRTC, HLS and LL-HLS, FFmpeg pipelines, custom players, real-time video analytics, and edge-device integrations.",
   },
   {
     id: "faq-3",
-    question: "Mobile only or full-stack?",
-    answer: "Mobile is my specialty—where I have the most depth. I'm also strong in fullstack: React, Next.js, Supabase, PostgreSQL, APIs, real-time. I've shipped whole products end-to-end. You get a senior mobile engineer who can own the full stack—no handoffs, no gaps.",
+    question: "How do distributed systems and platforms fit together?",
+    answer: "I connect event-driven services, queues, data stores, Kubernetes, GitOps, CI/CD, observability, and application architecture into systems that can be operated in production.",
   },
   {
     id: "faq-4",
-    question: "What teams and products have you worked with?",
-    answer: "Startups to enterprise: hospital systems, streaming apps in production, ERPs with real-time Kanban and chat, factory tooling (Kotlin Multiplatform). I adapt to agile and async; I care about maintainability and quality.",
+    question: "What products have you worked on?",
+    answer: "Video-monitoring and real-time systems, streaming products, internal platforms, and products spanning backend, web, and mobile. Orbit is delivered; Studio and Stormz are in development.",
   },
   {
     id: "faq-5",
     question: "How do you approach architecture and quality?",
-    answer: "Scalable components, clear state, performance (virtualized lists, memoization). Documented decisions, handoff teams can build on. CI/CD, store compliance, and iteration without breaking production.",
+    answer: "Explicit trade-offs, clear boundaries, tests, observability, and attention to latency, failure modes, consistency, idempotency, and safe delivery.",
   },
   {
     id: "faq-6",
     question: "How can we start a conversation?",
-    answer: "Book a call above or reach out on LinkedIn or email. Open to full-time, long-term contract, or project-based. Tell me what you're building and what you need—I'd be glad to talk.",
+    answer: "Book a call above or reach out on LinkedIn or email. Tell me what you are building and where you need technical ownership.",
   },
 ];
 

@@ -90,7 +90,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
         transition={{ duration: 0.4 }}
       >
         <div className="w-full flex items-center justify-center gap-2 text-white text-sm font-normal font-sans backdrop-blur-md bg-white/20 border !border-white shadow-lg transition-all duration-300 px-4 py-2.5 rounded-full">
-          <span>View Casestudy</span>
+          <span>View Case Study</span>
           <ArrowUpRight size={14} />
         </div>
       </motion.div>
@@ -111,10 +111,10 @@ export const ProjectsSectionMobile = ({ projects }: { projects: Project[] }) => 
           className="mb-8"
         >
           <h2 className="text-[36px] font-normal text-white mb-3 leading-[1.1] tracking-[-0.02em] font-satoshi">
-            Featured Projects
+            Selected Systems
           </h2>
           <p className="text-white/70 text-sm leading-relaxed font-sans">
-            Selected work from recent years
+            Engineering work across streaming, platforms, and product systems
           </p>
         </motion.div>
 

@@ -11,33 +11,33 @@ import {
 const faqs = [
   {
     id: "faq-1",
-    question: "What makes you different as a mobile engineer?",
-    answer: "6+ years with apps in production on the App Store and Google Play. React Native plus custom native code—Swift for PiP, AirPlay, advanced playback; Kotlin and Kotlin Multiplatform for shared logic and tooling. I own the full cycle: architecture and state management, performance (virtualized lists, memoization), release pipelines (EAS Build, Fastlane), and store submission. When the product needed backend or end-to-end ownership, I've built and shipped that too—from database and APIs to the app in the store.",
+    question: "What is your main engineering focus?",
+    answer: "Video streaming, distributed systems, and platform engineering. I work across media pipelines, real-time services, backend architecture, infrastructure, and production operations, with mobile and frontend engineering as complementary strengths.",
   },
   {
     id: "faq-2",
-    question: "What's your hands-on experience with React Native and native code?",
-    answer: "Production apps on both stores; custom native modules in Swift (PiP, AirPlay, advanced playback) and Kotlin; Kotlin Multiplatform for shared tooling. I've worked with offline-first flows, real-time (LiveKit, Supabase), HLS streaming, and full release pipelines. I own the full mobile lifecycle—from architecture decisions to store submission.",
+    question: "What hands-on experience do you have with video systems?",
+    answer: "I work with WebRTC, HLS and LL-HLS streaming, FFmpeg pipelines, custom players, codec-aware delivery, real-time video analytics, and edge-device integrations. The goal is dependable media infrastructure from ingest and processing through playback.",
   },
   {
     id: "faq-3",
-    question: "Do you only do mobile or full-stack?",
-    answer: "Mobile is my specialty—that's where I have the most depth and where I bring the most value. I'm also strong in fullstack: frontend (React, Next.js) and backend (Supabase, PostgreSQL, REST APIs, real-time) are part of my daily work. I've shipped entire products end-to-end, from database and APIs to the app in the store. So you get a senior mobile engineer who can own the whole stack when the product needs it—no handoffs, no gaps.",
+    question: "How do distributed systems and platform engineering fit together?",
+    answer: "I connect application architecture with the platform that runs it: event-driven services, queues, data stores, containers, Kubernetes, GitOps, CI/CD, observability, and operational safeguards. I care about clear boundaries, idempotency, reliability, and decisions that hold up in production.",
   },
   {
     id: "faq-4",
-    question: "What kind of teams and products have you worked with?",
-    answer: "From startup MVPs to enterprise: hospital management systems, subscription streaming (iOS & Android in production), internal ERPs with real-time Kanban and chat, factory tooling (Kotlin Multiplatform, CAD export). I adapt to agile, milestones, and async—and I care about long-term maintainability, not just shipping features.",
+    question: "What kinds of products have you worked on?",
+    answer: "Video-monitoring and real-time systems, streaming products, internal operational platforms, and product experiences spanning backend, web, and mobile. Current portfolio work also includes Orbit, an internal developer platform, plus Studio and Stormz as in-development media infrastructure projects.",
   },
   {
     id: "faq-5",
     question: "How do you approach architecture and quality?",
-    answer: "I focus on scalable component design, clear state management, and performance (virtualized lists, memoization, sensible re-renders). I prefer documented decisions and handoff that teams can build on. Release quality matters: CI/CD, store compliance, and iteration without breaking production.",
+    answer: "I make trade-offs explicit, keep boundaries understandable, and validate behavior with tests and observability. I look at latency, throughput, failure modes, consistency, idempotency, deployment safety, and the operational experience—not just whether a feature works locally.",
   },
   {
     id: "faq-6",
     question: "How can we start a conversation?",
-    answer: "Book a call via the button above or reach out on LinkedIn or email. I'm open to full-time, long-term contract, or project-based work. Tell me what you're building and what you need—I'd be glad to talk.",
+    answer: "Book a call via the button above or reach out on LinkedIn or email. Tell me what you are building, the constraints you are working with, and where you need technical ownership.",
   },
 ];
 

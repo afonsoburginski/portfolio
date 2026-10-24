@@ -10,22 +10,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Afonso Burginski - Desenvolvedor Full Stack",
-  description: "Portfolio de Afonso Burginski - Desenvolvedor Full Stack especializado em Next.js, React e tecnologias modernas",
-  keywords: ["Afonso Burginski", "desenvolvedor", "full stack", "Next.js", "React", "portfolio"],
+  title: "Afonso Burginski — Senior Software Engineer | Video Streaming & Platform Engineering",
+  description: "Afonso Burginski is a Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering.",
+  keywords: ["Afonso Burginski", "Senior Software Engineer", "video streaming", "distributed systems", "platform engineering", "WebRTC", "Kubernetes"],
   authors: [{ name: "Afonso Burginski", url: "https://github.com/afonsoburginski" }],
   openGraph: {
     type: "website",
-    locale: "pt_BR",
+    locale: "en_US",
     url: "https://www.afonsodev.com",
-    title: "Afonso Burginski - Desenvolvedor Full Stack",
-    description: "Portfolio de Afonso Burginski - Desenvolvedor Full Stack",
+    title: "Afonso Burginski — Senior Software Engineer | Video Streaming & Platform Engineering",
+    description: "Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering.",
     siteName: "Afonso Burginski",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Afonso Burginski - Desenvolvedor Full Stack",
-    description: "Portfolio de Afonso Burginski - Desenvolvedor Full Stack",
+    title: "Afonso Burginski — Senior Software Engineer | Video Streaming & Platform Engineering",
+    description: "Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering.",
   },
 };
 

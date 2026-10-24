@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
 import { InfiniteLogos } from "../../ui/infinite-logos";
 import { Spotlight } from "../../ui/spotlight-new";
-import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiTypescript, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiPostgresql, SiDocker, SiTypescript, SiReact } from "react-icons/si";
 
 export const HeroMobile = () => {
   return (
@@ -25,7 +25,7 @@ export const HeroMobile = () => {
         >
           <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping absolute opacity-60" />
           <span className="w-2 h-2 bg-emerald-400 rounded-full relative" />
-          <span className="text-gray-200 text-xs">Senior Mobile Developer</span>
+          <span className="text-gray-200 text-xs">Senior Software Engineer</span>
         </motion.div>
 
         <motion.h1
@@ -34,7 +34,7 @@ export const HeroMobile = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-[32px] font-normal text-white mb-4 leading-[1.1] tracking-[-0.02em] font-satoshi px-2"
         >
-          Apps that users love indeed
+          Engineering complex systems, from architecture to production.
         </motion.h1>
 
         <motion.div
@@ -44,7 +44,7 @@ export const HeroMobile = () => {
           className="text-white/70 max-w-[420px] mx-auto mb-6 px-4"
         >
           <p className="text-sm leading-relaxed tracking-wide font-sans">
-            React Native and native (Kotlin, Swift) for iOS and Android. 6+ years shipping apps to the App Store and Google Play.
+            Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. I design, build, and operate media platforms and infrastructure end-to-end.
           </p>
         </motion.div>
 
@@ -61,14 +61,14 @@ export const HeroMobile = () => {
             }}
             className="w-full max-w-[280px] backdrop-blur-md bg-white/20 text-white font-medium text-sm font-sans px-6 py-3 rounded-xl border border-white/20 hover:bg-white/30 transition-all duration-300"
           >
-            Let&apos;s Build Together
+            Get in Touch
           </button>
           
           <button
             onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
             className="w-full max-w-[280px] backdrop-blur-sm bg-black/40 text-white font-medium text-sm font-sans px-6 py-3 rounded-xl border border-white/20 hover:bg-white/50 transition-all duration-300"
           >
-            View Projects
+            Explore My Work
           </button>
         </motion.div>
 
@@ -81,15 +81,14 @@ export const HeroMobile = () => {
         >
           <InfiniteLogos
             items={[
-              { name: "React Native", icon: SiReact },
-              { name: "iOS", icon: SiApple },
-              { name: "Android", icon: SiAndroid },
-              { name: "Kotlin", icon: SiKotlin },
-              { name: "Swift", icon: SiSwift },
+              { name: "WebRTC", icon: SiWebrtc },
+              { name: "FFmpeg", icon: SiFfmpeg },
+              { name: "Kafka", icon: SiApachekafka },
+              { name: "Kubernetes", icon: SiKubernetes },
               { name: "TypeScript", icon: SiTypescript },
               { name: "PostgreSQL", icon: SiPostgresql },
-              { name: "Supabase", icon: SiSupabase },
               { name: "Docker", icon: SiDocker },
+              { name: "React Native", icon: SiReact },
             ]}
             direction="left"
             speed="normal"

@@ -2,16 +2,16 @@
 
 import { motion } from "motion/react";
 import { Trophy, Zap, Star, Code, Shield } from "lucide-react";
-import { SiReact, SiExpo, SiNextdotjs, SiNodedotjs, SiKotlin, SiSupabase, SiPostgresql } from "react-icons/si";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiNestjs, SiPostgresql } from "react-icons/si";
 import Image from "next/image";
 
 const skills = [
-  { name: "React Native", icon: SiReact },
-  { name: "Expo", icon: SiExpo },
-  { name: "Next.js", icon: SiNextdotjs },
-  { name: "Node.js", icon: SiNodedotjs },
-  { name: "Kotlin", icon: SiKotlin },
-  { name: "Supabase", icon: SiSupabase },
+  { name: "WebRTC", icon: SiWebrtc },
+  { name: "FFmpeg", icon: SiFfmpeg },
+  { name: "Kafka", icon: SiApachekafka },
+  { name: "Kubernetes", icon: SiKubernetes },
+  { name: "Redis", icon: SiRedis },
+  { name: "NestJS", icon: SiNestjs },
   { name: "PostgreSQL", icon: SiPostgresql },
 ];
 
@@ -89,7 +89,7 @@ export function AboutSectionMobile() {
             Meet Afonso
           </h2>
           <p className="text-white/70 text-sm leading-relaxed font-sans">
-            Senior Mobile Engineer with 6+ years shipping apps to the App Store and Google Play. I specialize in React Native and native (Kotlin, Swift)—performance, native modules, and release quality. Backend (Supabase, PostgreSQL) when the product needs full ownership.
+            I am a Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. Mobile and frontend engineering are complementary strengths when the system requires them.
           </p>
         </motion.div>
 

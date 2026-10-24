@@ -4,66 +4,57 @@ import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
 import Image from "next/image";
 import { 
-  Smartphone,
   Server,
   Code,
-  Database as Db,
   GitBranch,
   Rocket,
   Zap,
 } from "lucide-react";
-import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiExpo, SiTypescript, SiNodedotjs, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiPostgresql, SiDocker, SiTypescript, SiNodedotjs, SiReact } from "react-icons/si";
 
 const tags = [
-  "Mobile Development",
-  "React Native & Native",
-  "App Store & Play Store",
-  "Backend when needed",
+  "Video Streaming",
+  "Distributed Systems",
+  "Platform Engineering",
+  "Product Engineering",
 ];
 
 const services = [
   {
-    title: "Mobile Architecture & Consulting",
-    desc: "Consulting on app architecture, performance, and release strategy. EAS Build, Fastlane, store delivery. Senior mobile perspective.",
+    title: "Video Streaming & Media Systems",
+    desc: "WebRTC, HLS, LL-HLS, FFmpeg pipelines, custom players, and real-time video analytics.",
     icon: Rocket
   },
   {
-    title: "Mobile Apps",
-    desc: "React Native apps with native performance: offline‑first, push notifications, secure auth, 60fps. EAS Build and Fastlane for App Store and Play Store.",
-    icon: Smartphone
-  },
-  {
-    title: "Native Modules & Integrations",
-    desc: "Custom Swift (PiP, AirPlay) and Kotlin when React Native isn't enough. Native bridges, one codebase, no quality compromise.",
-    icon: Code
-  },
-  {
-    title: "Backend & APIs for Mobile",
-    desc: "When the product needs it: Supabase + PostgreSQL, APIs, auth, real-time. CI/CD and releases—backend in service of the app.",
+    title: "Distributed Systems & Backend",
+    desc: "Event-driven services and APIs with NestJS, Kafka, Redis, BullMQ, PostgreSQL, and WebSockets.",
     icon: Server
+  },
+  {
+    title: "Platform Engineering",
+    desc: "Kubernetes, Docker, GitOps, CI/CD, observability, and reliability-minded automation.",
+    icon: Rocket
+  },
+  {
+    title: "Product Engineering",
+    desc: "Backend, web, and mobile delivery with React, TypeScript, and React Native as complementary strengths.",
+    icon: Code
   },
 ];
 
 const bottomTags = [
-  // Mobile
-  { name: "React Native", icon: SiReact },
-  { name: "iOS", icon: SiApple },
-  { name: "Android", icon: SiAndroid },
-  { name: "Kotlin", icon: SiKotlin },
-  { name: "Swift", icon: SiSwift },
-  { name: "Expo", icon: SiExpo },
-  // Backend
+  { name: "WebRTC", icon: SiWebrtc },
+  { name: "FFmpeg", icon: SiFfmpeg },
+  { name: "Kafka", icon: SiApachekafka },
+  { name: "Kubernetes", icon: SiKubernetes },
+  { name: "Redis", icon: SiRedis },
   { name: "TypeScript", icon: SiTypescript },
   { name: "Node.js", icon: SiNodedotjs },
   { name: "PostgreSQL", icon: SiPostgresql },
-  { name: "Supabase", icon: SiSupabase },
   { name: "Docker", icon: SiDocker },
-  { name: "REST APIs", icon: Server },
-  // Key capabilities
-  { name: "Real‑time", icon: Zap },
-  { name: "Offline‑first", icon: Db },
+  { name: "React Native", icon: SiReact },
+  { name: "Real-time", icon: Zap },
   { name: "CI/CD", icon: GitBranch },
-  { name: "App Store & Play Store", icon: Rocket },
 ];
 
 // Split into two alternating rows to reduce visible repetition
@@ -115,7 +106,7 @@ export function ServicesShowcaseMobile() {
             className="mb-6"
           >
             <p className="text-white/70 text-sm leading-relaxed font-sans">
-              Transforming ideas into powerful digital solutions with modern technologies for mobile and web.
+              I build and operate complex media systems, distributed backends, and platform infrastructure end-to-end.
             </p>
           </motion.div>
 

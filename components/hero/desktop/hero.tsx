@@ -4,7 +4,7 @@ import { getCalApi } from "@calcom/embed-react";
 import { InfiniteLogos } from "../../ui/infinite-logos";
 import { HoverBorderGradient } from "../../ui/hover-border-gradient";
 import { Spotlight } from "../../ui/spotlight-new";
-import { SiReact, SiApple, SiAndroid, SiKotlin, SiSwift, SiTypescript, SiPostgresql, SiSupabase, SiDocker } from "react-icons/si";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiPostgresql, SiDocker, SiTypescript, SiReact } from "react-icons/si";
 
 export const HeroDesktop = () => {
   return (
@@ -26,7 +26,7 @@ export const HeroDesktop = () => {
         >
           <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping absolute opacity-60" />
           <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full relative" />
-          <span className="text-gray-200 text-sm">Senior Mobile Developer</span>
+          <span className="text-gray-200 text-sm">Senior Software Engineer</span>
         </motion.div>
 
         <motion.h1
@@ -35,7 +35,7 @@ export const HeroDesktop = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[56px] md:text-[80px] lg:text-[96px] font-normal text-white mb-4 leading-[1.03] tracking-[-0.02em] font-satoshi"
         >
-          Apps that users love indeed
+          Engineering complex systems, from architecture to production.
         </motion.h1>
 
         <motion.div
@@ -45,7 +45,7 @@ export const HeroDesktop = () => {
           className="text-white/70 max-w-[600px] mx-auto mb-6"
         >
           <p className="text-base md:text-lg leading-relaxed tracking-wide font-sans">
-            React Native and native code (Kotlin, Swift) for iOS and Android. 6+ years shipping apps to the App Store and Google Play — from cross-platform to custom native modules.
+            Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. I design, build, and operate media platforms and infrastructure with end-to-end ownership.
           </p>
         </motion.div>
 
@@ -66,7 +66,7 @@ export const HeroDesktop = () => {
             duration={1}
             clockwise={true}
           >
-            Let&apos;s Build Together
+            Get in Touch
           </HoverBorderGradient>
           
           <HoverBorderGradient
@@ -77,7 +77,7 @@ export const HeroDesktop = () => {
             duration={1}
             clockwise={false}
           >
-            View Projects
+            Explore My Work
           </HoverBorderGradient>
         </motion.div>
 
@@ -90,15 +90,14 @@ export const HeroDesktop = () => {
         >
           <InfiniteLogos
             items={[
-              { name: "React Native", icon: SiReact },
-              { name: "iOS", icon: SiApple },
-              { name: "Android", icon: SiAndroid },
-              { name: "Kotlin", icon: SiKotlin },
-              { name: "Swift", icon: SiSwift },
+              { name: "WebRTC", icon: SiWebrtc },
+              { name: "FFmpeg", icon: SiFfmpeg },
+              { name: "Kafka", icon: SiApachekafka },
+              { name: "Kubernetes", icon: SiKubernetes },
               { name: "TypeScript", icon: SiTypescript },
               { name: "PostgreSQL", icon: SiPostgresql },
-              { name: "Supabase", icon: SiSupabase },
               { name: "Docker", icon: SiDocker },
+              { name: "React Native", icon: SiReact },
             ]}
             direction="left"
             speed="normal"

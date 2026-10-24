@@ -1,28 +1,26 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Trophy, Zap, Star, Code, Shield, TrendingUp, FileCode } from "lucide-react";
-import { SiReact, SiExpo, SiNextdotjs, SiNodedotjs, SiKotlin, SiSupabase, SiPostgresql, SiGithub, SiFigma, SiVercel, SiDocker, SiAmazonwebservices, SiCloudflare } from "react-icons/si";
+import { Trophy, Zap, Star, Code, Shield, TrendingUp } from "lucide-react";
+import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiNestjs, SiPostgresql, SiDocker, SiTypescript, SiGithub, SiCloudflare, SiReact } from "react-icons/si";
 import Image from "next/image";
 
 const skills = [
-  { name: "React Native", icon: SiReact },
-  { name: "Expo", icon: SiExpo },
-  { name: "Next.js", icon: SiNextdotjs },
-  { name: "Node.js", icon: SiNodedotjs },
-  { name: "Kotlin", icon: SiKotlin },
-  { name: "Supabase", icon: SiSupabase },
+  { name: "WebRTC", icon: SiWebrtc },
+  { name: "FFmpeg", icon: SiFfmpeg },
+  { name: "Kafka", icon: SiApachekafka },
+  { name: "Kubernetes", icon: SiKubernetes },
+  { name: "Redis", icon: SiRedis },
+  { name: "NestJS", icon: SiNestjs },
   { name: "PostgreSQL", icon: SiPostgresql },
 ];
 
 const tools = [
-  { name: "VSCode", icon: FileCode },
-  { name: "Figma", icon: SiFigma },
+  { name: "TypeScript", icon: SiTypescript },
   { name: "Git & GitHub", icon: SiGithub },
   { name: "Docker", icon: SiDocker },
-  { name: "Vercel", icon: SiVercel },
-  { name: "AWS", icon: SiAmazonwebservices },
-  { name: "Cloudflare", icon: SiCloudflare }
+  { name: "Cloudflare", icon: SiCloudflare },
+  { name: "React Native", icon: SiReact }
 ];
 
 const experiences = [
@@ -30,7 +28,7 @@ const experiences = [
     role: "Senior Software Engineer",
     company: "Atman Systems",
     period: "Mar 2026 - Present",
-    description: "Owns the camera/video domain of a large-scale smart-city video monitoring platform — 27 NestJS microservices (Kafka, Kong, Kubernetes). Low-latency streaming (WebRTC/LL-HLS, codec negotiation), real-time video analytics, event correlation and alarms, telemetry over time-partitioned PostgreSQL, CI/CD quality gates. Selected to lead the platform's upcoming mobile application.",
+    description: "Owns the camera and video domain of an urban video-monitoring platform: WebRTC and LL-HLS streaming, NestJS microservices, Kafka, Redis, BullMQ, PostgreSQL, real-time video analytics, edge-device integrations, Kubernetes, integration testing, and mobile real-time experiences.",
     highlights: [
       { text: "WebRTC / LL-HLS streaming", icon: Star },
       { text: "NestJS microservices", icon: Code },
@@ -41,7 +39,7 @@ const experiences = [
     role: "Full Stack Engineer",
     company: "JHONROB Silos e Secadores",
     period: "Nov 2023 - Mar 2026",
-    description: "Built and scaled internal sales solution in Next.js — 80% reduction in commercial proposal errors, ~14% increase in monthly profit. Kotlin Multiplatform and native tooling (GEM Exportador — CAD export with real-time WebSocket queue, Android modules for factory operators). Led GEM ERP (Next.js + Supabase): real-time Kanban, corporate chat, dashboards. TypeScript, Next.js, Node.js, Prisma, PostgreSQL (Docker).",
+    description: "Built internal sales and operations systems with Next.js, TypeScript, Node.js, PostgreSQL, Docker, real-time workflows, dashboards, chat, and Kotlin Multiplatform tooling for factory operators.",
     highlights: [
       { text: "80% error reduction", icon: TrendingUp },
       { text: "Kotlin Multiplatform", icon: Code },
@@ -52,9 +50,9 @@ const experiences = [
     role: "Senior Mobile Engineer",
     company: "afonsodev.com",
     period: "Jan 2020 - Present",
-    description: "Apps in production on App Store and Google Play. React Native (New Architecture), native modules in Swift (PiP, AirPlay) and Kotlin, streaming (HLS, LiveKit Watch Party), offline-first, EAS Build/Fastlane. When the product required it, also built backend and web (Next.js, Supabase) for the same projects — end-to-end ownership, not generalist.",
+    description: "Built and operated production mobile products with React Native, Swift, Kotlin, HLS, LiveKit, offline-first flows, and release automation. When required, also owned the backend and web layers for end-to-end delivery.",
     highlights: [
-      { text: "App Store & Play Store", icon: Trophy },
+      { text: "HLS & LiveKit streaming", icon: Trophy },
       { text: "React Native + native", icon: Star },
       { text: "Backend when needed", icon: Zap }
     ]
@@ -130,7 +128,7 @@ export function AboutSectionDesktop() {
               Meet Afonso
             </h2>
             <p className="text-white/70 text-lg leading-relaxed font-sans max-w-3xl mx-auto">
-              Senior Mobile Engineer with 6+ years shipping production apps to the App Store and Google Play. I specialize in React Native and native development (Kotlin, Swift)—architecture, performance, custom native modules, and release pipelines. When the product demands full ownership, I design and build the backend (Supabase, PostgreSQL) so the app is delivered end-to-end.
+              I am a Senior Software Engineer specializing in video streaming, distributed systems, and platform engineering. I work across architecture, backend, infrastructure, and product delivery, with mobile and frontend engineering as practical strengths when the system requires them.
             </p>
           </motion.div>
 
