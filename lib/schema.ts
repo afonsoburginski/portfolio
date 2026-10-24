@@ -1,4 +1,4 @@
-import { pgTable, text, integer, doublePrecision, boolean, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, doublePrecision, boolean, timestamp, primaryKey, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // App date columns are stored as ISO-8601 strings (the app writes them via
@@ -213,6 +213,22 @@ export const projects = pgTable("projects", {
   created_at: text("created_at").notNull().default(nowIso()),
   updated_at: text("updated_at").notNull().default(nowIso()),
 });
+
+export const social_posts = pgTable("social_posts", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  platform: text("platform", { enum: ["linkedin", "github", "x", "other"] }).notNull().default("linkedin"),
+  kind: text("kind", { enum: ["post", "article", "link"] }).notNull(),
+  urn: text("urn").unique(),
+  url: text("url").notNull().unique(),
+  title: text("title"),
+  body: text("body").notNull(),
+  image: text("image"),
+  published_at: text("published_at").notNull(),
+  created_at: text("created_at").notNull().default(nowIso()),
+  updated_at: text("updated_at").notNull().default(nowIso()),
+}, (table) => [index("social_posts_published_at_idx").on(table.published_at)]);
+
+export type SocialPost = typeof social_posts.$inferSelect;
 
 // ——— TypeScript types ———
 
