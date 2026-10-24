@@ -1,0 +1,67 @@
+import { Radio, Waves } from "lucide-react";
+import {
+  SiApachekafka,
+  SiArgo,
+  SiCloudflare,
+  SiDocker,
+  SiFfmpeg,
+  SiGithubactions,
+  SiKotlin,
+  SiKubernetes,
+  SiNestjs,
+  SiNextdotjs,
+  SiPostgresql,
+  SiReact,
+  SiRedis,
+  SiSocketdotio,
+  SiSwift,
+  SiTypescript,
+  SiWebrtc,
+} from "react-icons/si";
+
+export const stackIcons = {
+  webrtc: { icon: SiWebrtc, color: "#61DAFB" },
+  hls: { icon: Waves, color: "#FFFFFF" },
+  ffmpeg: { icon: SiFfmpeg, color: "#007808" },
+  kafka: { icon: SiApachekafka, color: "#FFFFFF" },
+  nestjs: { icon: SiNestjs, color: "#E0234E" },
+  postgresql: { icon: SiPostgresql, color: "#4169E1" },
+  redis: { icon: SiRedis, color: "#FF4438" },
+  websockets: { icon: SiSocketdotio, color: "#FFFFFF" },
+  kubernetes: { icon: SiKubernetes, color: "#326CE5" },
+  docker: { icon: SiDocker, color: "#2496ED" },
+  argo: { icon: SiArgo, color: "#EF7B4D" },
+  githubActions: { icon: SiGithubactions, color: "#2088FF" },
+  cloudflare: { icon: SiCloudflare, color: "#F38020" },
+  typescript: { icon: SiTypescript, color: "#3178C6" },
+  nextjs: { icon: SiNextdotjs, color: "#FFFFFF" },
+  react: { icon: SiReact, color: "#61DAFB" },
+  reactNative: { icon: SiReact, color: "#61DAFB" },
+  kotlin: { icon: SiKotlin, color: "#7F52FF" },
+  swift: { icon: SiSwift, color: "#F05138" },
+  streaming: { icon: Radio, color: "#61DAFB" },
+} as const;
+
+export const coreSkills = [
+  { name: "WebRTC", ...stackIcons.webrtc },
+  { name: "HLS / LL-HLS", ...stackIcons.hls },
+  { name: "FFmpeg", ...stackIcons.ffmpeg },
+  { name: "Kafka", ...stackIcons.kafka },
+  { name: "NestJS", ...stackIcons.nestjs },
+  { name: "PostgreSQL", ...stackIcons.postgresql },
+  { name: "Redis / BullMQ", ...stackIcons.redis },
+  { name: "WebSockets", ...stackIcons.websockets },
+];
+
+export const toolsAndPlatforms = [
+  { name: "Kubernetes", ...stackIcons.kubernetes },
+  { name: "Docker", ...stackIcons.docker },
+  { name: "Argo CD / GitOps", ...stackIcons.argo },
+  { name: "GitHub Actions", ...stackIcons.githubActions },
+  { name: "Cloudflare", ...stackIcons.cloudflare },
+  { name: "TypeScript", ...stackIcons.typescript },
+  { name: "React / Next.js", ...stackIcons.react },
+  { name: "React Native", ...stackIcons.reactNative },
+  { name: "Kotlin", ...stackIcons.kotlin },
+  { name: "Swift", ...stackIcons.swift },
+];
