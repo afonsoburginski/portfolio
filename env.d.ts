@@ -9,6 +9,7 @@ declare namespace NodeJS {
 
     // Postgres
     DATABASE_URL: string;
+    PORTFOLIO_MCP_TOKEN?: string;
 
     // Cloudflare R2 (S3-compatible API)
     R2_ACCOUNT_ID: string;

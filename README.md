@@ -70,3 +70,11 @@ O projeto utiliza um sistema de cores baseado em variáveis CSS que suporta dark
 ## 📄 Licença
 
 Este projeto é de código aberto para fins educacionais.
+
+## MCP
+
+The portfolio exposes a stateless Streamable HTTP MCP endpoint at `https://afonsodev.com/api/mcp`. Send JSON-RPC requests with `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>` and `Content-Type: application/json`. Set `PORTFOLIO_MCP_TOKEN` as a server runtime secret; the endpoint returns 401 when it is missing or incorrect. Only POST is supported.
+
+Tools: `social_post_record`, `social_post_list`, `social_post_delete`, `project_upsert`, and `project_list`. After publishing on LinkedIn, call `social_post_record` with the public post URL and body, optionally including its URN, title, image, kind, and publication time. Older LinkedIn posts can be registered manually with their URL. The home page displays the six most recent recorded LinkedIn posts. `project_upsert` accepts public GitHub repository URLs and project images hosted on `cdn.afonsodev.com`.
+
+The `social_posts` table is created by migration 0003. The production container applies pending migrations through `migrate.mjs` before starting Next.js. For a local database, run `NODE_ENV=development npm run db:migrate`; do not use Drizzle's push command. To smoke test a local server after migration, run `PORTFOLIO_MCP_TOKEN=<token> node scripts/mcp-smoke.mjs` with the same token configured on the server. The smoke script rejects nonlocal URLs and removes its test post.
