@@ -28,8 +28,6 @@ function getBreadcrumbs(pathname: string) {
   if (pathname.startsWith("/dashboard/requests/") && pathname !== "/dashboard/requests") {
     crumbs.push({ label: "Pedido", href: "/dashboard" });
     crumbs.push({ label: "Detalhes" });
-  } else if (pathname.startsWith("/dashboard/admin")) {
-    crumbs.push({ label: "Admin Panel" });
   }
   return crumbs;
 }

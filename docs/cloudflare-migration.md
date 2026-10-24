@@ -68,8 +68,6 @@ Set these in Cloudflare dashboard or with `wrangler secret put`:
 npx wrangler secret put BETTER_AUTH_SECRET
 npx wrangler secret put GOOGLE_CLIENT_ID
 npx wrangler secret put GOOGLE_CLIENT_SECRET
-npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put ADMIN_EMAIL
 ```
 
 `NEXT_PUBLIC_APP_URL` is a non-secret and is configured in `wrangler.jsonc` under `vars`.

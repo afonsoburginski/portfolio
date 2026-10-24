@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { isAdminEmail } from "@/lib/admin-helpers";
-import { putObject, deleteObject, r2PublicUrl } from "@/lib/r2";
+import { putObject, r2PublicUrl } from "@/lib/r2";
 
 const R2_PUBLIC_URL = r2PublicUrl();
 const USER_UPLOAD_FOLDERS = new Set(["requests", "comments"]);
@@ -26,15 +25,12 @@ export async function POST(req: Request) {
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
-  const folder = (formData.get("folder") as string) ?? "projects";
-  const userIsAdmin =
-    (session.user as { isAdmin?: boolean }).isAdmin === true ||
-    isAdminEmail(session.user.email);
+  const folder = (formData.get("folder") as string) ?? "requests";
 
   if (!file) {
     return Response.json({ error: "No file provided" }, { status: 400 });
   }
-  if (!userIsAdmin && !USER_UPLOAD_FOLDERS.has(folder)) {
+  if (!USER_UPLOAD_FOLDERS.has(folder)) {
     return Response.json({ error: "Folder not allowed" }, { status: 403 });
   }
   if (file.size > MAX_FILE_SIZE) {
@@ -54,20 +50,4 @@ export async function POST(req: Request) {
     type: file.type,
     size: file.size,
   });
-}
-
-export async function DELETE(req: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || !isAdminEmail(session.user.email)) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { key } = await req.json();
-  if (!key) {
-    return Response.json({ error: "No key provided" }, { status: 400 });
-  }
-
-  await deleteObject(key);
-
-  return Response.json({ success: true });
 }

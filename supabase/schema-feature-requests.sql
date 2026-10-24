@@ -5,7 +5,6 @@
 -- 2. In .env.local add:
 --    NEXT_PUBLIC_SUPABASE_URL=...
 --    SUPABASE_SERVICE_ROLE_KEY=...
---    DASHBOARD_ADMIN_SECRET=...  (any secret string to access /dashboard/admin)
 -- 3. Run this SQL in Supabase SQL Editor.
 
 create table if not exists public.feature_requests (

@@ -21,10 +21,6 @@ export async function getMyRequests(token: string): Promise<Request[]> {
   return authFetch(BASE, token);
 }
 
-export async function getAllRequests(token: string, adminSecret: string): Promise<Request[]> {
-  return authFetch(`${BASE}?admin_secret=${adminSecret}`, token);
-}
-
 export async function createRequest(
   token: string,
   payload: { title: string; description: string; type: string; priority: number }

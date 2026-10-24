@@ -2,10 +2,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, CalendarClock, CheckCircle2, Clock,
-  CreditCard, DollarSign, Loader2, MessageSquare, Trash2, Truck, XCircle,
+  CreditCard, DollarSign, Loader2, Trash2, Truck, XCircle,
 } from "lucide-react";
 import type { Request, RequestAttachment, RequestStage, RequestTask } from "@/lib/database.types";
-import { FormattedMessageContent } from "@/components/dashboard/formatted-message-content";
 import { RequestAttachments } from "@/components/dashboard/request-attachments";
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from "./constants";
 import { computeRequestPricing } from "@/lib/services/pricing";
@@ -155,16 +154,6 @@ export function RequestCard({
               onAdd={onAddAttachment}
               onDelete={onDeleteAttachment}
             />
-          </div>
-        )}
-
-        {/* Observações do admin */}
-        {req.admin_notes && (
-          <div className="border-t border-border/60 px-5 py-4">
-            <SectionLabel icon={<MessageSquare className="size-3" />}>Observações</SectionLabel>
-            <div className="text-sm leading-relaxed">
-              <FormattedMessageContent content={req.admin_notes} />
-            </div>
           </div>
         )}
 

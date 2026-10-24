@@ -30,6 +30,9 @@ export async function GET(req: NextRequest) {
     .from(requests)
     .where(eq(requests.id, requestId));
   if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (request.user_id !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   if (request.paid_at || request.status === "approved") {
     return NextResponse.json({ status: "approved" });

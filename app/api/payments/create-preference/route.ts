@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { requests, request_stages } from "@/lib/schema";
 import { eq } from "drizzle-orm";
-import { isAdminEmail } from "@/lib/admin-helpers";
 import { createPreference, computeMarketplaceFee, type SplitConfig } from "@/lib/mercadopago";
 import { computeRequestPricing } from "@/lib/services/pricing";
 
@@ -17,9 +16,7 @@ export async function POST(req: NextRequest) {
   const [request] = await db.select().from(requests).where(eq(requests.id, requestId));
   if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
 
-  const isAdmin =
-    isAdminEmail(session.user.email) || (session.user as { isAdmin?: boolean }).isAdmin === true;
-  if (!isAdmin && request.user_id !== session.user.id) {
+  if (request.user_id !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -7,11 +7,6 @@ declare namespace NodeJS {
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
 
-    RESEND_API_KEY: string;
-    ADMIN_EMAIL?: string;
-
-    DASHBOARD_ADMIN_SECRET?: string;
-
     // Postgres
     DATABASE_URL: string;
 
@@ -21,8 +16,6 @@ declare namespace NodeJS {
     R2_SECRET_ACCESS_KEY: string;
     R2_BUCKET?: string;
     R2_PUBLIC_URL?: string;
-
-    OPENAI_API_KEY?: string;
 
     NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY?: string;
     MERCADOPAGO_ACCESS_TOKEN?: string;

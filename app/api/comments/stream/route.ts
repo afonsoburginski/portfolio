@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { request_comments, user } from "@/lib/schema";
+import { request_comments, requests, user } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,14 @@ export async function GET(req: NextRequest) {
 
   const requestId = req.nextUrl.searchParams.get("requestId");
   if (!requestId) return new Response("requestId required", { status: 400 });
+
+  const [request] = await db
+    .select({ user_id: requests.user_id })
+    .from(requests)
+    .where(eq(requests.id, requestId));
+  if (!request || request.user_id !== session.user.id) {
+    return new Response("Forbidden", { status: 403 });
+  }
 
   const encoder = new TextEncoder();
   let closed = false;

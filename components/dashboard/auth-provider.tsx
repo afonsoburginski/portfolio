@@ -8,7 +8,6 @@ export type AuthUser = {
   name: string;
   email: string;
   image?: string | null;
-  isAdmin?: boolean;
   company?: string | null;
   createdAt?: Date;
   updatedAt?: Date;

@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
-import { getMyRequests, getAllRequests } from "@/lib/dashboard-data";
-import { isAdminEmail } from "@/lib/admin-helpers";
+import { getMyRequests } from "@/lib/dashboard-data";
 import type { Request, RequestStatus } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,10 +11,9 @@ import {
 import { NewRequestDialog } from "@/components/dashboard/new-request-dialog";
 import {
   PlusCircle, Loader2, ChevronRight, FileText,
-  CheckCircle2, AlertCircle, Rocket, LayoutList, GanttChartSquare,
+  CheckCircle2, AlertCircle, Rocket,
 } from "lucide-react";
 import { ClientRequestContextMenu } from "@/components/dashboard/client-request-context-menu";
-import { AdminGanttView } from "@/components/dashboard/admin-gantt-view";
 import { getCalApi } from "@calcom/embed-react";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
@@ -53,23 +51,19 @@ function StatusPill({ status }: { status: RequestStatus }) {
   );
 }
 
-type ViewMode = "table" | "gantt";
-
 export function RequestsOverview() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [newRequestOpen, setNewRequestOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
-  const isAdmin = isAdminEmail(user?.email) || user?.isAdmin === true;
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(() =>
-    (isAdmin ? getAllRequests() : getMyRequests())
+    getMyRequests()
       .then(setRequests)
       .catch(console.error),
-  [isAdmin]);
+  []);
 
   useEffect(() => {
     refresh().finally(() => setLoading(false));
@@ -157,12 +151,10 @@ export function RequestsOverview() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-0.5">
           <h1 className="text-xl font-semibold tracking-tight">
-            {isAdmin ? "Dashboard" : `Olá, ${name} 👋`}
+            {`Olá, ${name} 👋`}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isAdmin
-              ? "Visão geral de todos os pedidos e solicitações dos clientes."
-              : "Acompanhe seus pedidos, orçamentos e entregas."}
+            Acompanhe seus pedidos, orçamentos e entregas.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -200,7 +192,7 @@ export function RequestsOverview() {
         ))}
       </div>
 
-      {/* Requests table / gantt */}
+      {/* Requests table */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
@@ -213,37 +205,8 @@ export function RequestsOverview() {
                   : `${requests.length} solicitações · clique com botão direito para ações rápidas`}
             </p>
           </div>
-          {!loading && requests.length > 0 && (
-            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
-              <button
-                onClick={() => setViewMode("table")}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  viewMode === "table"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <LayoutList className="size-3.5" />
-                Tabela
-              </button>
-              <button
-                onClick={() => setViewMode("gantt")}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  viewMode === "gantt"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <GanttChartSquare className="size-3.5" />
-                Gantt
-              </button>
-            </div>
-          )}
         </div>
 
-        {viewMode === "gantt" && !loading ? (
-          <AdminGanttView requests={requests} />
-        ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -331,7 +294,6 @@ export function RequestsOverview() {
             </Table>
           )}
         </div>
-        )}
       </div>
     </div>
   );

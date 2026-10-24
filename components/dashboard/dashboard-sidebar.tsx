@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/dashboard/auth-provider";
-import { isAdminEmail } from "@/lib/admin-helpers";
 import {
   Sidebar, SidebarContent, SidebarHeader, SidebarFooter,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton,
@@ -17,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  LayoutDashboard, ShieldCheck, FolderKanban,
+  LayoutDashboard,
   LogOut, ChevronsUpDown, ExternalLink,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -29,16 +28,10 @@ const CLIENT_NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, showBadge: true },
 ];
 
-const ADMIN_NAV: NavItem[] = [
-  { label: "All Requests", href: "/dashboard/admin", icon: ShieldCheck, showBadge: true },
-  { label: "Projects", href: "/dashboard/admin/projects", icon: FolderKanban },
-];
-
 export function DashboardSidebar() {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
-  const isAdmin = isAdminEmail(user?.email);
 
   const avatarUrl = user?.image ?? undefined;
   const fullName  = user?.name ?? user?.email ?? "User";
@@ -108,35 +101,6 @@ export function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
-          <>
-            <SidebarSeparator />
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/30">
-                Admin
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {ADMIN_NAV.map(item => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(item.href)}
-                        tooltip={item.label}
-                      >
-                        <Link href={item.href}>
-                          <item.icon />
-                          <span>{item.label}</span>
-                          <NotificationBadge count={unreadCount} className="ml-auto" />
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
-        )}
       </SidebarContent>
 
       {/* ── Footer ───────────────────────────────────────── */}
@@ -174,11 +138,6 @@ export function DashboardSidebar() {
                 <div className="px-2 py-2 space-y-0.5">
                   <p className="text-xs font-medium text-neutral-200 truncate">{fullName}</p>
                   <p className="text-[10px] text-neutral-600 truncate">{email}</p>
-                  {isAdmin && (
-                    <span className="inline-block text-[9px] font-bold tracking-widest bg-white text-black rounded px-1.5 py-0.5 mt-1">
-                      ADMIN
-                    </span>
-                  )}
                 </div>
                 <DropdownMenuSeparator className="bg-neutral-800" />
                 <DropdownMenuItem asChild

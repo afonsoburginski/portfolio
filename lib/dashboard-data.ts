@@ -1,18 +1,11 @@
 "use server";
 
 import { db } from "./db";
-import { requests, request_attachments, request_comments, request_tasks, request_stages, user_preferences, notifications, user, projects } from "./schema";
+import { requests, request_attachments, request_comments, request_tasks, request_stages, notifications, user, projects } from "./schema";
 import { eq, desc, inArray, and, ne, asc, sql } from "drizzle-orm";
 import { auth } from "./auth";
 import { headers } from "next/headers";
-import type { RequestStatus, RequestType, RequestTaskStatus, ProjectCategory, ProjectStatus } from "./schema";
-import { isAdmin } from "./admin-helpers";
-
-async function requireAdmin() {
-  const u = await currentUser();
-  if (!isAdmin(u)) throw new Error("Forbidden");
-  return u!;
-}
+import type { RequestType, RequestTaskStatus } from "./schema";
 
 async function currentUser() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -29,15 +22,6 @@ export async function getMyRequests() {
     .from(requests)
     .leftJoin(user, eq(requests.user_id, user.id))
     .where(eq(requests.user_id, u.id))
-    .orderBy(desc(requests.created_at));
-  return rows.map(r => ({ ...r.request, profiles: r.user }));
-}
-
-export async function getAllRequests() {
-  const rows = await db
-    .select({ request: requests, user })
-    .from(requests)
-    .leftJoin(user, eq(requests.user_id, user.id))
     .orderBy(desc(requests.created_at));
   return rows.map(r => ({ ...r.request, profiles: r.user }));
 }
@@ -77,50 +61,15 @@ export async function createRequest(payload: {
   return row;
 }
 
-export async function updateRequestAsAdmin(
-  id: string,
-  patch: Partial<{
-    status: RequestStatus;
-    title: string;
-    description: string;
-    type: RequestType;
-    priority: number;
-    budget: string;
-    payment_deadline: string;
-    delivery_deadline: string;
-    admin_notes: string;
-    image_url: string | null;
-    paid_manually: boolean;
-    paid_at: string | null;
-  }>
-) {
-  const updates: Record<string, unknown> = {
-    ...patch,
-    updated_at: new Date().toISOString(),
-  };
-  if (patch.status === "quoted") updates.quoted_at = new Date().toISOString();
-  if (patch.status === "approved") updates.approved_at = new Date().toISOString();
-  if (patch.status === "delivered") updates.delivered_at = new Date().toISOString();
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [row] = await db.update(requests).set(updates as any).where(eq(requests.id, id)).returning();
-  return row;
-}
-
 export async function cancelRequest(id: string) {
+  const u = await currentUser();
+  if (!u) throw new Error("Not authenticated");
   const [row] = await db
     .update(requests)
     .set({ status: "cancelled", updated_at: new Date().toISOString() })
-    .where(eq(requests.id, id))
+    .where(and(eq(requests.id, id), eq(requests.user_id, u.id)))
     .returning();
   return row;
-}
-
-export async function deleteRequest(id: string) {
-  await db.delete(request_comments).where(eq(request_comments.request_id, id));
-  await db.delete(request_attachments).where(eq(request_attachments.request_id, id));
-  await db.delete(request_tasks).where(eq(request_tasks.request_id, id));
-  await db.delete(requests).where(eq(requests.id, id));
 }
 
 export async function respondToQuote(
@@ -128,6 +77,8 @@ export async function respondToQuote(
   status: "approved" | "rejected",
   clientNotes?: string
 ) {
+  const u = await currentUser();
+  if (!u) throw new Error("Not authenticated");
   const patch: Record<string, unknown> = {
     status,
     updated_at: new Date().toISOString(),
@@ -135,24 +86,8 @@ export async function respondToQuote(
   if (clientNotes) patch.client_notes = clientNotes;
   if (status === "approved") patch.approved_at = new Date().toISOString();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [row] = await db.update(requests).set(patch as any).where(eq(requests.id, id)).returning();
+  const [row] = await db.update(requests).set(patch as any).where(and(eq(requests.id, id), eq(requests.user_id, u.id))).returning();
   return row;
-}
-
-export async function changeRequestClient(requestId: string, newUserId: string) {
-  const [row] = await db
-    .update(requests)
-    .set({ user_id: newUserId, updated_at: new Date().toISOString() })
-    .where(eq(requests.id, requestId))
-    .returning();
-  if (!row) throw new Error("Request not found");
-  return row;
-}
-
-// ——— Users / Profiles ———
-
-export async function getAllProfiles() {
-  return db.select().from(user).orderBy(user.name);
 }
 
 // ——— Image upload ———
@@ -160,20 +95,10 @@ export async function getAllProfiles() {
 export async function updateRequestImage(requestId: string, imageUrl: string | null) {
   const u = await currentUser();
   if (!u) throw new Error("Not authenticated");
-  const isAdm = isAdmin(u);
-
-  // Admin pode atualizar qualquer request, usuário só os próprios
-  if (isAdm) {
-    await db
-      .update(requests)
-      .set({ image_url: imageUrl, updated_at: new Date().toISOString() })
-      .where(eq(requests.id, requestId));
-  } else {
-    await db
-      .update(requests)
-      .set({ image_url: imageUrl, updated_at: new Date().toISOString() })
-      .where(and(eq(requests.id, requestId), eq(requests.user_id, u.id)));
-  }
+  await db
+    .update(requests)
+    .set({ image_url: imageUrl, updated_at: new Date().toISOString() })
+    .where(and(eq(requests.id, requestId), eq(requests.user_id, u.id)));
 
   return imageUrl;
 }
@@ -183,15 +108,14 @@ export async function updateRequestImage(requestId: string, imageUrl: string | n
 async function canMutateRequest(requestId: string) {
   const u = await currentUser();
   if (!u) throw new Error("Not authenticated");
-  const isAdm = isAdmin(u);
   const [row] = await db
     .select({ user_id: requests.user_id })
     .from(requests)
     .where(eq(requests.id, requestId))
     .limit(1);
   if (!row) throw new Error("Request not found");
-  if (!isAdm && row.user_id !== u.id) throw new Error("Forbidden");
-  return { user: u, isAdmin: isAdm };
+  if (row.user_id !== u.id) throw new Error("Forbidden");
+  return { user: u };
 }
 
 export async function getRequestAttachments(requestId: string) {
@@ -292,36 +216,6 @@ export async function getRequestStages(requestId: string) {
     .from(request_stages)
     .where(eq(request_stages.request_id, requestId))
     .orderBy(request_stages.position);
-}
-
-export async function getAllStages() {
-  return db
-    .select()
-    .from(request_stages)
-    .orderBy(request_stages.position);
-}
-
-export async function getUserPreference(key: string): Promise<string | null> {
-  const u = await currentUser();
-  if (!u) return null;
-  const [row] = await db
-    .select({ value: user_preferences.value })
-    .from(user_preferences)
-    .where(and(eq(user_preferences.user_id, u.id), eq(user_preferences.key, key)))
-    .limit(1);
-  return row?.value ?? null;
-}
-
-export async function setUserPreference(key: string, value: string): Promise<void> {
-  const u = await currentUser();
-  if (!u) throw new Error("Not authenticated");
-  await db
-    .insert(user_preferences)
-    .values({ user_id: u.id, key, value })
-    .onConflictDoUpdate({
-      target: [user_preferences.user_id, user_preferences.key],
-      set: { value, updated_at: new Date().toISOString() },
-    });
 }
 
 export async function createRequestTask(payload: {
@@ -425,10 +319,9 @@ export async function getRequestComments(requestId: string) {
 export async function addComment(requestId: string, content: string) {
   const u = await currentUser();
   if (!u) throw new Error("Not authenticated");
-  const adminUser = isAdmin(u as { email?: string; isAdmin?: boolean });
   const [row] = await db
     .insert(request_comments)
-    .values({ request_id: requestId, user_id: u.id, content, is_admin: adminUser })
+    .values({ request_id: requestId, user_id: u.id, content, is_admin: false })
     .returning();
   return row;
 }
@@ -447,123 +340,9 @@ export async function getHomeProjects() {
     .orderBy(asc(projects.sort_order));
 }
 
-export async function getAllProjectsAdmin() {
-  await requireAdmin();
-  return db.select().from(projects).orderBy(asc(projects.sort_order));
-}
-
-export async function createProject(payload: {
-  slug: string;
-  title: string;
-  description?: string;
-  image?: string | null;
-  link?: string | null;
-  category?: ProjectCategory;
-  status?: ProjectStatus;
-  featured?: boolean;
-}) {
-  await requireAdmin();
-  const last = await db
-    .select({ max: sql<number>`COALESCE(MAX(${projects.sort_order}), 0)` })
-    .from(projects);
-  const nextOrder = (last[0]?.max ?? 0) + 10;
-  const [row] = await db
-    .insert(projects)
-    .values({
-      slug: payload.slug,
-      title: payload.title,
-      description: payload.description ?? "",
-      image: payload.image ?? null,
-      link: payload.link ?? null,
-      category: payload.category ?? "web",
-      status: payload.status ?? "production",
-      featured: payload.featured ?? true,
-      sort_order: nextOrder,
-    })
-    .returning();
-  return row;
-}
-
-export async function updateProject(
-  id: string,
-  patch: Partial<{
-    slug: string;
-    title: string;
-    description: string;
-    image: string | null;
-    link: string | null;
-    category: ProjectCategory;
-    status: ProjectStatus;
-    featured: boolean;
-    sort_order: number;
-  }>,
-) {
-  await requireAdmin();
-  const [row] = await db
-    .update(projects)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set({ ...(patch as any), updated_at: new Date().toISOString() })
-    .where(eq(projects.id, id))
-    .returning();
-  return row;
-}
-
-export async function deleteProject(id: string) {
-  await requireAdmin();
-  await db.delete(projects).where(eq(projects.id, id));
-}
-
-export async function reorderProjects(orderedIds: string[]) {
-  await requireAdmin();
-  await Promise.all(
-    orderedIds.map((id, idx) =>
-      db
-        .update(projects)
-        .set({ sort_order: (idx + 1) * 10, updated_at: new Date().toISOString() })
-        .where(eq(projects.id, id)),
-    ),
-  );
-}
-
 export async function getProjectBySlug(slug: string) {
   const rows = await db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
   return rows[0] ?? null;
-}
-
-export async function getProjectByIdAdmin(id: string) {
-  await requireAdmin();
-  const rows = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-  return rows[0] ?? null;
-}
-
-export async function updateProjectCaseStudy(
-  id: string,
-  patch: Partial<{
-    subtitle: string | null;
-    role: string | null;
-    timeline: string | null;
-    stack: string | null;
-    live_url: string | null;
-    github_url: string | null;
-    story: string | null;
-    image2: string | null;
-    revenue_note: string | null;
-    extra_images: string;
-    objectives: string;
-    highlights: string;
-    outcomes: string;
-    challenges: string;
-    sections: string;
-  }>,
-) {
-  await requireAdmin();
-  const [row] = await db
-    .update(projects)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set({ ...(patch as any), updated_at: new Date().toISOString() })
-    .where(eq(projects.id, id))
-    .returning();
-  return row;
 }
 
 // ——— Payment helpers ———

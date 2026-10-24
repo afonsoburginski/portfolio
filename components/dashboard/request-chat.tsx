@@ -19,17 +19,16 @@ interface Comment {
 
 interface RequestChatProps {
   requestId: string;
-  isAdmin?: boolean;
 }
 
-function Avatar({ name, isAdmin }: { name: string | null | undefined; isAdmin: boolean }) {
+function Avatar({ name }: { name: string | null | undefined }) {
   const initials = name
     ? name.split(" ").slice(0, 2).map(s => s[0]).join("").toUpperCase()
-    : isAdmin ? "A" : "U";
+    : "U";
   return (
     <div className={cn(
       "size-7 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold",
-      isAdmin ? "bg-purple-500/20 text-purple-300" : "bg-zinc-500/20 text-zinc-300"
+      "bg-zinc-500/20 text-zinc-300"
     )}>
       {initials}
     </div>
@@ -49,7 +48,7 @@ function markdownLinkLabel(label: string) {
   return label.replace(/[\[\]]/g, "").replace(/[()]/g, "-");
 }
 
-export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
+export function RequestChat({ requestId }: RequestChatProps) {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +107,7 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
       id: tempId,
       request_id: requestId,
       user_id: user.id,
-      is_admin: isAdmin,
+      is_admin: false,
       content,
       created_at: new Date().toISOString(),
       optimistic: true,
@@ -226,23 +225,18 @@ export function RequestChat({ requestId, isAdmin = false }: RequestChatProps) {
                   c.optimistic && "opacity-60"
                 )}
               >
-                <Avatar name={c.user?.name} isAdmin={c.is_admin} />
+                <Avatar name={c.user?.name} />
                 <div className={cn("flex flex-col gap-1 max-w-[75%]", mine ? "items-end" : "items-start")}>
                   <div className="flex items-center gap-1.5">
                     {!mine && (
                       <span className="text-[10px] font-medium text-muted-foreground">
-                        {c.user?.name ?? (c.is_admin ? "Admin" : "Usuário")}
-                      </span>
-                    )}
-                    {c.is_admin && (
-                      <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-purple-500/15 text-purple-400 uppercase tracking-wide">
-                        admin
+                        {c.user?.name ?? "Usuário"}
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-end gap-1.5">
-                    {!c.optimistic && (isAdmin || mine) && (
+                    {!c.optimistic && mine && (
                       <button
                         type="button"
                         onClick={() => deleteComment(c.id)}
