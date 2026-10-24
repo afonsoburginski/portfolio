@@ -2,20 +2,13 @@
 import { motion } from "motion/react";
 import { getCalApi } from "@calcom/embed-react";
 import { InfiniteLogos } from "../../ui/infinite-logos";
-import { Spotlight } from "../../ui/spotlight-new";
+import { HeroAsciiBackground } from "../ascii-background";
 import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiPostgresql, SiDocker, SiTypescript, SiReact } from "react-icons/si";
 
 export const HeroMobile = () => {
   return (
     <section className="relative flex flex-col items-center px-4 pt-24 pb-2 overflow-hidden bg-black/[0.96]">
-      {/* Spotlight effect */}
-      <div className="absolute inset-0 w-full h-full">
-        <Spotlight 
-          gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(210, 30%, 90%, .15) 0, hsla(210, 20%, 70%, .08) 50%, hsla(210, 15%, 60%, 0) 80%)"
-          gradientSecond="radial-gradient(50% 50% at 50% 50%, hsla(210, 25%, 88%, .12) 0, hsla(210, 15%, 75%, .06) 80%, transparent 100%)"
-          gradientThird="radial-gradient(50% 50% at 50% 50%, hsla(210, 20%, 85%, .08) 0, hsla(210, 10%, 70%, .04) 80%, transparent 100%)"
-        />
-      </div>
+      <HeroAsciiBackground variant="mobile" />
       <div className="w-full text-center relative z-10 mt-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -32,9 +25,9 @@ export const HeroMobile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-[32px] font-normal text-white mb-4 leading-[1.1] tracking-[-0.02em] font-satoshi px-2"
+          className="text-[28px] font-normal text-white mb-4 leading-[1.1] tracking-[-0.02em] font-satoshi px-2"
         >
-          Engineering complex systems, from architecture to production.
+          Engineering real-time media and distributed platforms, from architecture to production.
         </motion.h1>
 
         <motion.div
