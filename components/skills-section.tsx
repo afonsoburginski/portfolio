@@ -6,31 +6,31 @@ const skillCategories = [
   {
     title: "Streaming & Media",
     skills: [
-      { name: "WebRTC", level: 95 },
-      { name: "HLS / LL-HLS", level: 90 },
-      { name: "FFmpeg", level: 88 },
-      { name: "Video analytics", level: 92 },
-      { name: "Custom players", level: 95 },
+      "WebRTC",
+      "HLS / LL-HLS",
+      "FFmpeg",
+      "Video analytics",
+      "Custom players",
     ]
   },
   {
     title: "Distributed Systems",
     skills: [
-      { name: "NestJS / Node.js", level: 85 },
-      { name: "Kafka", level: 82 },
-      { name: "Redis / BullMQ", level: 80 },
-      { name: "PostgreSQL", level: 78 },
-      { name: "WebSockets", level: 88 },
+      "NestJS / Node.js",
+      "Kafka",
+      "Redis / BullMQ",
+      "PostgreSQL",
+      "WebSockets",
     ]
   },
   {
     title: "Platform Engineering",
     skills: [
-      { name: "Kubernetes", level: 90 },
-      { name: "Docker", level: 75 },
-      { name: "GitOps / Argo CD", level: 85 },
-      { name: "CI/CD", level: 80 },
-      { name: "TypeScript", level: 95 },
+      "Kubernetes",
+      "Docker",
+      "GitOps / Argo CD",
+      "CI/CD",
+      "TypeScript",
     ]
   }
 ];
@@ -73,28 +73,14 @@ export function SkillsSection() {
                 {category.title}
               </h3>
               
-              <div className="space-y-4">
-                {category.skills.map((skill, skillIdx) => (
-                  <div key={skill.name}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-300 font-medium">
-                        {skill.name}
-                      </span>
-                      <span className="text-blue-400 text-sm font-semibold">
-                        {skill.level}%
-                      </span>
-                    </div>
-                    
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${skill.level}%` }}
-                        transition={{ duration: 1, delay: categoryIdx * 0.1 + skillIdx * 0.1 }}
-                        viewport={{ once: true }}
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                      />
-                    </div>
-                  </div>
+              <div className="flex flex-wrap gap-2">
+                {category.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 text-sm font-medium"
+                  >
+                    {skill}
+                  </span>
                 ))}
               </div>
             </motion.div>
