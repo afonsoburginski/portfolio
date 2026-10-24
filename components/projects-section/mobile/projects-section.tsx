@@ -34,7 +34,7 @@ export const ProjectsSectionMobile = ({ projects }: { projects: Project[] }) => 
         </motion.div>
 
         <Masonry
-          items={toMasonryItems(projects)}
+          items={toMasonryItems(projects, 750)}
           columns={1}
           gap={12}
           radius={8}
