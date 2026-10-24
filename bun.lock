@@ -8,6 +8,8 @@
         "@aws-sdk/client-s3": "^3.658.0",
         "@better-auth/drizzle-adapter": "^1.5.3",
         "@calcom/embed-react": "^1.5.3",
+        "@hugeicons/core-free-icons": "^4.3.5",
+        "@hugeicons/react": "^1.1.10",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-slot": "^1.2.3",
         "@tanstack/react-table": "^8.21.3",
@@ -259,6 +261,10 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
 
     "@hono/node-server": ["@hono/node-server@1.19.9", "", { "peerDependencies": { "hono": "^4" } }, "sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw=="],
+
+    "@hugeicons/core-free-icons": ["@hugeicons/core-free-icons@4.3.5", "", {}, "sha512-Sv+NjHRPnQk+yZsGCMcGznCHdTfJR9PMMOEKcJYAQU4gy90dmlc9PwdtvYOImBZIjiheMsTLL5eMn2DmHxUiUg=="],
+
+    "@hugeicons/react": ["@hugeicons/react@1.1.10", "", { "peerDependencies": { "react": ">=16.0.0" } }, "sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.1", "", {}, ""],
 
