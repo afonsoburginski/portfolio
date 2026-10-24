@@ -1,27 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Trophy, Zap, Star, Code, Shield, TrendingUp } from "lucide-react";
-import { SiWebrtc, SiFfmpeg, SiApachekafka, SiKubernetes, SiRedis, SiNestjs, SiPostgresql, SiDocker, SiTypescript, SiGithub, SiCloudflare, SiReact } from "react-icons/si";
+import { Database, Shield, TrendingUp, Zap } from "lucide-react";
+import { coreSkills, stackIcons, toolsAndPlatforms } from "@/lib/stack-icons";
 import Image from "next/image";
-
-const skills = [
-  { name: "WebRTC", icon: SiWebrtc },
-  { name: "FFmpeg", icon: SiFfmpeg },
-  { name: "Kafka", icon: SiApachekafka },
-  { name: "Kubernetes", icon: SiKubernetes },
-  { name: "Redis", icon: SiRedis },
-  { name: "NestJS", icon: SiNestjs },
-  { name: "PostgreSQL", icon: SiPostgresql },
-];
-
-const tools = [
-  { name: "TypeScript", icon: SiTypescript },
-  { name: "Git & GitHub", icon: SiGithub },
-  { name: "Docker", icon: SiDocker },
-  { name: "Cloudflare", icon: SiCloudflare },
-  { name: "React Native", icon: SiReact }
-];
+import type { CSSProperties } from "react";
 
 const experiences = [
   {
@@ -30,9 +13,9 @@ const experiences = [
     period: "Mar 2026 - Present",
     description: "Architecture and delivery of real-time video streaming and distributed video analytics in a large-scale video monitoring platform: low-latency delivery with WebRTC and HLS / LL-HLS, event-driven analytics on Kafka, and NestJS, PostgreSQL, Redis / BullMQ and WebSocket services with integration testing and quality gates.",
     highlights: [
-      { text: "WebRTC / LL-HLS streaming", icon: Star },
-      { text: "NestJS microservices", icon: Code },
-      { text: "Kubernetes & CI/CD", icon: Trophy }
+      { text: "WebRTC / LL-HLS streaming", ...stackIcons.webrtc },
+      { text: "NestJS microservices", ...stackIcons.nestjs },
+      { text: "Kafka analytics", ...stackIcons.kafka }
     ]
   },
   {
@@ -41,9 +24,10 @@ const experiences = [
     period: "Nov 2023 - Mar 2026",
     description: "Designed and delivered business systems and mobile workflows with Next.js, React Native, PostgreSQL / Supabase and near-real-time operations, plus operational tooling for factory processes, including Kotlin Multiplatform components and automated CAD export.",
     highlights: [
-      { text: "Near-real-time operations", icon: TrendingUp },
-      { text: "Kotlin Multiplatform", icon: Code },
-      { text: "GEM ERP", icon: Star }
+      { text: "Next.js workflows", ...stackIcons.nextjs },
+      { text: "React Native", ...stackIcons.reactNative },
+      { text: "Kotlin Multiplatform", ...stackIcons.kotlin },
+      { text: "PostgreSQL / Supabase", ...stackIcons.postgresql }
     ]
   },
   {
@@ -52,9 +36,10 @@ const experiences = [
     period: "Jan 2020 - Mar 2026",
     description: "Designed and built Stormzplus, an independent video streaming product with a React Native mobile app, a Next.js web app and a Tauri / Vite desktop tool for administration and media processing, including the pipeline from chunked uploads and FFmpeg transcoding to multi-bitrate HLS on Cloudflare R2 and CDN. Also designed and delivered full-stack systems for external clients, with end-to-end technical ownership.",
     highlights: [
-      { text: "Stormzplus streaming pipeline", icon: Trophy },
-      { text: "Web, mobile & desktop", icon: Star },
-      { text: "Full-stack client systems", icon: Zap }
+      { text: "Stormzplus streaming pipeline", ...stackIcons.ffmpeg },
+      { text: "React Native mobile", ...stackIcons.reactNative },
+      { text: "Next.js web", ...stackIcons.nextjs },
+      { text: "Cloudflare R2 & CDN", ...stackIcons.cloudflare }
     ]
   },
   {
@@ -63,9 +48,9 @@ const experiences = [
     period: "Sep 2022 - Apr 2023",
     description: "React Native app for hospital management: biometric auth, real-time dashboards, offline-first forms for medical records and scheduling. Performance focus — virtualized lists, memoization, efficient API usage.",
     highlights: [
-      { text: "React Native", icon: Code },
-      { text: "Offline-first", icon: Zap },
-      { text: "Hospital system", icon: Shield }
+      { text: "React Native", ...stackIcons.reactNative },
+      { text: "Offline-first", icon: Zap, color: "#A1A1AA" },
+      { text: "Hospital system", icon: Shield, color: "#A1A1AA" }
     ]
   },
   {
@@ -74,9 +59,9 @@ const experiences = [
     period: "Jan 2021 - Sep 2022",
     description: "High-fidelity interfaces with Next.js and React for ISP management (customers, billing, support). Legacy system rebuild in TypeScript and REST API; backend in Laravel. CI/CD with Git/GitLab (Git Flow), agile (Scrum/Kanban).",
     highlights: [
-      { text: "Next.js & React", icon: Code },
-      { text: "CI/CD", icon: Zap },
-      { text: "Legacy rebuild", icon: TrendingUp }
+      { text: "Next.js & React", ...stackIcons.nextjs },
+      { text: "CI/CD", icon: Zap, color: "#A1A1AA" },
+      { text: "Legacy rebuild", icon: TrendingUp, color: "#A1A1AA" }
     ]
   },
   {
@@ -85,9 +70,9 @@ const experiences = [
     period: "Jan 2019 - Oct 2020",
     description: "PostgreSQL databases, schema design, query optimization. Report layouts for financial and operational reporting.",
     highlights: [
-      { text: "PostgreSQL", icon: Shield },
-      { text: "Database modeling", icon: Code },
-      { text: "Reporting", icon: TrendingUp }
+      { text: "PostgreSQL", ...stackIcons.postgresql },
+      { text: "Database modeling", icon: Database, color: "#A1A1AA" },
+      { text: "Reporting", icon: TrendingUp, color: "#A1A1AA" }
     ]
   }
 ];
@@ -133,7 +118,7 @@ export function AboutSectionDesktop() {
           </motion.div>
 
           {/* Main Layout: Skills (Left) | Timeline (Center) | Tools (Right) */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.2fr_1fr] gap-12 items-start">
+          <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_minmax(0,2.6fr)_minmax(0,1fr)] gap-12 items-start">
             {/* LEFT COLUMN - Skills */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -145,7 +130,7 @@ export function AboutSectionDesktop() {
               <div>
                 <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-6 text-opacity-60 text-white/60">Core Skills</h3>
                 <div className="space-y-2.5">
-                  {skills.map((skill, index) => {
+                  {coreSkills.map((skill, index) => {
                     const IconComponent = skill.icon;
                     return (
                       <motion.div
@@ -155,10 +140,11 @@ export function AboutSectionDesktop() {
                         transition={{ duration: 0.4, delay: 0.15 + index * 0.03 }}
                         viewport={{ once: true }}
                         whileHover={{ x: 8, transition: { duration: 0.2 } }}
-                        className="px-3 py-2 bg-[#0d0d0d] rounded-lg text-white text-sm font-sans hover:bg-white/10 transition-all duration-300 cursor-default group w-fit flex items-center gap-2"
+                        style={{ "--brand-glow": `${skill.color}55` } as CSSProperties}
+                        className="px-3 py-2 bg-[#0d0d0d] rounded-lg border border-white/10 text-white/80 text-sm font-sans hover:bg-white/10 hover:shadow-[0_0_14px_var(--brand-glow)] transition-[background-color,box-shadow] duration-200 cursor-default w-fit flex items-center gap-2"
                       >
-                        <IconComponent size={14} className="text-white/60 group-hover:text-white/80" />
-                        <span className="group-hover:text-white/80">{skill.name}</span>
+                        <IconComponent size={14} style={{ color: skill.color }} aria-hidden="true" />
+                        <span>{skill.name}</span>
                       </motion.div>
                     );
                   })}
@@ -179,7 +165,7 @@ export function AboutSectionDesktop() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
-                className="text-white text-sm font-semibold font-sans uppercase tracking-wider mb-8 text-center text-opacity-60 text-white/60"
+                className="text-white text-sm font-semibold font-sans uppercase tracking-wider mb-8 text-left 2xl:text-center text-white/60"
               >
                 Professional Journey
               </motion.h3>
@@ -187,25 +173,24 @@ export function AboutSectionDesktop() {
               {/* Timeline Container */}
               <div className="relative">
                 {/* Vertical gradient line */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-white/40 via-white/15 to-transparent" />
+                <div className="absolute left-[7px] 2xl:left-1/2 top-2 bottom-2 w-px bg-gradient-to-b from-[#1f6feb] via-[#8957e5] to-[#1f6feb]/20" />
 
                 {/* Timeline Items */}
-                <div className="space-y-6">
+                <div className="flex flex-col gap-6">
                   {experiences.map((exp, index) => (
                     <motion.div
-                      key={index}
+                      key={exp.company}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.25 + index * 0.08 }}
                       viewport={{ once: true }}
-                      className="group relative"
+                      className="group relative pl-9 2xl:pl-0"
                     >
-                      {/* Alternating layout: odd left, even right */}
-                      <div className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-                        <div className="w-5/12">
+                      <div className="2xl:grid 2xl:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)] 2xl:items-start">
+                        <div className={`min-w-0 ${index % 2 === 0 ? "2xl:col-start-1 2xl:row-start-1" : "2xl:col-start-3 2xl:row-start-1"}`}>
                           <motion.div
                             whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(255,255,255,0.05)" }}
-                            className="p-4 bg-gradient-to-r from-white/4 to-transparent rounded-lg border border-white/8 group-hover:border-white/15 transition-all duration-300 backdrop-blur-sm"
+                            className={`p-4 bg-gradient-to-r from-white/4 to-transparent rounded-lg border border-white/10 group-hover:border-white/20 transition-colors duration-200 backdrop-blur-sm ${index === 0 ? "border-[#1f6feb]/40" : ""}`}
                           >
                             {/* Role & Company */}
                             <div className="mb-2.5">
@@ -229,9 +214,9 @@ export function AboutSectionDesktop() {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.2, delay: idx * 0.05 }}
                                     viewport={{ once: true }}
-                                    className="text-white/60 text-xs font-sans px-1.5 py-1 bg-[#0d0d0d] rounded-sm hover:bg-white/8 transition-all duration-300 w-fit flex items-center gap-1"
+                                    className="text-white/60 text-xs font-sans px-1.5 py-1 bg-[#0d0d0d] rounded-sm w-fit flex items-center gap-1"
                                   >
-                                    <IconComponent size={12} className="text-white/50" />
+                                    <IconComponent size={12} style={{ color: highlight.color }} aria-hidden="true" />
                                     {highlight.text}
                                   </motion.span>
                                 );
@@ -239,24 +224,14 @@ export function AboutSectionDesktop() {
                             </div>
                           </motion.div>
                         </div>
+                        <div className={`mt-2.5 text-white/50 text-xs font-sans 2xl:row-start-1 2xl:mt-4 2xl:px-4 ${index % 2 === 0 ? "2xl:col-start-3" : "2xl:col-start-1 2xl:text-right"}`}>
+                          <span className={`inline-flex rounded-full border px-2.5 py-1 whitespace-nowrap ${index === 0 ? "border-[#1f6feb]/50 bg-[#1f6feb]/10 text-[#79adff]" : "border-white/10 bg-white/5"}`}>
+                            {exp.period}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Timeline Dot - Center */}
-                      <motion.div
-                        whileHover={{ scale: 1.3 }}
-                        className="absolute left-1/2 transform -translate-x-1/2 top-5 w-3.5 h-3.5 rounded-full bg-neutral-600 group-hover:bg-white/90 transition-all duration-300 border border-white/40 group-hover:border-white shadow-[0_0_0_4px_#000000] cursor-pointer z-10"
-                      />
-
-                      {/* Period Badge - Positioned at timeline dot */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
-                        viewport={{ once: true }}
-                        className="absolute left-1/2 transform -translate-x-1/2 top-12 text-white/40 text-xs font-sans whitespace-nowrap"
-                      >
-                        {exp.period}
-                      </motion.div>
+                      <span className={`absolute left-0 2xl:left-1/2 2xl:-translate-x-1/2 top-5 size-3.5 rounded-full border-2 border-black ring-[3px] ring-black ${index === 0 ? "bg-[#1f6feb] shadow-[0_0_0_4px_#1f6feb44] motion-safe:animate-pulse" : "bg-[#8957e5]"}`} aria-hidden="true" />
                     </motion.div>
                   ))}
                 </div>
@@ -272,9 +247,9 @@ export function AboutSectionDesktop() {
               className="space-y-4"
             >
               <div>
-                <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-6 text-opacity-60 text-white/60 text-right">Tools & Platforms</h3>
+                <h3 className="text-white text-xs font-semibold font-sans uppercase tracking-wider mb-6 text-white/60 2xl:text-right">Tools & Platforms</h3>
                 <div className="space-y-2.5">
-                  {tools.map((tool, index) => {
+                  {toolsAndPlatforms.map((tool, index) => {
                     const IconComponent = tool.icon;
                     return (
                       <motion.div
@@ -284,10 +259,11 @@ export function AboutSectionDesktop() {
                         transition={{ duration: 0.4, delay: 0.15 + index * 0.03 }}
                         viewport={{ once: true }}
                         whileHover={{ x: -8, transition: { duration: 0.2 } }}
-                        className="px-3 py-2 bg-[#0d0d0d] rounded-lg text-white text-sm font-sans hover:bg-white/10 transition-all duration-300 cursor-default group w-fit ml-auto flex items-center gap-2"
+                        style={{ "--brand-glow": `${tool.color}55` } as CSSProperties}
+                        className="px-3 py-2 bg-[#0d0d0d] rounded-lg border border-white/10 text-white/80 text-sm font-sans hover:bg-white/10 hover:shadow-[0_0_14px_var(--brand-glow)] transition-[background-color,box-shadow] duration-200 cursor-default w-fit 2xl:ml-auto flex items-center gap-2"
                       >
-                        <IconComponent size={14} className="text-white/60 group-hover:text-white/80" />
-                        <span className="group-hover:text-white/80">{tool.name}</span>
+                        <IconComponent size={14} style={{ color: tool.color }} aria-hidden="true" />
+                        <span>{tool.name}</span>
                       </motion.div>
                     );
                   })}
