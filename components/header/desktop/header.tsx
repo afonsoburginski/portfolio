@@ -16,12 +16,27 @@ export const HeaderDesktop = () => {
       cal("ui", { theme: "dark" });
     })();
 
+    // Read every possible scroll source and listen in the capture phase, so the
+    // blurred bar is applied even when the page scrolls inside another container
+    // (otherwise the hero headline slides under a transparent nav).
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const y = Math.max(window.scrollY, document.documentElement.scrollTop, document.body.scrollTop);
+      setScrolled(y > 8);
+    };
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      if (!frame) frame = requestAnimationFrame(update);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    update();
+    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
+    window.addEventListener("pageshow", handleScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("pageshow", handleScroll);
+    };
   }, []);
 
   return (
