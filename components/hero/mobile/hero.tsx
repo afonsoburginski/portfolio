@@ -27,7 +27,7 @@ export const HeroMobile = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-[28px] font-normal text-white mb-4 leading-[1.1] tracking-[-0.02em] font-satoshi px-2"
         >
-          Engineering real-time media and distributed platforms, from architecture to production.
+          Real-time video and distributed systems, built to run in production.
         </motion.h1>
 
         <motion.div

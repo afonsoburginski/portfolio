@@ -28,7 +28,7 @@ export const HeroDesktop = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[40px] md:text-[52px] lg:text-[64px] font-normal text-white mb-4 leading-[1.03] tracking-[-0.02em] font-satoshi"
         >
-          Engineering real-time media and distributed platforms, from architecture to production.
+          Real-time video and distributed systems, built to run in production.
         </motion.h1>
 
         <motion.div
