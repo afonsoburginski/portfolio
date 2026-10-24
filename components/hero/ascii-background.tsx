@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const GradientASCII = dynamic(() => import("../ui/gradient-ascii"), { ssr: false });
 
-const COLORS = ["#0b1220", "#1f6feb", "#8957e5"];
+const COLORS = ["#06101f", "#1f6feb", "#2dd4bf"];
 
 export const HeroAsciiBackground = ({ variant }: { variant: "desktop" | "mobile" }) => {
   const [reducedMotion, setReducedMotion] = useState(false);
