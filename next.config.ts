@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/new", destination: "/dashboard", permanent: false },
     ];
   },
+  async headers() {
+    // Consent and owner pages must never be framed (clickjacking) or leak their query string.
+    const guarded = [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "Referrer-Policy", value: "no-referrer" },
+      { key: "Cache-Control", value: "no-store" },
+    ];
+    return [
+      { source: "/oauth/:path*", headers: guarded },
+      { source: "/api/oauth/authorize", headers: guarded },
+      { source: "/api/linkedin/:path*", headers: guarded },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     // Optimized images are immutable per source key (project images get a new
