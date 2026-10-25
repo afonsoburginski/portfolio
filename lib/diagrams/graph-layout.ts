@@ -188,8 +188,8 @@ const LAYOUT_OPTIONS = {
   "elk.edgeRouting": "ORTHOGONAL",
   "elk.json.edgeCoords": "ROOT",
   "elk.json.shapeCoords": "ROOT",
-  "elk.spacing.nodeNode": "36",
-  "elk.layered.spacing.nodeNodeBetweenLayers": "72",
+  "elk.spacing.nodeNode": "30",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "56",
   "elk.layered.spacing.edgeNodeBetweenLayers": "24",
   "elk.layered.spacing.edgeEdgeBetweenLayers": "14",
   "elk.spacing.edgeEdge": "14",
@@ -255,11 +255,16 @@ async function runElk(model: GraphModel, vertical: boolean): Promise<GraphLayout
 
 const cache = new Map<string, GraphLayout>();
 const ELK_TIMEOUT_MS = 4000;
-const WIDE = 900;
+const READABLE_W = 780; // typical figure width in the article column
+const MAX_H = 1100;
+
+/** How well a layout reads at article width: 1 is full size, lower means shrunk text or a very tall figure. */
+const readability = (l: GraphLayout) => Math.min(1, READABLE_W / l.width, MAX_H / l.height);
 
 /**
  * Lays a graph out: manual coordinates when every node has them, otherwise ELK, otherwise the grid fallback.
- * Never throws. `auto` direction tries left-to-right first and switches to top-down when that is much narrower.
+ * Never throws. `auto` direction lays out both ways and keeps the one that reads better at article width
+ * (left-to-right wins ties, since it is the natural reading order for flows).
  */
 export async function layoutGraph(model: GraphModel): Promise<GraphLayout> {
   if (model.nodes.every((n) => n.x !== undefined && n.y !== undefined)) return manualLayout(model);
@@ -270,12 +275,13 @@ export async function layoutGraph(model: GraphModel): Promise<GraphLayout> {
     const run = async () => {
       if (model.direction === "down") return runElk(model, true);
       const right = await runElk(model, false);
-      if (model.direction === "right" || right.width <= WIDE) return right;
+      if (model.direction === "right" || readability(right) >= 0.95) return right;
       const down = await runElk(model, true);
-      return down.width < right.width * 0.85 ? down : right;
+      return readability(down) > readability(right) * 1.15 ? down : right;
     };
-    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("ELK timeout")), ELK_TIMEOUT_MS).unref?.());
-    const laid = await Promise.race([run(), timeout]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("ELK timeout")), ELK_TIMEOUT_MS); });
+    const laid = await Promise.race([run(), timeout]).finally(() => clearTimeout(timer));
     if (cache.size > 100) cache.clear();
     cache.set(key, laid);
     return laid;

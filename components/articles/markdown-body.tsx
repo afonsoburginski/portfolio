@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { SiCloudflare } from "react-icons/si";
 import { Diagram } from "./diagrams";
+import { DeclarativeDiagram } from "./diagrams/declarative-diagram";
+import { isDeclarative } from "@/lib/diagrams/validate";
 import { CLOUDFLARE_ORANGE } from "./diagram-kit";
 import { slugify } from "./slug";
 
@@ -114,7 +116,8 @@ export function MarkdownBody({ body }: { body: string }) {
         pre: ({ children }) => {
           const el = Array.isArray(children) ? children[0] : children;
           if (isValidElement<{ className?: string; children?: ReactNode }>(el) && /language-diagram/.test(el.props.className ?? "")) {
-            return <Diagram id={textOf(el.props.children).trim()} />;
+            const source = textOf(el.props.children).trim();
+            return isDeclarative(source) ? <DeclarativeDiagram source={source} /> : <Diagram id={source} />;
           }
           if (isValidElement<{ className?: string; children?: ReactNode }>(el) && /language-logos/.test(el.props.className ?? "")) {
             const ids = textOf(el.props.children).split(/\s+/).filter(isLogo);

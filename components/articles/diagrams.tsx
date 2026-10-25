@@ -217,6 +217,8 @@ const DIAGRAMS: Record<string, () => React.JSX.Element> = {
   ...REALTIME_DIAGRAMS,
 };
 
+export const LEGACY_DIAGRAM_IDS = Object.keys(DIAGRAMS);
+
 export function Diagram({ id }: { id: string }) {
   const Component = DIAGRAMS[id];
   return Component ? <Component /> : null;
