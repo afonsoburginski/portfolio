@@ -1,213 +1,139 @@
 ---
-title: "Streaming That Scales: HLS, LL-HLS or WebRTC?"
-subtitle: "How I choose a delivery path before the audience grows: from a handful of operators to a very large number of viewers."
+title: "Video Delivery Like Netflix and Prime Video: HLS, LL-HLS or WebRTC?"
+subtitle: "The decisions behind streaming to millions, and how I apply them to my own pipelines on Cloudflare R2 and CDN."
 slug: "delivery-path"
 date: "2026-10-24"
-description: "A decision framework for video delivery: latency, audience size and operational burden, across three very different systems."
+description: "How the big streaming platforms think about video delivery, and the framework I use for my own systems: latency, audience size and operational burden."
 ---
 
-Video delivery decisions are often framed as protocol comparisons. HLS offers scalability, LL-HLS reduces live latency, and WebRTC supports real-time communication.
+I have never run a platform like Netflix or Prime Video, and I don't have their scale. What I can do is read how they and the cloud vendors describe their choices, and use the same questions on the systems I do build.
 
-All three statements are useful. None tells me which architecture to build.
+Those questions are short. How late can the picture be? How many people watch the same stream? How much infrastructure can I keep running? The protocol (HLS, LL-HLS or WebRTC) falls out of the answers, not the other way around.
 
-When I own the media pipeline, I start with three constraints: **the latency the experience actually requires, the number of viewers watching the same stream, and the operational complexity I can realistically support.**
+I'll use three of my own systems as examples: Stormzplus, a video product I built; Studio, which is still in development; and live camera monitoring, which I describe in general terms only.
 
-My work on Stormzplus, its open-source FFmpeg transcoder, and the in-development Studio platform provides different perspectives on this problem. Large-scale video monitoring introduces another set of questions, particularly when viewers need to react to live events.
+## What the big platforms actually do
 
-The important distinction is that not every video system has the same delivery problem.
+I checked each of these against the vendor's own documentation. I left out everything I couldn't source.
 
-I want to explain how I evaluate those differences, where each protocol fits, and what evidence I would require before calling a decision successful.
+- **Netflix puts servers inside ISPs.** Through Open Connect, Netflix offers qualifying ISPs appliances that "can be embedded in your ISP network", and each one offloads Netflix traffic from the ISP's peering and transit links. The lesson for me is that the biggest players move the bytes closer to the viewer. See [Netflix Open Connect](https://openconnect.netflix.com/en/).
+- **Cloudflare sells both paths, and says they don't mix yet.** Stream delivers video with adaptive bitrate ([Cloudflare Stream docs](https://developers.cloudflare.com/stream/)). Its WebRTC option (WHIP to send, WHEP to watch) advertises under 500 ms of latency. In the same page, when I read it, live HLS playback and recording were "not yet supported" for those streams ([Stream WebRTC docs](https://developers.cloudflare.com/stream/webrtc-beta/)). Low delay and the cheap, cacheable path were two separate products.
+- **Amazon IVS splits them too.** Its docs list "low latency" channels under 5 seconds and "real-time" stages under 300 ms, and they say a traditional stream can be as much as 30 seconds behind ([Amazon IVS docs](https://docs.aws.amazon.com/ivs/latest/LowLatencyUserGuide/what-is.html)). Three tiers, three price and complexity levels.
+
+None of this tells me how Netflix or Prime Video build their players or their live stack, so I won't guess. What I take from it is the habit: they pick a tier per use case instead of one protocol for everything.
 
 ## Start with latency: how fast must the viewer see it?
 
-Before choosing a protocol, I ask:
+Ask one question first: what happens if the picture is late?
 
-**How fast does the viewer actually need to see the video, and what happens if that requirement is not met?**
+A movie can sit behind a buffer of many seconds, and nobody cares. A camera at a building entrance is different. If the operator sees the person at the door ten seconds late, the video is useless for opening it.
 
-This question sounds simple, but it separates several fundamentally different requirements.
+So I separate three things:
 
-For video on demand (VoD), I care about startup time, buffering, seeking, adaptive quality, and playback reliability. The video already exists. There is no live source to catch up with.
+- **Startup time:** how long until playback begins.
+- **Glass-to-glass latency:** the time from the camera capturing a frame to the viewer seeing it.
+- **Stability:** a very low latency is worthless if the player stalls every minute.
 
-For a live broadcast, the delay between capture and presentation becomes relevant. But the viewer may still tolerate a meaningful buffer if that produces more stable playback.
+The three options, in one line each:
 
-For an interactive monitoring interface, a delay might affect an operator's ability to respond to an event. The acceptable delay depends on the task, not on the fact that the content is live.
+- **HLS** cuts the video into small files (segments) and lists them in a playlist the player downloads over plain HTTP. It handles live, on-demand and adaptive quality. See [RFC 8216](https://www.rfc-editor.org/rfc/rfc8216.html).
+- **LL-HLS** is HLS where the server publishes partial segments, pieces of a segment that aren't finished yet, and the player can ask the server to hold a playlist request until the next piece exists. Same HTTP, less waiting. See [Apple's Low-Latency HLS documentation](https://developer.apple.com/documentation/http-live-streaming/enabling-low-latency-http-live-streaming-hls).
+- **WebRTC** is the real-time technology behind video calls in the browser. It needs signaling and a connectivity step I explain below. See the [W3C WebRTC specification](https://www.w3.org/TR/webrtc/) and [RFC 8825](https://www.rfc-editor.org/rfc/rfc8825.html).
 
-These are different optimization targets.
-
-I distinguish **startup latency** from **glass-to-glass latency**. The former measures how long playback takes to begin. The latter measures the delay from capturing a live frame to displaying it to the viewer.
-
-I also separate both from reliability. An aggressive live-latency target is not particularly useful if playback repeatedly stalls.
-
-The alternatives have different characteristics:
-
-- **HLS** uses HTTP-delivered playlists and media segments. It supports live and on-demand playback, multiple variants, and adaptive bitrate selection. See [RFC 8216](https://www.rfc-editor.org/rfc/rfc8216.html).
-- **LL-HLS** extends HLS with mechanisms such as partial segments, blocking playlist reload, and preload hints to reduce live delivery delay while retaining HTTP-based distribution. See [Apple's Low-Latency HLS documentation](https://developer.apple.com/documentation/http-live-streaming/enabling-low-latency-http-live-streaming-hls).
-- **WebRTC** provides browser-oriented real-time communication capabilities, including media transport negotiated through peer connections. It introduces different requirements around connectivity, session establishment, and media distribution. See the [W3C WebRTC specification](https://www.w3.org/TR/webrtc/) and [RFC 8825](https://www.rfc-editor.org/rfc/rfc8825.html).
-
-None is universally better.
-
-The fastest delivery mechanism is rarely the complete requirement. My objective is to meet the actual latency target without accepting unnecessary complexity elsewhere.
+The fastest option is rarely the one I need. I want the latency the product requires, and no extra complexity beyond that.
 
 ## Pre-compute once, serve from the edge: HLS and CDN for VoD
 
-Stormzplus was my independent subscription video product, developed during 2024–2025. Its delivery architecture used HLS, Cloudflare R2 object storage, and CDN distribution.
+```logos
+cloudflare
+```
 
-The central problem was straightforward: accept uploaded videos, prepare them for playback at different connection qualities, and make them available through web and mobile applications.
+Stormzplus was my own subscription video product, built in 2024 and 2025. Videos go through the pipeline once. After that, every viewer just downloads files.
 
-This is a case where I wanted media processing and media delivery to be separate concerns.
+The flow is: upload, transcode, package as multi-bitrate HLS, store in :cloudflare: Cloudflare R2, serve through a CDN, play.
 
-The pipeline followed this general sequence:
+A Go service runs FFmpeg with NVIDIA NVENC and produces several resolutions and bitrates. An uploaded file is not yet something a phone on a weak connection can play. The master playlist lists the variants, and the player switches between them as the network changes. FFmpeg's [transcoding docs](https://ffmpeg.org/ffmpeg.html#Transcoding) and [HLS muxer docs](https://ffmpeg.org/ffmpeg-formats.html#hls-2) cover the details. Switching doesn't remove buffering. Encoder settings, segment alignment and the player still matter.
 
-**Upload → Transcode → Multi-bitrate HLS packaging → Object storage → CDN → Player**
+Published files get immutable keys. When a video changes, I publish new keys instead of hoping a cache invalidation reaches every edge.
 
-The processing side used a Go service to orchestrate FFmpeg with NVIDIA NVENC, producing HLS renditions at multiple resolutions and bitrates.
-
-That matters because uploading a source file is not equivalent to creating a suitable playback asset.
-
-Different devices, network conditions, and bandwidth availability can require different encoded representations. FFmpeg provides the decoding, filtering, encoding, and packaging capabilities to produce those representations. Its [transcoding documentation](https://ffmpeg.org/ffmpeg.html#Transcoding) and [HLS muxer documentation](https://ffmpeg.org/ffmpeg-formats.html#hls-2) describe the relevant mechanisms.
-
-The resulting HLS master playlist references variant streams, allowing a compatible player to select among them as conditions change.
-
-That does not eliminate buffering or guarantee seamless adaptation. Rendition compatibility, segment alignment, encoder configuration, and player behavior still matter.
-
-For delivery, the packaged assets were published to Cloudflare R2 and distributed through a CDN.
-
-I used immutable asset keys and cache headers as part of the design. Immutable media paths make caching and version management easier to reason about: when content changes, publishing new asset keys avoids relying exclusively on invalidating previously cached media.
-
-For repeatable on-demand playback, this architecture has an important property: **the expensive transcoding work can happen before viewers request the video.**
-
-The CDN can then serve existing media objects without requiring a dedicated real-time media session for every viewer.
-
-That is why HLS made sense for Stormzplus.
+The key property is that **the expensive work happens before anyone presses play.** The CDN serves ordinary files, and no viewer needs a live media session. That is why HLS fit this product.
 
 ```diagram
 pipeline
 ```
 
-The player experience was also part of the system. On the web, I built a custom player supporting captions and playback resumption.
-
-On mobile, the React Native/Expo application used `react-native-video` for native HLS playback and shared the backend with the web application.
-
-This gave me two different client environments consuming the same underlying media delivery model.
+On the web I wrote a custom player with captions and resume. The React Native/Expo app uses `react-native-video` for native HLS and shares the backend.
 
 ### The open-source transcoder
 
-I also extracted a related study case into the public [nextjs-ffmpeg-transcoder repository](https://github.com/afonsoburginski/nextjs-ffmpeg-transcoder).
+I extracted a study case from this work into the public [nextjs-ffmpeg-transcoder repository](https://github.com/afonsoburginski/nextjs-ffmpeg-transcoder):
 
-It demonstrates the pipeline with explicit responsibilities:
+- A Go upload server with `/upload`, `/progress` and `/health` streams multipart uploads to temporary storage.
+- A Next.js admin app drives local FFmpeg and FFprobe.
+- FFmpeg produces multi-bitrate HLS and a master playlist, with NVENC when available and a CPU fallback.
+- Output goes to R2, and public URLs are built from a configurable CDN base URL.
 
-- A Go upload server exposes `/upload`, `/progress`, and `/health`, streaming multipart uploads to temporary storage.
-- A Next.js administrative application orchestrates local FFmpeg/FFprobe processing.
-- FFmpeg produces multi-bitrate HLS variants and a master playlist, with optional NVENC acceleration and CPU fallback.
-- Generated assets are published to R2, and public URLs are constructed using a configurable CDN base URL.
+Jobs move through `queued → uploading → encoding → publishing → ready`, because transcoding takes time and the UI has to show it.
 
-The interface uses Zustand to manage upload queues and status. Its documented lifecycle is:
-
-`queued → uploading → encoding → publishing → ready`
-
-This state model is important because transcoding is not an instantaneous request-response operation.
-
-However, the repository is a **study case, not a production-ready reference implementation**. Its documented hardening needs include observability, retries, compensation, endpoint security, DRM or encryption, subtitle handling, and CDN configuration.
-
-Those boundaries matter more than promotional claims about upload capacity or performance.
+It is a study case, not a production reference. Its own notes list what is missing: observability, retries, compensation, endpoint security, DRM or encryption, subtitles and CDN configuration.
 
 ### What still needs validation
 
-I would not infer CDN efficiency or predictable operating costs merely from the presence of R2 and a CDN.
-
-I would validate playback startup, rebuffering, adaptation behavior, cache effectiveness, encoding throughput, and end-to-end delivery costs using a documented measurement method.
-
-Until those measurements exist, the architectural rationale is defensible, but quantitative performance claims are not.
+Having R2 and a CDN doesn't prove the cache works well or that costs stay low. I would measure startup time, rebuffering, rendition switching, cache hits, encoding throughput and delivery cost, with the method written down. Until then the design is reasonable, and the numbers are unknown.
 
 ## When delivery isn't the bottleneck: orchestrating async media
 
-Studio is a scene-based workspace for generating and processing images, video, voice, and sound.
+Studio is a scene-based workspace for generating images, video, voice and sound. It is in development. The public preview and model catalog exist, but they say nothing about production scale.
 
-Studio is in development. Its public pre-launch preview and model catalog are available, but they are not evidence of production-scale operation.
+Its hard problem isn't delivery. A generated video can take a while because an outside provider does the work. The app has to remember what it asked for, track the state, match the result to the right request, and then handle the file.
 
-The engineering problem is different from Stormzplus.
+HLS or WebRTC solves none of that.
 
-A generated video may take time to become available because an external provider must process a request. The application needs to track that work, handle intermediate states, associate outputs with the correct generation, and process the resulting assets.
-
-Choosing HLS or WebRTC does not solve any of those problems.
-
-The current architecture separates a React client, a Hono server, provider adapters, BullMQ workers, PostgreSQL generation state, and Cloudflare R2 asset storage.
+The design splits a React client, a Hono API, provider adapters, BullMQ workers, PostgreSQL for generation state and Cloudflare R2 for assets.
 
 ```diagram
 async-media
 ```
 
-Submission and polling workers handle asynchronous generation workflows. PostgreSQL maintains generation state and identifiers.
+Workers submit jobs and poll for results, and PostgreSQL keeps the state. Assets have their own life cycle: upload, confirmation, inspection, then previews such as thumbnails or waveforms.
 
-Asset handling has its own lifecycle: upload intent, upload confirmation, inspection, storage state, and derivation of previews such as thumbnails or audio waveforms.
+**A request the provider accepted is not a file the user can play.** Accepted, finished, available and usable are four different states, and the system has to tell them apart.
 
-I consider those boundaries important because **a successfully submitted generation request is not a successfully delivered media asset.**
+Delivery comes later and depends on what the asset is for. An ordinary finished video can be a file over HTTP or HLS. If a feature ever needs live, two-way media, WebRTC becomes a candidate. Studio doesn't do that today.
 
-The system must distinguish a provider accepting work from that work completing, an output becoming available, and the output being suitable for use.
-
-For Studio, delivery decisions should follow the generated asset's purpose.
-
-If a completed video needs ordinary playback, HTTP-based file delivery or HLS could be appropriate depending on format, duration, compatibility, and viewing requirements.
-
-If a future feature requires genuinely interactive, real-time media exchange, WebRTC might become relevant.
-
-Neither possibility is evidence that Studio currently uses those protocols for such workflows.
-
-What the current implementation demonstrates is the separation of asynchronous processing, persisted generation state, and asset management.
-
-It does not yet establish production reliability, measured throughput, or delivery performance.
-
-That distinction is deliberate. Architecture describes how a system is organized; production evidence establishes how that organization behaves under actual operating conditions.
+What exists today is that separation. Production reliability and throughput are not proven.
 
 ## Live is a different problem: cameras, operators and concurrent viewers
 
-For a large-scale video monitoring platform, I would start by separating the different viewing requirements before selecting a delivery protocol.
+For a large video monitoring platform, I would split the viewing needs before touching protocols. The live/not-live question is too coarse.
 
-The questions are more complex than simply asking whether the camera is live.
-
-Does the viewer need to react immediately to what appears on screen? Is the video being watched continuously, or opened occasionally? Are many viewers watching the same source? Does the application prioritize minimum delay, stable playback, or both?
+Does the viewer have to react to what they see? Do they watch continuously or open the stream now and then? How many people watch the same source? Do I want the lowest delay, the steadiest picture, or both?
 
 ```diagram
 live-paths
 ```
 
-I would also distinguish viewing from recording and playback. A live monitoring session and a historical recording do not necessarily need the same delivery path.
-
 ### When I would consider WebRTC
 
-If an operator needs highly responsive live viewing, WebRTC would be a candidate.
+If an operator needs a very fast live view, WebRTC is the candidate. It was built for interactive media.
 
-Its real-time communication model is designed for interactive media, with peer connections and transport mechanisms that support low-delay communication.
+It brings work with it. The API does not define signaling, so I have to build the way two sides agree on a session. Connectivity is the other part: [ICE, defined in RFC 8445](https://www.rfc-editor.org/rfc/rfc8445.html), collects the possible network addresses and tests them, using STUN to discover addresses and TURN to relay traffic when no direct path works. Relaying costs bandwidth and servers. Not every connection needs it, and not every network allows a direct path.
 
-But using WebRTC introduces operational questions.
-
-The application needs session negotiation and signaling. The WebRTC API does not prescribe the application's signaling mechanism.
-
-Connectivity also requires attention. [ICE, defined in RFC 8445](https://www.rfc-editor.org/rfc/rfc8445.html), gathers candidate transport addresses and performs connectivity checks. It uses STUN and can use TURN relaying when direct connectivity is unavailable.
-
-Relaying can add infrastructure and bandwidth requirements. It is not correct to assume every connection requires TURN, or that every network permits a direct path.
-
-For many concurrent viewers, I would also evaluate the media distribution architecture instead of assuming independent peer connections are sufficient.
-
-A selective forwarding unit (SFU), for example, could be an alternative worth evaluating for redistributing real-time media.
+With many viewers on the same stream, I wouldn't assume a connection per viewer is enough. A selective forwarding unit (SFU), a server that receives one stream and forwards it to many viewers, is worth evaluating.
 
 ### When I would consider LL-HLS
 
-If operators need a relatively fresh live view but not continuous real-time interaction, LL-HLS would deserve evaluation.
+If operators want a fresh picture but don't need real-time interaction, LL-HLS deserves a test. Partial segments let the player see media before the full segment is done, and blocking reload plus preload hints help it follow the live edge.
 
-Its partial-segment mechanism can publish media before a complete parent segment becomes available. Blocking playlist reload and preload hints help clients follow the live edge more efficiently.
-
-However, low-latency playback requires compatible packaging, servers, intermediaries, and players. Merely generating shorter segments does not guarantee a particular end-to-end delay.
+Shorter segments alone don't give low delay. The packager, the servers in between and the player all have to support LL-HLS.
 
 ### When ordinary HLS could be enough
 
-For broader, primarily observational viewing where additional delay is acceptable, ordinary HLS may reduce the need for stateful, real-time distribution infrastructure.
-
-I would still test live-edge delay, stability, and origin/CDN behavior.
+If people mostly watch passively and a few extra seconds are fine, plain HLS keeps the infrastructure simple. I would still test live-edge delay, stability and how origin and CDN behave.
 
 ## A decision framework: latency × audience × operational burden
 
-I use the following table as an initial decision filter, not an automatic protocol selector.
+This table is a first filter, not an automatic selector.
 
 ```diagram
 decision
@@ -222,77 +148,41 @@ decision
 | Interactive; minimum practical delay is important | Many | Potentially substantial media distribution and connection-management burden | **WebRTC with evaluated forwarding architecture** |
 | Live; latency target not yet established | Unknown or variable | Uncertain | **HLS, LL-HLS, or WebRTC: benchmark first** |
 
-The ambiguous case matters.
-
-Imagine a monitoring dashboard where users want a reasonably current image but do not directly control anything through the video feed.
-
-WebRTC might deliver lower delay than necessary. Ordinary HLS might introduce more delay than users accept. LL-HLS might be a useful compromise, but that cannot be established without a target and measurements.
-
-I would prototype against the actual viewing requirement rather than declaring a winner based on protocol reputation.
+The last row is the common one. Picture a dashboard where people want a reasonably current image and don't control anything with it. WebRTC may be faster than needed. Plain HLS may be too slow. LL-HLS might fit, but nobody can say without a target and a measurement. I would prototype against the real viewing need.
 
 ### A possible hybrid
 
-A hybrid delivery architecture is also worth considering:
+You can also split by audience: **WebRTC for the few operators who act, HLS for everyone who only watches.** One source, two paths. The few don't force their latency requirement on the whole distribution.
 
-**WebRTC for interactive operators; HLS for a wider, non-interactive audience.**
-
-The same source could serve different consumption patterns through distinct processing and delivery paths.
-
-That separation could prevent the latency requirement of a small interactive audience from dictating the entire distribution architecture.
-
-It would also add complexity: potentially multiple packaging paths, synchronization concerns, access-control requirements, and additional infrastructure to operate.
-
-I would adopt that pattern only if the workload justified it.
+The price is more packaging paths, possible sync issues, access control on both, and more to operate. I would only do it if the workload justified it.
 
 ## Prove it: what I'd measure before trusting the decision
 
-The validation process I would apply to any of these decisions is where the real work starts.
+A choice isn't done until I've tested it against the reason I made it.
 
 ### Playback behavior
 
-I would measure startup time, rebuffering frequency and duration, rendition-switching behavior, and playback failures across representative desktop and mobile environments.
-
-For live delivery, I would measure glass-to-glass latency separately from startup time, including behavior during network degradation and reconnection.
+Startup time, rebuffering, rendition switching and failures, on desktop and mobile. For live, glass-to-glass latency on its own, including network drops and reconnects.
 
 ### Transcoding and publishing
 
-For FFmpeg-based pipelines, I would test representative source formats, encoder fallback behavior, rendition compatibility, incomplete processing, and failed publication.
-
-I would verify that an asset is not marked ready before all required playlists and segments are accessible.
-
-I would also test cleanup and retry behavior after interrupted jobs. A job identifier alone does not make repeated execution safe: retries require explicit idempotency rules and appropriate handling of partial side effects.
+Real source files, encoder fallback, rendition compatibility, half-finished jobs and failed publishes. An asset must not be marked ready before every playlist and segment can be fetched. After an interrupted job, retries need explicit idempotency rules. A job ID alone doesn't make a repeat safe.
 
 ### CDN and operational costs
 
-I would examine request patterns, cache configuration, origin fetches, egress, and the cost of preparing and storing multiple renditions.
-
-Immutable asset keys help define cache behavior, but they do not guarantee a high cache-hit ratio. Object storage and CDN delivery likewise do not guarantee low costs.
+Origin fetches, cache hits, egress, and the cost of storing several renditions. Immutable keys help caching but don't guarantee a high hit rate.
 
 ### Real-time alternatives
 
-For a WebRTC evaluation, I would test session establishment, candidate selection, connectivity failures, relay requirements, media quality under packet loss, and how distribution behaves as simultaneous viewers increase.
-
-For LL-HLS, I would test live-edge stability, partial-segment availability, playlist reload behavior, CDN compatibility, and player support.
-
-I would compare these results against explicit product requirements rather than generic protocol benchmarks.
-
-The learning I can defend today is methodological: **a protocol decision is incomplete until the system has been tested against the constraints that justified it.**
+For WebRTC: session setup, relay needs, quality under packet loss, and what happens as viewers are added. For LL-HLS: live-edge stability, CDN compatibility and player support. I compare results against the product's requirements, not generic benchmarks.
 
 ## Pick the requirement, then the protocol
 
-The way I approach video delivery is to identify the actual problem before committing to an architecture.
+Stormzplus shows why pre-processed HLS on object storage and a CDN suits on-demand playback. Studio shows that with async generation, job and asset state come before the delivery protocol. Live monitoring raises the hard questions: responsiveness, viewers, connectivity and who runs it.
 
-Stormzplus illustrates why preprocessed, multi-bitrate HLS delivered through object storage and a CDN fits repeatable on-demand playback.
+I don't have a favorite protocol. I want the lightest architecture that still meets the requirement.
 
-Studio illustrates a different priority: when media is generated asynchronously, reliable orchestration and asset state management matter before the delivery protocol becomes the main decision.
-
-Live monitoring raises harder questions about responsiveness, simultaneous viewers, connectivity, and operational capacity. Those requirements may justify HLS, LL-HLS, WebRTC, or a combination, depending on validated needs.
-
-My preference is not for a particular protocol. It is for an architecture whose complexity is justified by the experience it delivers.
-
-**Latency must be a requirement, not a marketing adjective. Scalability must be tested, not assumed. And operational simplicity is part of engineering quality.**
-
-That is the standard I want to apply whenever I own the media pipeline.
+**Latency should be a requirement, not an adjective. Scale should be tested, not assumed. Simple operations count as engineering quality.**
 
 ### Public projects and references
 
