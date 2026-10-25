@@ -88,7 +88,7 @@ Articles live in the `articles` table (migration 0004), which is the single sour
 
 Import the existing files once after the migration with `DATABASE_URL=... node scripts/seed-articles.mjs` (inserts missing slugs only; `--force` overwrites title, subtitle, description and body of existing rows).
 
-**LinkedIn images.** `GET /articles/<slug>/export/capa` (1920×1080 cover) and `/articles/<slug>/export/table-<n>` (n-th table, 1-based) return PNGs and require `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>`, e.g. `curl -H "Authorization: Bearer $PORTFOLIO_MCP_TOKEN" https://afonsodev.com/articles/delivery-path/export/capa -o capa.png`. Diagrams are not rasterized server-side (no SVG rasterizer in the repo): screenshot each diagram figure from the published page, or draft pages via a local preview.
+**LinkedIn images.** `GET /articles/<slug>/export/capa` (1920×1080 cover) and `/articles/<slug>/export/table-<n>` (n-th table, 1-based) return PNGs and require `Authorization: Bearer <PORTFOLIO_MCP_TOKEN>`, e.g. `curl -H "Authorization: Bearer $PORTFOLIO_MCP_TOKEN" https://afonsodev.com/articles/delivery-path/export/capa -o capa.png`. Diagrams are not rasterized server-side (no SVG rasterizer in the repo): screenshot each diagram figure from the published page.
 
 **Publishing flow.** `article_upsert` (draft) → review → `article_publish` → `article_export_linkedin` + download the images → create the LinkedIn post/article → `social_post_record` with the LinkedIn URL → `article_publish {slug, linkedinUrl}` to store the link on the article.
 
