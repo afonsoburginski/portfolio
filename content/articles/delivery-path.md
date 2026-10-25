@@ -1,8 +1,9 @@
 ---
-title: "HLS, LL-HLS or WebRTC? How I Pick a Delivery Path for Video I Own"
+title: "Streaming That Scales: HLS, LL-HLS or WebRTC?"
+subtitle: "How I choose a delivery path before the audience grows: from a handful of operators to a very large number of viewers."
 slug: "delivery-path"
 date: "2026-10-24"
-description: "Latency, audience size and operational burden decide the protocol, not its reputation. Three video systems, three different answers."
+description: "A decision framework for video delivery: latency, audience size and operational burden, across three very different systems."
 ---
 
 Video delivery decisions are often framed as protocol comparisons. HLS offers scalability, LL-HLS reduces live latency, and WebRTC supports real-time communication.
@@ -17,7 +18,7 @@ The important distinction is that not every video system has the same delivery p
 
 I want to explain how I evaluate those differences, where each protocol fits, and what evidence I would require before calling a decision successful.
 
-## 1. The First Question: How Fast Does the Viewer Need to See It?
+## Start with latency: how fast must the viewer see it?
 
 Before choosing a protocol, I ask:
 
@@ -47,7 +48,7 @@ None is universally better.
 
 The fastest delivery mechanism is rarely the complete requirement. My objective is to meet the actual latency target without accepting unnecessary complexity elsewhere.
 
-## 2. Case A: Stormzplus, When HLS and CDN Delivery Make Sense
+## Pre-compute once, serve from the edge: HLS and CDN for VoD
 
 Stormzplus was my independent subscription video product, developed during 2024–2025. Its delivery architecture used HLS, Cloudflare R2 object storage, and CDN distribution.
 
@@ -118,7 +119,7 @@ I would validate playback startup, rebuffering, adaptation behavior, cache effec
 
 Until those measurements exist, the architectural rationale is defensible, but quantitative performance claims are not.
 
-## 3. Case B: Studio, When Delivery Is Not the Main Problem
+## When delivery isn't the bottleneck: orchestrating async media
 
 Studio is a scene-based workspace for generating and processing images, video, voice, and sound.
 
@@ -158,7 +159,7 @@ It does not yet establish production reliability, measured throughput, or delive
 
 That distinction is deliberate. Architecture describes how a system is organized; production evidence establishes how that organization behaves under actual operating conditions.
 
-## 4. Case C: Live Cameras, Where the Decision Gets Harder
+## Live is a different problem: cameras, operators and concurrent viewers
 
 For a large-scale video monitoring platform, I would start by separating the different viewing requirements before selecting a delivery protocol.
 
@@ -204,7 +205,7 @@ For broader, primarily observational viewing where additional delay is acceptabl
 
 I would still test live-edge delay, stability, and origin/CDN behavior.
 
-## 5. Decision Table: Latency, Audience, and Operational Burden
+## A decision framework: latency × audience × operational burden
 
 I use the following table as an initial decision filter, not an automatic protocol selector.
 
@@ -243,7 +244,7 @@ It would also add complexity: potentially multiple packaging paths, synchronizat
 
 I would adopt that pattern only if the workload justified it.
 
-## 6. What I Would Test Next
+## Prove it: what I'd measure before trusting the decision
 
 The validation process I would apply to any of these decisions is where the real work starts.
 
@@ -277,7 +278,7 @@ I would compare these results against explicit product requirements rather than 
 
 The learning I can defend today is methodological: **a protocol decision is incomplete until the system has been tested against the constraints that justified it.**
 
-## 7. Closing: Choose the Requirement, Then the Protocol
+## Pick the requirement, then the protocol
 
 The way I approach video delivery is to identify the actual problem before committing to an architecture.
 
