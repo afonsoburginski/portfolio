@@ -1,9 +1,9 @@
 ---
-title: "Video Delivery Like Netflix and Prime Video: HLS, LL-HLS or WebRTC?"
-subtitle: "The decisions behind streaming to millions, and how I apply them to my own pipelines on Cloudflare R2 and CDN."
+title: "Netflix Ships Hardware to ISPs. Copy the Habit, Not the Scale"
+subtitle: "What Open Connect, Cloudflare Stream and Amazon IVS reveal about choosing HLS, LL-HLS or WebRTC, and how I apply it to my own pipelines."
 slug: "delivery-path"
 date: "2026-10-24"
-description: "How the big streaming platforms think about video delivery, and the framework I use for my own systems: latency, audience size and operational burden."
+description: "Three questions (how late, how many viewers, how much infrastructure) decide between HLS, LL-HLS and WebRTC. With vendor facts and my own pipelines."
 ---
 
 I have never run a platform like Netflix or Prime Video, and I don't have their scale. What I can do is read how they and the cloud vendors describe their choices, and use the same questions on the systems I do build.
