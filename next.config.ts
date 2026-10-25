@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Build a self-contained server (.next/standalone/server.js) for the Docker image.
   output: "standalone",
+  // ELK lays diagrams out on the server (see components/articles/diagrams); load it with Node, not the bundler.
+  serverExternalPackages: ["elkjs"],
   async redirects() {
     return [
       { source: "/dashboard/new", destination: "/dashboard", permanent: false },
