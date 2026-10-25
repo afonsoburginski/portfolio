@@ -10,6 +10,16 @@ declare namespace NodeJS {
     // Postgres
     DATABASE_URL: string;
     PORTFOLIO_MCP_TOKEN?: string;
+    // Single site owner: only this verified Google account can approve OAuth consents and connect LinkedIn
+    OWNER_EMAIL?: string;
+    // Overrides https://afonsodev.com in OAuth metadata (local dev only)
+    OAUTH_ISSUER?: string;
+
+    // LinkedIn posting from the MCP
+    LINKEDIN_CLIENT_ID?: string;
+    LINKEDIN_CLIENT_SECRET?: string;
+    LINKEDIN_TOKEN_KEY?: string; // 32 bytes, base64 (openssl rand -base64 32)
+    LINKEDIN_API_VERSION?: string; // YYYYMM, defaults to the current month
 
     // Cloudflare R2 (S3-compatible API)
     R2_ACCOUNT_ID: string;
