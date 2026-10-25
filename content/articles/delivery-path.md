@@ -36,9 +36,9 @@ So I separate three things:
 
 The three options, in one line each:
 
-- **HLS** cuts the video into small files (segments) and lists them in a playlist the player downloads over plain HTTP. It handles live, on-demand and adaptive quality. See [RFC 8216](https://www.rfc-editor.org/rfc/rfc8216.html).
-- **LL-HLS** is HLS where the server publishes partial segments, pieces of a segment that aren't finished yet, and the player can ask the server to hold a playlist request until the next piece exists. Same HTTP, less waiting. See [Apple's Low-Latency HLS documentation](https://developer.apple.com/documentation/http-live-streaming/enabling-low-latency-http-live-streaming-hls).
-- **WebRTC** is the real-time technology behind video calls in the browser. It needs signaling and a connectivity step I explain below. See the [W3C WebRTC specification](https://www.w3.org/TR/webrtc/) and [RFC 8825](https://www.rfc-editor.org/rfc/rfc8825.html).
+- **HLS** cuts the video into small files (segments) and lists them in a playlist the player downloads over plain HTTP. It handles live, on-demand and adaptive quality.
+- **LL-HLS** is HLS where the server publishes partial segments, pieces of a segment that aren't finished yet, and the player can ask the server to hold a playlist request until the next piece exists. Same HTTP, less waiting. Apple designed it; [their documentation](https://developer.apple.com/documentation/http-live-streaming/enabling-low-latency-http-live-streaming-hls) is the reference.
+- **WebRTC** is the real-time technology behind video calls in the browser. It needs signaling and a connectivity step I explain below.
 
 The fastest option is rarely the one I need. I want the latency the product requires, and no extra complexity beyond that.
 
@@ -52,7 +52,7 @@ Stormzplus was my own subscription video product, built in 2024 and 2025. Videos
 
 The flow is: upload, transcode, package as multi-bitrate HLS, store in :cloudflare: Cloudflare R2, serve through a CDN, play.
 
-A Go service runs FFmpeg with NVIDIA NVENC and produces several resolutions and bitrates. An uploaded file is not yet something a phone on a weak connection can play. The master playlist lists the variants, and the player switches between them as the network changes. FFmpeg's [transcoding docs](https://ffmpeg.org/ffmpeg.html#Transcoding) and [HLS muxer docs](https://ffmpeg.org/ffmpeg-formats.html#hls-2) cover the details. Switching doesn't remove buffering. Encoder settings, segment alignment and the player still matter.
+A Go service runs FFmpeg with NVIDIA NVENC and produces several resolutions and bitrates. An uploaded file is not yet something a phone on a weak connection can play. The master playlist lists the variants, and the player switches between them as the network changes. Switching doesn't remove buffering. Encoder settings, segment alignment and the player still matter.
 
 Published files get immutable keys. When a video changes, I publish new keys instead of hoping a cache invalidation reaches every edge.
 
@@ -117,7 +117,7 @@ live-paths
 
 If an operator needs a very fast live view, WebRTC is the candidate. It was built for interactive media.
 
-It brings work with it. The API does not define signaling, so I have to build the way two sides agree on a session. Connectivity is the other part: [ICE, defined in RFC 8445](https://www.rfc-editor.org/rfc/rfc8445.html), collects the possible network addresses and tests them, using STUN to discover addresses and TURN to relay traffic when no direct path works. Relaying costs bandwidth and servers. Not every connection needs it, and not every network allows a direct path.
+It brings work with it. The API does not define signaling, so I have to build the way two sides agree on a session. Connectivity is the other part: ICE (the connectivity step) collects the possible network addresses and tests them, using STUN to discover addresses and TURN to relay traffic when no direct path works. Relaying costs bandwidth and servers. Not every connection needs it, and not every network allows a direct path.
 
 With many viewers on the same stream, I wouldn't assume a connection per viewer is enough. A selective forwarding unit (SFU), a server that receives one stream and forwards it to many viewers, is worth evaluating.
 
