@@ -230,6 +230,24 @@ export const social_posts = pgTable("social_posts", {
 
 export type SocialPost = typeof social_posts.$inferSelect;
 
+export const articles = pgTable("articles", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  description: text("description").notNull(),
+  body: text("body").notNull(),
+  tags: text("tags").notNull().default("[]"),
+  status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+  published_at: text("published_at"),
+  linkedin_url: text("linkedin_url"),
+  cover_image: text("cover_image"),
+  created_at: text("created_at").notNull().default(nowIso()),
+  updated_at: text("updated_at").notNull().default(nowIso()),
+}, (table) => [index("articles_status_published_at_idx").on(table.status, table.published_at)]);
+
+export type ArticleRow = typeof articles.$inferSelect;
+
 // ——— TypeScript types ———
 
 export type User = typeof user.$inferSelect;
