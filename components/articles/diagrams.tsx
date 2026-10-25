@@ -1,3 +1,4 @@
+import { REALTIME_DIAGRAMS } from "./realtime-diagrams";
 import { DiagramFigure, Edge, Group, Node, Pill } from "./diagram-kit";
 
 function Pipeline() {
@@ -213,6 +214,7 @@ const DIAGRAMS: Record<string, () => React.JSX.Element> = {
   "async-media": AsyncMedia,
   "live-paths": LivePaths,
   decision: Decision,
+  ...REALTIME_DIAGRAMS,
 };
 
 export function Diagram({ id }: { id: string }) {
