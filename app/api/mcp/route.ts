@@ -47,6 +47,7 @@ const rawTools = [
   { name: "article_list", description: "List articles (no bodies), optionally filtered by status.", inputSchema: { type: "object", properties: { status: { type: "string", enum: ["draft", "published"] } } } },
   { name: "article_get", description: "Get one article, including the full Markdown body, in any status.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } } },
   { name: "article_publish", description: "Publish an article on the public site (sets published_at if empty) and optionally record its LinkedIn URL. Publishes immediately; show the final article to the user first. Requires confirm: true.", inputSchema: { type: "object", required: ["slug", "confirm"], properties: { slug: { type: "string" }, linkedinUrl: { type: "string" }, confirm: { type: "boolean", const: true } } } },
+  { name: "article_link_linkedin", description: "Attach the LinkedIn article/post URL to a published-or-draft article after you post it by hand in LinkedIn's article editor (LinkedIn's API cannot publish articles). The home feed then shows one card that opens the article on this site and links to LinkedIn.", inputSchema: { type: "object", required: ["slug", "linkedinUrl"], properties: { slug: { type: "string" }, linkedinUrl: { type: "string" } } } },
   { name: "article_export_linkedin", description: "Convert an article to clean HTML for the LinkedIn article editor, with image placeholders and the list of images to upload.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } } },
   { name: "linkedin_status", description: "Show whether the LinkedIn connection is authenticated and when it expires. Never returns the token.", inputSchema: { type: "object", properties: {} } },
   { name: "linkedin_create_post", description: "Publish a LinkedIn post as the owner and record it in social_posts. Publishes immediately and cannot be drafted; show the final text to the user first. Requires confirm: true.", inputSchema: { type: "object", required: ["text", "confirm"], properties: {
@@ -60,7 +61,7 @@ const rawTools = [
 ] as const;
 
 // Tools that change data or publish need mcp:write; everything else needs mcp:read.
-const WRITE_TOOLS = new Set(["social_post_record", "social_post_delete", "project_upsert", "article_upsert", "article_publish", "linkedin_create_post", "linkedin_delete_post"]);
+const WRITE_TOOLS = new Set(["social_post_record", "social_post_delete", "project_upsert", "article_upsert", "article_publish", "article_link_linkedin", "linkedin_create_post", "linkedin_delete_post"]);
 const DESTRUCTIVE_TOOLS = new Set(["social_post_delete", "linkedin_delete_post"]);
 const tools = rawTools.map(tool => ({
   ...tool,
@@ -257,6 +258,11 @@ async function callTool(name: string, args: Params) {
       const row = await setArticleStatus(slugArg(args.slug), "published", optional(args.linkedinUrl, "linkedinUrl", linkedinUrl));
       if (!row) throw new ToolInputError("Article not found in the database. Create it with article_upsert first.");
       return { slug: row.slug, status: row.status, publishedAt: row.published_at, linkedinUrl: row.linkedin_url, url: `${ARTICLE_URL}${row.slug}` };
+    }
+    case "article_link_linkedin": {
+      const slug = slugArg(args.slug);
+      if (!(await setArticleLinkedinUrl(slug, linkedinUrl(args.linkedinUrl, "linkedinUrl")))) throw new ToolInputError("Article not found in the database. Create it with article_upsert first.");
+      return { slug, linkedinUrl: args.linkedinUrl, url: `${ARTICLE_URL}${slug}` };
     }
     case "article_export_linkedin": {
       const article = await getArticle(slugArg(args.slug), { preview: true });

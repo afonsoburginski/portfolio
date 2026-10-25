@@ -2,13 +2,13 @@
 
 import { SiLinkedin, SiGithub, SiInstagram } from "react-icons/si";
 import { SocialFeed } from "@/components/contact-section/social-feed";
-import type { SocialPost } from "@/lib/schema";
+import type { FeedItem } from "@/lib/feed";
 
-export function SocialSectionMobile({ posts }: { posts: SocialPost[] }) {
+export function SocialSectionMobile({ items }: { items: FeedItem[] }) {
   return (
     <section id="social" className="relative py-16 px-4">
       <div className="mx-auto flex max-w-[1100px] flex-col items-center text-center">
-        <SocialFeed posts={posts} />
+        <SocialFeed items={items} />
 
           <div className="flex items-center gap-5 mt-8 text-white/80">
             <a href="https://www.linkedin.com/in/afonsoburginski/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white transition-colors">

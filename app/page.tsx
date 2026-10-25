@@ -8,12 +8,12 @@ import { FaqSection } from "@/components/faq-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { getHomeProjects } from "@/lib/dashboard-data";
-import { getSocialPosts } from "@/lib/social-data";
+import { getFeedItems } from "@/lib/feed";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [projects, posts] = await Promise.all([getHomeProjects(), getSocialPosts(6, "linkedin")]);
+  const [projects, items] = await Promise.all([getHomeProjects(), getFeedItems(6)]);
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
@@ -22,7 +22,7 @@ export default async function Home() {
         <Hero />
         <ProjectsSection projects={projects} />
         <AboutSection />
-        <SocialSection posts={posts} />
+        <SocialSection items={items} />
         <ServicesShowcase />
         <FaqSection />
         <ContactSection />
