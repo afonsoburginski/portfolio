@@ -80,3 +80,17 @@ export function exportForLinkedin(article: { slug: string; title: string; body: 
   const markdown = article.body.replace(/\]\((\/[^)\s]*)\)/g, `](${SITE}$1)`);
   return { title: article.title, html, markdown, images };
 }
+
+// Cell text of every GFM table in the body, in document order (header row first).
+export function extractTables(body: string): string[][][] {
+  const tree = unified().use(remarkParse).use(remarkGfm).parse(body) as Root;
+  const tables: string[][][] = [];
+  const walk = (nodes: RootContent[]) => {
+    for (const node of nodes) {
+      if (node.type === "table") tables.push(node.children.map((row) => row.children.map(textOf)));
+      else if ("children" in node) walk(node.children as RootContent[]);
+    }
+  };
+  walk(tree.children);
+  return tables;
+}
