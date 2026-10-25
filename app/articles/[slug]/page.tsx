@@ -10,6 +10,8 @@ import { ReadingProgress } from "@/components/articles/reading-progress";
 import { extractToc } from "@/components/articles/slug";
 import { TableOfContents } from "@/components/articles/toc";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticle(slug);
@@ -52,7 +54,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       />
       <Header />
       <main className="relative z-10 px-6 pt-36 pb-24">
-        <ArticleHeader title={article.title} description={article.description} date={date} readingMinutes={article.readingMinutes} />
+        <ArticleHeader title={article.title} subtitle={article.subtitle ?? article.description} tags={article.tags} date={date} readingMinutes={article.readingMinutes} />
         <div className="mx-auto mt-14 grid max-w-[1040px] gap-x-16 lg:grid-cols-[minmax(0,720px)_minmax(0,240px)] lg:justify-between">
           <article id="article-content" className="min-w-0 font-sans text-[17px] leading-[1.8] text-white/75 lg:text-[18px]">
             <TableOfContents items={toc} variant="inline" />

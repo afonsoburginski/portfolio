@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { getArticle } from "@/lib/articles";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const alt = "Article by Afonso Burginski";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
