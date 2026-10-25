@@ -79,6 +79,10 @@ The CDN can then serve existing media objects without requiring a dedicated real
 
 That is why HLS made sense for Stormzplus.
 
+```diagram
+pipeline
+```
+
 The player experience was also part of the system. On the web, I built a custom player supporting captions and playback resumption.
 
 On mobile, the React Native/Expo application used `react-native-video` for native HLS playback and shared the backend with the web application.
@@ -128,6 +132,10 @@ Choosing HLS or WebRTC does not solve any of those problems.
 
 The current architecture separates a React client, a Hono server, provider adapters, BullMQ workers, PostgreSQL generation state, and Cloudflare R2 asset storage.
 
+```diagram
+async-media
+```
+
 Submission and polling workers handle asynchronous generation workflows. PostgreSQL maintains generation state and identifiers.
 
 Asset handling has its own lifecycle: upload intent, upload confirmation, inspection, storage state, and derivation of previews such as thumbnails or audio waveforms.
@@ -157,6 +165,10 @@ For a large-scale video monitoring platform, I would start by separating the dif
 The questions are more complex than simply asking whether the camera is live.
 
 Does the viewer need to react immediately to what appears on screen? Is the video being watched continuously, or opened occasionally? Are many viewers watching the same source? Does the application prioritize minimum delay, stable playback, or both?
+
+```diagram
+live-paths
+```
 
 I would also distinguish viewing from recording and playback. A live monitoring session and a historical recording do not necessarily need the same delivery path.
 
@@ -195,6 +207,10 @@ I would still test live-edge delay, stability, and origin/CDN behavior.
 ## 5. Decision Table: Latency, Audience, and Operational Burden
 
 I use the following table as an initial decision filter, not an automatic protocol selector.
+
+```diagram
+decision
+```
 
 | Latency requirement | Viewers per stream | Operational burden | Candidate |
 |---|---|---|---|
