@@ -81,7 +81,7 @@ export const HeaderDesktop = () => {
                 Projects
               </button>
               <button
-                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('social')?.scrollIntoView({ behavior: 'smooth' })}
                 className="text-gray-300 hover:text-white transition-colors"
               >
                 Socials

@@ -2,6 +2,7 @@ import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { ProjectsSection } from "@/components/projects-section";
 import { AboutSection } from "@/components/about-section";
+import { SocialSection } from "@/components/social-section";
 import { ServicesShowcase } from "@/components/services-showcase";
 import { FaqSection } from "@/components/faq-section";
 import { ContactSection } from "@/components/contact-section";
@@ -21,9 +22,10 @@ export default async function Home() {
         <Hero />
         <ProjectsSection projects={projects} />
         <AboutSection />
+        <SocialSection posts={posts} />
         <ServicesShowcase />
         <FaqSection />
-        <ContactSection posts={posts} />
+        <ContactSection />
         <Footer />
       </div>
     </div>

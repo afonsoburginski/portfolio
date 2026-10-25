@@ -3,15 +3,12 @@
 import { motion } from "motion/react";
 import { Spotlight } from "../../ui/spotlight-new";
 import { HoverBorderGradient } from "../../ui/hover-border-gradient";
-import { SiLinkedin, SiGithub, SiInstagram } from "react-icons/si";
 import { getCalApi } from "@calcom/embed-react";
-import { SocialFeed } from "../social-feed";
-import type { SocialPost } from "@/lib/schema";
 
-export function ContactSectionDesktop({ posts }: { posts: SocialPost[] }) {
+export function ContactSectionDesktop() {
 
   return (
-    <section id="social" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
+    <section id="contact" className="relative min-h-[70vh] flex items-center justify-center py-32 px-4 md:px-8 overflow-visible">
       {/* Spotlight background - slightly overlaps previous section */}
       <div className="absolute -top-16 md:-top-8 left-0 right-0 h-[160%] w-full pointer-events-none">
         <Spotlight
@@ -62,22 +59,6 @@ export function ContactSectionDesktop({ posts }: { posts: SocialPost[] }) {
             Book a Free Call
           </HoverBorderGradient>
 
-          <SocialFeed posts={posts} />
-
-          {/* Social Row */}
-          <div className="flex items-center gap-6 mt-2 text-white/80">
-            <a href="https://www.linkedin.com/in/afonsoburginski/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white transition-colors">
-              <SiLinkedin size={20} />
-            </a>
-            <div className="w-px h-4 bg-white/30" />
-            <a href="https://github.com/afonsoburginski" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-white transition-colors">
-              <SiGithub size={20} />
-            </a>
-            <div className="w-px h-4 bg-white/30" />
-            <a href="https://www.instagram.com/afonso_burginski?igsh=MWVhYXF0am9jNzIwMw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white transition-colors">
-              <SiInstagram size={20} />
-            </a>
-          </div>
         </motion.div>
       </div>
     </section>

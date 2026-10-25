@@ -102,7 +102,7 @@ export const HeaderMobile = () => {
                   Projects
                 </button>
                 <button
-                  onClick={() => handleNavClick('contact')}
+                  onClick={() => handleNavClick('social')}
                   className="text-white text-2xl font-satoshi hover:text-white/70 transition-colors"
                 >
                   Socials
