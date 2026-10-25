@@ -84,7 +84,7 @@ function WebRtcHandshake() {
 function BufferOccupancy() {
   const id="dg-buffer-occupancy";
   const data=[5,4,3,3.5,4,4];
-  const x=i=>110+i*144, y=v=>355-v*53;
+  const x=(i:number)=>110+i*144, y=(v:number)=>355-v*53;
   const poly=data.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
   return <DiagramFigure id={id} width={910} height={455} title="Hypothetical buffer occupancy through a two-second network outage"
     desc="Buffer begins with five seconds. With no media arriving for two seconds playback consumes two seconds, leaving three. Media then arrives at one and a half times playback for two seconds so occupancy recovers to four seconds. At matching delivery speed the four seconds remain."
