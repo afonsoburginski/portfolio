@@ -27,6 +27,8 @@ const listResponse = await request("tools/list", {});
 assert(listResponse.ok, "tools/list failed");
 const list = await listResponse.json();
 assert(list.result?.tools?.some(tool => tool.name === "social_post_record"), "social_post_record is missing");
+for (const name of ["article_upsert", "article_list", "article_get", "article_publish", "article_export_linkedin"])
+  assert(list.result.tools.some(tool => tool.name === name), `${name} is missing`);
 
 const postUrl = `https://www.linkedin.com/feed/update/smoke-${crypto.randomUUID()}/`;
 try {

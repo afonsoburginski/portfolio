@@ -1,6 +1,8 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
+import { hasMcpBearer } from "@/lib/mcp-auth";
 import { projects } from "@/lib/schema";
+import { exportForLinkedin } from "@/lib/article-linkedin";
+import { getArticle, listArticles, setArticleStatus, upsertArticle } from "@/lib/articles";
 import { deleteSocialPost, getSocialPosts, upsertSocialPost } from "@/lib/social-data";
 
 export const runtime = "nodejs";
@@ -29,7 +31,29 @@ const tools = [
     objectives: { type: "array", items: { type: "string" } }, highlights: { type: "array", items: { type: "string" } }, outcomes: { type: "array", items: { type: "string" } }, challenges: { type: "array", items: { type: "object", required: ["title", "detail"], properties: { title: { type: "string" }, detail: { type: "string" } } } }, sections: { type: "array", items: { type: "object" } },
   } } },
   { name: "project_list", description: "List portfolio project summaries.", inputSchema: { type: "object", properties: {} } },
+  { name: "article_upsert", description: "Create or update an article by slug (Markdown body; ```diagram blocks allowed). Returns the public URL.", inputSchema: { type: "object", required: ["slug", "title", "description", "body"], properties: {
+    slug: { type: "string", pattern: "^[a-z0-9-]+$" }, title: { type: "string" }, subtitle: { type: "string" }, description: { type: "string" }, body: { type: "string", maxLength: 200000 },
+    tags: { type: "array", items: { type: "string" } }, status: { type: "string", enum: ["draft", "published"] }, publishedAt: { type: "string", format: "date-time" },
+    linkedinUrl: { type: "string" }, coverImage: { type: "string" },
+  } } },
+  { name: "article_list", description: "List articles (no bodies), optionally filtered by status.", inputSchema: { type: "object", properties: { status: { type: "string", enum: ["draft", "published"] } } } },
+  { name: "article_get", description: "Get one article, including the full Markdown body, in any status.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } } },
+  { name: "article_publish", description: "Publish an article (sets published_at if empty) and optionally record its LinkedIn URL.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" }, linkedinUrl: { type: "string" } } } },
+  { name: "article_export_linkedin", description: "Convert an article to clean HTML for the LinkedIn article editor, with image placeholders and the list of images to upload.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } } },
 ] as const;
+
+const ARTICLE_URL = "https://afonsodev.com/articles/";
+const MAX_ARTICLE_BODY = 200_000;
+const ARTICLE_STATUSES = ["draft", "published"] as const;
+
+function slugArg(value: unknown): string {
+  const slug = string(value, "slug")!;
+  if (!/^[a-z0-9-]+$/.test(slug) || slug.length > 100) throw new ToolInputError("Invalid slug.");
+  return slug;
+}
+function linkedinUrl(value: unknown, name: string): string {
+  return httpsUrl(value, name, "www.linkedin.com");
+}
 
 function object(value: unknown): Params {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new ToolInputError("Expected an object.");
@@ -174,6 +198,44 @@ async function callTool(name: string, args: Params) {
     }
     case "project_list":
       return db.select({ slug: projects.slug, title: projects.title, status: projects.status, featured: projects.featured, image: projects.image }).from(projects);
+    case "article_upsert": {
+      const slug = slugArg(args.slug);
+      const body = args.body;
+      if (typeof body !== "string" || !body.trim()) throw new ToolInputError("body is required.");
+      if (body.length > MAX_ARTICLE_BODY) throw new ToolInputError("body is too large (max 200 KB).");
+      const publishedAt = optional(args.publishedAt, "publishedAt", string);
+      if (publishedAt !== undefined && !Number.isFinite(Date.parse(publishedAt))) throw new ToolInputError("Invalid publishedAt.");
+      const row = await upsertArticle({
+        slug, body, title: string(args.title, "title")!, description: string(args.description, "description")!,
+        subtitle: optional(args.subtitle, "subtitle", string),
+        tags: stringArray(args.tags, "tags"),
+        status: args.status === undefined ? undefined : choice(args.status, "status", ARTICLE_STATUSES),
+        publishedAt: publishedAt === undefined ? undefined : new Date(publishedAt).toISOString(),
+        linkedinUrl: optional(args.linkedinUrl, "linkedinUrl", linkedinUrl),
+        coverImage: optional(args.coverImage, "coverImage", (v) => httpsUrl(v, "coverImage", "cdn.afonsodev.com")),
+      });
+      return { slug: row.slug, status: row.status, publishedAt: row.published_at, url: `${ARTICLE_URL}${row.slug}` };
+    }
+    case "article_list": {
+      const status = args.status === undefined ? undefined : choice(args.status, "status", ARTICLE_STATUSES);
+      const items = await listArticles({ preview: true, status });
+      return items.map(a => ({ slug: a.slug, title: a.title, status: a.status, publishedAt: a.date, linkedinUrl: a.linkedinUrl, url: `${ARTICLE_URL}${a.slug}` }));
+    }
+    case "article_get": {
+      const article = await getArticle(slugArg(args.slug), { preview: true });
+      if (!article) throw new ToolInputError("Article not found.");
+      return { ...article, url: `${ARTICLE_URL}${article.slug}` };
+    }
+    case "article_publish": {
+      const row = await setArticleStatus(slugArg(args.slug), "published", optional(args.linkedinUrl, "linkedinUrl", linkedinUrl));
+      if (!row) throw new ToolInputError("Article not found in the database. Create it with article_upsert first.");
+      return { slug: row.slug, status: row.status, publishedAt: row.published_at, linkedinUrl: row.linkedin_url, url: `${ARTICLE_URL}${row.slug}` };
+    }
+    case "article_export_linkedin": {
+      const article = await getArticle(slugArg(args.slug), { preview: true });
+      if (!article) throw new ToolInputError("Article not found.");
+      return exportForLinkedin(article);
+    }
     default: throw new ToolInputError("Unknown tool.");
   }
 }
@@ -184,13 +246,7 @@ function rpc(id: RpcId, result?: unknown, error?: { code: number; message: strin
 function unauthorized() { return new Response("Unauthorized", { status: 401, headers: { "Cache-Control": "no-store" } }); }
 
 export async function POST(request: Request) {
-  const secret = process.env.PORTFOLIO_MCP_TOKEN;
-  const authorization = request.headers.get("authorization");
-  if (!secret || !authorization?.startsWith("Bearer ")) return unauthorized();
-  const supplied = authorization.slice(7);
-  const expectedHash = createHash("sha256").update(secret).digest();
-  const suppliedHash = createHash("sha256").update(supplied).digest();
-  if (!timingSafeEqual(expectedHash, suppliedHash)) return unauthorized();
+  if (!hasMcpBearer(request)) return unauthorized();
 
   const now = Date.now();
   if (now - windowStart >= WINDOW_MS) { windowStart = now; requestCount = 0; }
@@ -198,7 +254,7 @@ export async function POST(request: Request) {
   let payload: unknown;
   try {
     const raw = await request.text();
-    if (raw.length > 128_000) return new Response("Payload Too Large", { status: 413 });
+    if (raw.length > 256_000) return new Response("Payload Too Large", { status: 413 });
     payload = JSON.parse(raw);
   } catch { return rpc(null, undefined, { code: -32700, message: "Parse error" }); }
   let message: Params;
