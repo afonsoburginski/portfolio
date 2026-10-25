@@ -248,6 +248,55 @@ export const articles = pgTable("articles", {
 
 export type ArticleRow = typeof articles.$inferSelect;
 
+// ——— OAuth 2.1 authorization server for the MCP endpoint (single owner) ———
+// Only SHA-256 hashes of codes and tokens are stored; plaintext never touches the database.
+
+const tstz = (name: string) => timestamp(name, { withTimezone: true });
+
+export const oauth_clients = pgTable("oauth_clients", {
+  client_id: text("client_id").primaryKey(),
+  client_name: text("client_name").notNull(),
+  redirect_uris: text("redirect_uris").notNull(), // JSON string[]
+  created_at: tstz("created_at").notNull().defaultNow(),
+});
+
+export const oauth_codes = pgTable("oauth_codes", {
+  code_hash: text("code_hash").primaryKey(),
+  family_id: text("family_id").notNull(),
+  client_id: text("client_id").notNull().references(() => oauth_clients.client_id, { onDelete: "cascade" }),
+  redirect_uri: text("redirect_uri").notNull(),
+  scope: text("scope").notNull(),
+  resource: text("resource").notNull(),
+  code_challenge: text("code_challenge").notNull(),
+  expires_at: tstz("expires_at").notNull(),
+  used_at: tstz("used_at"),
+});
+
+export const oauth_tokens = pgTable("oauth_tokens", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  family_id: text("family_id").notNull(),
+  client_id: text("client_id").notNull().references(() => oauth_clients.client_id, { onDelete: "cascade" }),
+  access_hash: text("access_hash").notNull().unique(),
+  refresh_hash: text("refresh_hash").notNull().unique(),
+  scope: text("scope").notNull(),
+  resource: text("resource").notNull(),
+  access_expires_at: tstz("access_expires_at").notNull(),
+  refresh_expires_at: tstz("refresh_expires_at").notNull(),
+  refresh_used_at: tstz("refresh_used_at"),
+  revoked_at: tstz("revoked_at"),
+  created_at: tstz("created_at").notNull().defaultNow(),
+}, (table) => [index("oauth_tokens_family_idx").on(table.family_id)]);
+
+// LinkedIn member token for posting from the MCP; access_token_enc is AES-256-GCM (see lib/linkedin/crypto.ts).
+export const linkedin_tokens = pgTable("linkedin_tokens", {
+  member_sub: text("member_sub").primaryKey(),
+  access_token_enc: text("access_token_enc").notNull(),
+  expires_at: tstz("expires_at").notNull(),
+  scopes: text("scopes").notNull(),
+  created_at: tstz("created_at").notNull().defaultNow(),
+  updated_at: tstz("updated_at").notNull().defaultNow(),
+});
+
 // ——— TypeScript types ———
 
 export type User = typeof user.$inferSelect;

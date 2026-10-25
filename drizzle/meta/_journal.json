@@ -36,6 +36,13 @@
       "when": 1792888201181,
       "tag": "0004_articles",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792889647353,
+      "tag": "0005_oauth_linkedin",
+      "breakpoints": true
     }
   ]
 }
