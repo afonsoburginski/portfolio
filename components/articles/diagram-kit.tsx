@@ -85,7 +85,7 @@ export function Group({ x, y, w, h, label, tone = "plain" }: { x: number; y: num
   );
 }
 
-/** Brand glyph centered on cx. Cloudflare keeps its orange; other brands take the tone color (the site never uses purple). */
+/** Brand glyph centered on cx. Cloudflare keeps its orange; other brands take the tone color. */
 function BrandGlyph({ brand, cx, y, color }: { brand: BrandName; cx: number; y: number; color: string }) {
   const Glyph = BRANDS[brand];
   return (

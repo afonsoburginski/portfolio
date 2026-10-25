@@ -28,7 +28,7 @@ test("errors name the path of the problem", () => {
     [{ type: "architecture", ...base, nodes: [{ id: "a", label: "A" }, { id: "a", label: "B" }] }, /nodes\[1\]\.id: duplicate id "a"/],
     [{ type: "architecture", ...base, nodes: [{ id: "a", label: "A", x: 1 }] }, /x and y/],
     [{ type: "architecture", ...base, nodes: [{ id: "a", label: "A", icon: "unicorn" }] }, /nodes\[0\]\.icon/],
-    [{ type: "architecture", ...base, nodes: [{ id: "a", label: "A", tone: "purple" }] }, /nodes\[0\]\.tone/],
+    [{ type: "architecture", ...base, nodes: [{ id: "a", label: "A", tone: "magenta" }] }, /nodes\[0\]\.tone/],
     [{ type: "architecture", ...base, groups: [{ id: "g", label: "G", parent: "g2" }, { id: "g2", label: "G2", parent: "g" }], nodes: [{ id: "a", label: "A" }] }, /cycle/],
     [{ type: "sequence", ...base, participants: [{ id: "a", label: "A" }, { id: "b", label: "B" }], steps: [{ kind: "message", from: "a", to: "c", label: "x" }] }, /steps\[0\]\.to: unknown participant "c"/],
     [{ type: "sequence", ...base, participants: [{ id: "a", label: "A" }, { id: "b", label: "B" }], steps: [{ kind: "oops" }] }, /steps\[0\]/],

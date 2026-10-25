@@ -25,7 +25,7 @@ Unknown keys are errors (typos fail loudly). A figure also gets a screen-reader-
 
 ## Vocabulary
 
-- **Tones**: `main` (blue), `alt` (teal), `amber`, `plain`, `white`, plus `ok` (green), `warn` (amber), `error` (red). There is no purple; do not ask for one.
+- **Tones**: `main` (blue), `alt` (teal), `amber`, `plain`, `white`, plus `ok` (green), `warn` (amber), `error` (red). Only these tones exist; do not invent colors.
 - **Icons** (`icon`): camera, server, queue, db, cloud, player, user, upload, cpu, bucket, split, plug, layers, kubernetes, kafka, broker, network, browser, mobile, lock, clock, gateway, shield, key, pod, cache, users, chart, mic, signal, function, globe.
 - **Brands** (`brand`, drawn in the tone color, Cloudflare in its orange): cloudflare, kafka, kubernetes, docker, postgresql, redis, nginx, rabbitmq, go, webrtc, mongodb, prometheus, grafana, ffmpeg, nodejs, react, aws, envoy, istio, helm, terraform, apple, android.
 - **Ids** (`id`): letters, digits, `-`, `_`; unique across nodes and groups.

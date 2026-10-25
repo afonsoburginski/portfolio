@@ -24,7 +24,7 @@ export function layoutSequence(spec: SequenceSpec): SequenceLayout {
   const numbered = spec.numbered !== false;
   const gaps = Array.from({ length: n - 1 }, (_, i) => Math.max(120, (boxes[i].w + boxes[i + 1].w) / 2 + 28));
   let rightRoom = boxes[n - 1].w / 2;
-  let leftRoom = boxes[0].w / 2;
+  const leftRoom = boxes[0].w / 2;
 
   const need = (a: number, b: number, width: number) => {
     const lo = Math.min(a, b), hi = Math.max(a, b);
