@@ -279,3 +279,19 @@ body {
 .cal-modal-loading body {
   overflow: hidden;
 }
+
+/* Article diagrams: animated flow on arrows */
+.dg-flow {
+  stroke-dasharray: 6 6;
+  animation: dg-dash 1.2s linear infinite;
+}
+@keyframes dg-dash {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dg-flow {
+    animation: none;
+  }
+}
