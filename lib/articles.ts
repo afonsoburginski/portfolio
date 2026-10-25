@@ -179,3 +179,9 @@ export async function setArticleStatus(slug: string, status: ArticleStatus, link
     return row;
   });
 }
+
+export async function setArticleLinkedinUrl(slug: string, linkedinUrl: string): Promise<boolean> {
+  const rows = await db.update(articles).set({ linkedin_url: linkedinUrl, updated_at: new Date().toISOString() })
+    .where(eq(articles.slug, slug)).returning({ id: articles.id });
+  return rows.length > 0;
+}
