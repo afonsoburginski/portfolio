@@ -38,6 +38,12 @@ const listResponse = await request("tools/list", {});
 assert(listResponse.ok, "tools/list failed");
 const list = await listResponse.json();
 assert(list.result?.tools?.some(tool => tool.name === "social_post_record"), "social_post_record is missing");
+assert(list.result?.tools?.some(tool => tool.name === "diagram_schema"), "diagram_schema is missing");
+const diagramSchema = await tool("diagram_schema", {});
+assert(diagramSchema.jsonSchema && Object.keys(diagramSchema.examples).length === 6, "diagram_schema is incomplete");
+const badDiagram = await request("tools/call", { name: "article_upsert", arguments: { slug: "diagram-smoke", title: "t", description: "d", body: "```diagram\n{\"type\":\"architecture\",\"title\":\"t\",\"description\":\"d\",\"nodes\":[{\"id\":\"a\",\"label\":\"A\"}],\"edges\":[{\"from\":\"a\",\"to\":\"ghost\"}]}\n```" } });
+const badPayload = await badDiagram.json();
+assert(badPayload.result?.isError && /unknown node "ghost"/.test(badPayload.result.content[0].text), "article_upsert accepted an invalid diagram");
 for (const name of ["article_upsert", "article_list", "article_get", "article_publish", "article_export_linkedin", "linkedin_status", "linkedin_create_post", "linkedin_delete_post", "linkedin_list_my_posts"])
   assert(list.result.tools.some(tool => tool.name === name), `${name} is missing`);
 

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DiagramFigure, type LegendItem } from "../diagram-kit";
 import { EDGE_COLOR, TEXT } from "@/lib/diagrams/tones";
+import { TONES } from "@/lib/diagrams/names";
 import type { DiagramSpec } from "@/lib/diagrams/schema";
 
 /** Stable id for SVG defs and file names: same spec, same id, on server and client. */
@@ -44,6 +45,7 @@ export function Frame({ spec, width, height, connections, legend, badge, readabl
       exportName={spec.title}
       minWidth={readableWidth ?? Math.min(Math.round((width + 32) * 0.7), 720)}
       badge={badge}
+      markerTones={TONES}
     >
       {children}
     </DiagramFigure>

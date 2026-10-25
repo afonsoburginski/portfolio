@@ -7,6 +7,10 @@ import { projects } from "@/lib/schema";
 import { exportForLinkedin } from "@/lib/article-linkedin";
 import { getArticle, listArticles, setArticleLinkedinUrl, setArticleStatus, upsertArticle } from "@/lib/articles";
 import { deleteSocialPost, getSocialPosts, upsertSocialPost } from "@/lib/social-data";
+import { LEGACY_DIAGRAM_IDS } from "@/components/articles/diagrams";
+import { diagramJsonSchema } from "@/lib/diagrams/json-schema";
+import { validateArticleDiagrams } from "@/lib/diagrams/validate";
+import { FIXTURES } from "@/lib/diagrams/__fixtures__";
 
 export const runtime = "nodejs";
 
@@ -39,11 +43,12 @@ const rawTools = [
     objectives: { type: "array", items: { type: "string" } }, highlights: { type: "array", items: { type: "string" } }, outcomes: { type: "array", items: { type: "string" } }, challenges: { type: "array", items: { type: "object", required: ["title", "detail"], properties: { title: { type: "string" }, detail: { type: "string" } } } }, sections: { type: "array", items: { type: "object" } },
   } } },
   { name: "project_list", description: "List portfolio project summaries.", inputSchema: { type: "object", properties: {} } },
-  { name: "article_upsert", description: "Create or update an article by slug (Markdown body; ```diagram blocks allowed). Returns the public URL.", inputSchema: { type: "object", required: ["slug", "title", "description", "body"], properties: {
+  { name: "article_upsert", description: "Create or update an article by slug (Markdown body). Returns the public URL. Diagrams: a ```diagram block whose body is a JSON object (starts with `{`) is a declarative diagram of type architecture, network, pipeline, sequence, buffer or metric; each block is validated and the call is rejected with the path of every error. Call diagram_schema first for the JSON Schema and one example per type. A one-word body (e.g. `pipeline`) is a legacy figure id.", inputSchema: { type: "object", required: ["slug", "title", "description", "body"], properties: {
     slug: { type: "string", pattern: "^[a-z0-9-]+$" }, title: { type: "string" }, subtitle: { type: "string" }, description: { type: "string" }, body: { type: "string", maxLength: 200000 },
     tags: { type: "array", items: { type: "string" } }, status: { type: "string", enum: ["draft", "published"] }, publishedAt: { type: "string", format: "date-time" },
     linkedinUrl: { type: "string" }, coverImage: { type: "string" }, confirm: { type: "boolean", description: "Must be true when status is published." },
   } } },
+  { name: "diagram_schema", description: "JSON Schema of the declarative ```diagram block (a JSON object, discriminated by `type`: architecture, network, pipeline, sequence, buffer, metric) plus one valid example per type and the shared vocabulary. Read this before writing a diagram into an article body.", inputSchema: { type: "object", properties: {} } },
   { name: "article_list", description: "List articles (no bodies), optionally filtered by status.", inputSchema: { type: "object", properties: { status: { type: "string", enum: ["draft", "published"] } } } },
   { name: "article_get", description: "Get one article, including the full Markdown body, in any status.", inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } } },
   { name: "article_publish", description: "Publish an article on the public site (sets published_at if empty) and optionally record its LinkedIn URL. Publishes immediately; show the final article to the user first. Requires confirm: true.", inputSchema: { type: "object", required: ["slug", "confirm"], properties: { slug: { type: "string" }, linkedinUrl: { type: "string" }, confirm: { type: "boolean", const: true } } } },
@@ -230,6 +235,12 @@ async function callTool(name: string, args: Params) {
       const body = args.body;
       if (typeof body !== "string" || !body.trim()) throw new ToolInputError("body is required.");
       if (body.length > MAX_ARTICLE_BODY) throw new ToolInputError("body is too large (max 200 KB).");
+      const diagramProblems = validateArticleDiagrams(body, LEGACY_DIAGRAM_IDS);
+      if (diagramProblems.length) {
+        const shown = diagramProblems.slice(0, 12);
+        const more = diagramProblems.length - shown.length;
+        throw new ToolInputError(`Invalid diagram block(s). Fix and retry (see diagram_schema):\n${shown.map(p => `- ${p}`).join("\n")}${more > 0 ? `\n- ...and ${more} more` : ""}`);
+      }
       const publishedAt = optional(args.publishedAt, "publishedAt", string);
       if (publishedAt !== undefined && !Number.isFinite(Date.parse(publishedAt))) throw new ToolInputError("Invalid publishedAt.");
       const row = await upsertArticle({
@@ -243,6 +254,13 @@ async function callTool(name: string, args: Params) {
       });
       return { slug: row.slug, status: row.status, publishedAt: row.published_at, url: `${ARTICLE_URL}${row.slug}` };
     }
+    case "diagram_schema":
+      return {
+        usage: "Put a JSON object in a ```diagram fenced block of the article body. Include title and description (accessibility). Unknown keys are errors.",
+        tones: ["main", "alt", "amber", "plain", "white", "ok", "warn", "error"],
+        examples: { architecture: FIXTURES.kafka, network: FIXTURES.webrtcTopology, pipeline: FIXTURES.mediaPipeline, sequence: FIXTURES.webrtcSignaling, buffer: FIXTURES.jitterBuffer, metric: FIXTURES.delayChart },
+        jsonSchema: diagramJsonSchema(),
+      };
     case "article_list": {
       const status = args.status === undefined ? undefined : choice(args.status, "status", ARTICLE_STATUSES);
       const items = await listArticles({ preview: true, status });

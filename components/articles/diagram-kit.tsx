@@ -195,6 +195,7 @@ export function Pill({ x, y, w, label, tone = "plain" }: { x: number; y: number;
 export type LegendItem = { color: string; label: string; dashed?: boolean };
 
 const PAD = 16;
+const LEGACY_MARKERS: readonly Tone[] = ["main", "alt", "plain"];
 
 function LegendList({ legend, className = "" }: { legend: LegendItem[]; className?: string }) {
   return (
@@ -211,7 +212,7 @@ function LegendList({ legend, className = "" }: { legend: LegendItem[]; classNam
   );
 }
 
-export function DiagramFigure({ id, title, desc, width, height, caption, legend, children, connections, exportName, minWidth, badge }: {
+export function DiagramFigure({ id, title, desc, width, height, caption, legend, children, connections, exportName, minWidth, badge, markerTones = LEGACY_MARKERS }: {
   id: string; title: string; desc: string; width: number; height: number;
   caption?: string; legend?: LegendItem[]; children: ReactNode;
   /** Text equivalent of the connections, rendered as a screen-reader-only list. */
@@ -221,6 +222,8 @@ export function DiagramFigure({ id, title, desc, width, height, caption, legend,
   /** Below this container width the figure scrolls horizontally instead of shrinking its text. */
   minWidth?: number;
   badge?: string;
+  /** Arrowhead colors to define. Defaults to the three tones legacy figures use. */
+  markerTones?: readonly Tone[];
 }) {
   return (
     <figure className="not-prose my-10 w-full">
@@ -236,7 +239,7 @@ export function DiagramFigure({ id, title, desc, width, height, caption, legend,
           <title id={`${id}-t`}>{title}</title>
           <desc id={`${id}-d`}>{desc}</desc>
           <defs>
-            {(Object.keys(EDGE_COLOR) as EdgeTone[]).map((t) => (
+            {markerTones.map((t) => (
               <marker key={t} id={`${id}-a-${t}`} viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M0 1.2L9 5 0 8.8z" fill={EDGE_COLOR[t]} />
               </marker>
