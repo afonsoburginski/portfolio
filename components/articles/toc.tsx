@@ -19,15 +19,23 @@ export function TableOfContents({ items, variant }: { items: TocItem[]; variant:
     return () => observer.disconnect();
   }, [items]);
 
+  const jump = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", `#${id}`);
+    setActive(id);
+  };
+
   const list = (
-    <ol className="space-y-1.5 border-l border-white/10">
+    <ol className="space-y-1 font-sans">
       {items.map((i) => (
         <li key={i.id}>
           <a
             href={`#${i.id}`}
+            onClick={(e) => jump(e, i.id)}
             aria-current={active === i.id ? "location" : undefined}
-            className={`-ml-px block border-l py-0.5 text-[13px] leading-5 transition-colors ${i.level === 3 ? "pl-7" : "pl-4"} ${
-              active === i.id ? "border-[#2dd4bf] text-white" : "border-transparent text-white/45 hover:text-white/80"
+            className={`block py-1 text-[13px] leading-5 transition-colors duration-200 ${i.level === 3 ? "pl-4" : ""} ${
+              active === i.id ? "font-medium text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
             {i.text}
@@ -39,16 +47,16 @@ export function TableOfContents({ items, variant }: { items: TocItem[]; variant:
 
   if (variant === "inline") {
     return (
-      <details className="mb-10 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 backdrop-blur-sm lg:hidden">
-        <summary className="cursor-pointer text-sm font-medium text-white/80">On this page</summary>
+      <details className="mb-8 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-md lg:hidden">
+        <summary className="cursor-pointer font-sans text-sm font-medium text-white/80">On this page</summary>
         <nav aria-label="Table of contents" className="mt-3">{list}</nav>
       </details>
     );
   }
 
   return (
-    <nav aria-label="Table of contents" className="sticky top-28 hidden max-h-[calc(100vh-8rem)] overflow-y-auto lg:block">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-white/40">On this page</p>
+    <nav aria-label="Table of contents" className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto">
+      <p className="mb-3 font-sans text-xs uppercase tracking-wider text-white/50">On this page</p>
       {list}
     </nav>
   );

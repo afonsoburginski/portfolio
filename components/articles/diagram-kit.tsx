@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SiCloudflare } from "react-icons/si";
 
 export type Tone = "main" | "alt" | "plain" | "white" | "amber";
 
@@ -33,6 +34,8 @@ const ICONS: Record<IconName, ReactNode> = {
   layers: <path d="M10 3l8 4-8 4-8-4zM2 11l8 4 8-4" />,
 };
 
+export const CLOUDFLARE_ORANGE = "#F38020";
+
 export function Icon({ name, x, y, color }: { name: IconName; x: number; y: number; color: string }) {
   return (
     <g transform={`translate(${x} ${y})`} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
@@ -53,8 +56,8 @@ export function Group({ x, y, w, h, label, tone = "plain" }: { x: number; y: num
   );
 }
 
-export function Node({ x, y, w, h = 84, label, sub, icon, tone = "plain", step }: {
-  x: number; y: number; w: number; h?: number; label: string; sub?: string; icon?: IconName; tone?: Tone; step?: number;
+export function Node({ x, y, w, h = 84, label, sub, icon, brand, tone = "plain", step }: {
+  x: number; y: number; w: number; h?: number; label: string; sub?: string; icon?: IconName; brand?: "cloudflare"; tone?: Tone; step?: number;
 }) {
   const t = TONE[tone];
   const cx = x + w / 2;
@@ -62,11 +65,16 @@ export function Node({ x, y, w, h = 84, label, sub, icon, tone = "plain", step }
     <g>
       <rect x={x} y={y} width={w} height={h} rx={10} fill={t.fill} stroke={t.stroke} strokeWidth={1.5} />
       {icon && <Icon name={icon} x={cx - 10} y={y + 12} color={t.icon} />}
-      <text x={cx} y={y + (icon ? 54 : h / 2 + (sub ? -2 : 4))} textAnchor="middle" fontSize={12.5} fontWeight={600} fill="#e6edf3">
+      {brand === "cloudflare" && (
+        <g transform={`translate(${cx - 11} ${y + 11})`} aria-hidden="true">
+          <SiCloudflare size={22} color={CLOUDFLARE_ORANGE} />
+        </g>
+      )}
+      <text x={cx} y={y + (icon || brand ? 54 : h / 2 + (sub ? -2 : 4))} textAnchor="middle" fontSize={12.5} fontWeight={600} fill="#e6edf3">
         {label}
       </text>
       {sub && (
-        <text x={cx} y={y + (icon ? 70 : h / 2 + 14)} textAnchor="middle" fontSize={10.5} fill="#8b949e">
+        <text x={cx} y={y + (icon || brand ? 70 : h / 2 + 14)} textAnchor="middle" fontSize={10.5} fill="#8b949e">
           {sub}
         </text>
       )}
@@ -124,19 +132,22 @@ export function Pill({ x, y, w, label, tone = "plain" }: { x: number; y: number;
 
 export type LegendItem = { color: string; label: string; dashed?: boolean };
 
-export function DiagramFigure({ id, title, desc, width, height, minWidth = 640, caption, legend, children }: {
-  id: string; title: string; desc: string; width: number; height: number; minWidth?: number;
+const PAD = 16;
+
+export function DiagramFigure({ id, title, desc, width, height, caption, legend, children }: {
+  id: string; title: string; desc: string; width: number; height: number;
   caption: string; legend?: LegendItem[]; children: ReactNode;
 }) {
   return (
-    <figure className="not-prose my-10 -mx-1 sm:mx-0">
+    <figure className="not-prose my-10 w-full">
       <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm sm:p-5">
         <svg
           role="img"
           aria-labelledby={`${id}-t ${id}-d`}
-          viewBox={`0 0 ${width} ${height}`}
+          viewBox={`${-PAD} ${-PAD} ${width + PAD * 2} ${height + PAD * 2}`}
           width="100%"
-          style={{ minWidth, fontFamily: "inherit", display: "block" }}
+          className="block min-w-[640px] lg:min-w-0"
+          style={{ fontFamily: "inherit" }}
         >
           <title id={`${id}-t`}>{title}</title>
           <desc id={`${id}-d`}>{desc}</desc>

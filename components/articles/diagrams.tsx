@@ -34,8 +34,8 @@ function Pipeline() {
       <Node x={260} y={70} w={150} icon="server" label="Upload server" sub="Go, multipart streaming" tone="main" />
       <Node x={490} y={70} w={150} icon="cpu" label="FFmpeg" sub="NVENC / CPU fallback" tone="main" step={2} />
       <Node x={720} y={70} w={150} icon="layers" label="HLS renditions" sub="+ master playlist" tone="main" />
-      <Node x={720} y={250} w={150} icon="bucket" label="Object storage" sub="Cloudflare R2" tone="main" step={3} />
-      <Node x={490} y={250} w={150} icon="cloud" label="CDN" sub="immutable asset keys" tone="alt" step={4} />
+      <Node x={720} y={250} w={150} brand="cloudflare" label="Object storage" sub="Cloudflare R2" tone="main" step={3} />
+      <Node x={490} y={250} w={150} brand="cloudflare" label="CDN" sub="immutable asset keys" tone="alt" step={4} />
       <Node x={260} y={250} w={150} icon="player" label="Players" sub="web · React Native" tone="alt" step={5} />
 
       {["queued", "uploading", "encoding", "publishing", "ready"].map((s, i) => (
@@ -172,7 +172,6 @@ function Decision() {
       id={id}
       width={960}
       height={600}
-      minWidth={720}
       title="Decision flow: HLS, LL-HLS or WebRTC"
       desc="Start by asking if the content is live. If not, use HLS for video on demand. If live, ask whether the viewer needs to react to what they see. If yes, with few concurrent viewers use WebRTC, with many viewers evaluate WebRTC with an SFU, or LL-HLS if seconds of delay are acceptable. If the viewer does not need to react, use HLS when several seconds of delay are acceptable and LL-HLS otherwise. If the target is unknown, benchmark first."
       caption="Figure 4. A first-pass filter, not an automatic selector: the leaves are candidates to validate against measured requirements."

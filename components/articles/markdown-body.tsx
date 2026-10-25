@@ -1,7 +1,9 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { SiCloudflare } from "react-icons/si";
 import { Diagram } from "./diagrams";
+import { CLOUDFLARE_ORANGE } from "./diagram-kit";
 import { slugify } from "./slug";
 
 function textOf(node: ReactNode): string {
@@ -10,13 +12,52 @@ function textOf(node: ReactNode): string {
     .join("");
 }
 
+const COL = "max-w-[820px]";
+
+const LOGOS = {
+  cloudflare: { label: "Cloudflare R2 + CDN", icon: SiCloudflare, color: CLOUDFLARE_ORANGE },
+} as const;
+
+type LogoId = keyof typeof LOGOS;
+
+function isLogo(id: string): id is LogoId {
+  return id in LOGOS;
+}
+
+function BuiltOn({ ids }: { ids: LogoId[] }) {
+  return (
+    <div className="not-prose my-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-md">
+      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-white/45">Built on</span>
+      {ids.map((id) => {
+        const { label, icon: Icon, color } = LOGOS[id];
+        return (
+          <span key={id} className="flex items-center gap-3 text-base font-medium text-white">
+            <Icon size={26} color={color} aria-hidden="true" />
+            {label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function withInlineIcons(children: ReactNode): ReactNode {
+  return Children.map(children, (child) => {
+    if (typeof child !== "string" || !child.includes(":cloudflare:")) return child;
+    return child.split(":cloudflare:").flatMap((part, i, all) => [
+      part,
+      i < all.length - 1 ? <SiCloudflare key={i} size={16} color={CLOUDFLARE_ORANGE} aria-hidden="true" className="mx-1 inline-block -translate-y-px" /> : null,
+    ]);
+  });
+}
+
 function Heading({ level, children }: { level: 2 | 3; children?: ReactNode }) {
   const id = slugify(textOf(children));
   const Tag = level === 2 ? "h2" : "h3";
   const style =
     level === 2
-      ? "mt-16 mb-5 border-t border-white/10 pt-8 text-[30px] font-normal leading-tight text-white font-satoshi"
-      : "mt-10 mb-4 text-xl font-semibold text-white";
+      ? `${COL} mt-16 mb-5 border-t border-white/10 pt-8 text-[30px] font-normal leading-tight text-white font-satoshi`
+      : `${COL} mt-10 mb-4 text-xl font-semibold text-white`;
   return (
     <Tag id={id} className={`group relative scroll-mt-28 ${style}`}>
       <a href={`#${id}`} aria-label="Link to this section" className="absolute -left-6 top-0 hidden text-[#58a6ff] no-underline opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 lg:block" style={level === 2 ? { top: "2rem" } : undefined}>
@@ -51,9 +92,9 @@ export function MarkdownBody({ body }: { body: string }) {
         p: ({ node, children }) => {
           const only = node?.children?.length === 1 ? (node.children[0] as { tagName?: string }) : null;
           if (only?.tagName === "strong") {
-            return <p className="my-7 rounded-r-xl border-l-2 border-[#2dd4bf] bg-[#2dd4bf]/[0.06] py-4 pl-5 pr-4 text-white/90">{children}</p>;
+            return <p className={`${COL} my-7 rounded-r-xl border-l-2 border-[#2dd4bf] bg-[#2dd4bf]/[0.06] py-4 pl-5 pr-4 text-white/90`}>{withInlineIcons(children)}</p>;
           }
-          return <p className="my-6">{children}</p>;
+          return <p className={`${COL} my-6`}>{withInlineIcons(children)}</p>;
         },
         strong: (p) => <strong className="font-semibold text-white" {...p} />,
         a: ({ href = "", ...p }) => {
@@ -67,14 +108,19 @@ export function MarkdownBody({ body }: { body: string }) {
             />
           );
         },
-        ul: (p) => <ul className="my-6 list-disc space-y-2 pl-6 marker:text-white/30" {...p} />,
-        ol: (p) => <ol className="my-6 list-decimal space-y-2 pl-6 marker:text-white/30" {...p} />,
+        ul: (p) => <ul className={`${COL} my-6 list-disc space-y-2 pl-6 marker:text-white/30`} {...p} />,
+        li: ({ children, ...p }) => <li {...p}>{withInlineIcons(children)}</li>,
+        ol: (p) => <ol className={`${COL} my-6 list-decimal space-y-2 pl-6 marker:text-white/30`} {...p} />,
         pre: ({ children }) => {
           const el = Array.isArray(children) ? children[0] : children;
           if (isValidElement<{ className?: string; children?: ReactNode }>(el) && /language-diagram/.test(el.props.className ?? "")) {
             return <Diagram id={textOf(el.props.children).trim()} />;
           }
-          return <pre className="my-6 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-white/85">{children}</pre>;
+          if (isValidElement<{ className?: string; children?: ReactNode }>(el) && /language-logos/.test(el.props.className ?? "")) {
+            const ids = textOf(el.props.children).split(/\s+/).filter(isLogo);
+            return ids.length ? <BuiltOn ids={ids} /> : null;
+          }
+          return <pre className={`${COL} my-6 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-white/85`}>{children}</pre>;
         },
         code: ({ className, ...p }) =>
           className?.includes("language-") ? (
@@ -82,7 +128,7 @@ export function MarkdownBody({ body }: { body: string }) {
           ) : (
             <code className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.88em] text-[#e6edf3]" {...p} />
           ),
-        blockquote: (p) => <blockquote className="my-8 rounded-r-xl border-l-2 border-[#58a6ff]/60 bg-white/[0.03] py-3 pl-5 pr-4 italic text-white/65" {...p} />,
+        blockquote: (p) => <blockquote className={`${COL} my-8 rounded-r-xl border-l-2 border-[#58a6ff]/60 bg-white/[0.03] py-3 pl-5 pr-4 italic text-white/65`} {...p} />,
         table: (p) => (
           <div className="my-8 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm max-lg:overflow-x-auto">
             <table className="w-full text-left text-[15px] leading-6" {...p} />

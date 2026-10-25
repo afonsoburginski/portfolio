@@ -53,16 +53,22 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         }}
       />
       <Header />
-      <main className="relative z-10 px-6 pt-36 pb-24">
-        <ArticleHeader title={article.title} subtitle={article.subtitle ?? article.description} tags={article.tags} date={date} readingMinutes={article.readingMinutes} />
-        <div className="mx-auto mt-14 grid max-w-[1040px] gap-x-16 lg:grid-cols-[minmax(0,720px)_minmax(0,240px)] lg:justify-between">
-          <article id="article-content" className="min-w-0 font-sans text-[17px] leading-[1.8] text-white/75 lg:text-[18px]">
-            <TableOfContents items={toc} variant="inline" />
-            <MarkdownBody body={article.body} />
-            <AuthorCard canonicalUrl={`https://afonsodev.com/articles/${article.slug}`} />
-          </article>
-          <div className="hidden lg:block">
+      <main className="relative z-10 px-6 pt-32 pb-20">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="hidden pt-1 lg:block">
             <TableOfContents items={toc} variant="sidebar" />
+          </aside>
+          <div className="min-w-0">
+            <ArticleHeader title={article.title} subtitle={article.subtitle ?? article.description} tags={article.tags} date={date} readingMinutes={article.readingMinutes} />
+            <div className="mt-8 border-t border-white/10 pt-8">
+              <TableOfContents items={toc} variant="inline" />
+              <article id="article-content" className="font-sans text-[17px] leading-[1.8] text-white/75 lg:text-[18px]">
+                <MarkdownBody body={article.body} />
+                <div className="max-w-[820px]">
+                  <AuthorCard canonicalUrl={`https://afonsodev.com/articles/${article.slug}`} />
+                </div>
+              </article>
+            </div>
           </div>
         </div>
       </main>

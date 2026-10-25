@@ -37,7 +37,7 @@ function renderNode(node: RootContent, ctx: Ctx): string {
   switch (node.type) {
     case "heading": return `<h${Math.min(Math.max(node.depth, 2), 3)}>${inner()}</h${Math.min(Math.max(node.depth, 2), 3)}>`;
     case "paragraph": return `<p>${inner()}</p>`;
-    case "text": return escapeHtml(node.value);
+    case "text": return escapeHtml(node.value.replace(/:cloudflare:\s*/g, ""));
     case "strong": return `<strong>${inner()}</strong>`;
     case "emphasis": return `<em>${inner()}</em>`;
     case "delete": return `<s>${inner()}</s>`;
@@ -52,6 +52,7 @@ function renderNode(node: RootContent, ctx: Ctx): string {
       return href ? `<a href="${escapeHtml(href)}">${inner()}</a>` : inner();
     }
     case "code": {
+      if (node.lang === "logos") return "";
       if (node.lang === "diagram") {
         const id = node.value.trim().replace(/[^a-z0-9-]/gi, "");
         ctx.images.push({ name: `${id}.png`, description: `Diagram "${id}": render it from the article page (components/articles/diagrams.tsx).` });
