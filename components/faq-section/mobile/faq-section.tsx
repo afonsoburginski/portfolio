@@ -27,7 +27,7 @@ const faqs = [
   {
     id: "faq-4",
     question: "What products have you worked on?",
-    answer: "Video-monitoring and real-time systems, streaming products, internal platforms, and products spanning backend, web, and mobile. Orbit is delivered; Studio and Stormz are in development.",
+    answer: "Video-monitoring and real-time systems, streaming products, internal platforms, and products spanning backend, web, and mobile. Studio and Stormz are in development.",
   },
   {
     id: "faq-5",

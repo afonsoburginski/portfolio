@@ -27,7 +27,7 @@ const faqs = [
   {
     id: "faq-4",
     question: "What kinds of products have you worked on?",
-    answer: "Video-monitoring and real-time systems, streaming products, internal operational platforms, and product experiences spanning backend, web, and mobile. Current portfolio work also includes Orbit, an internal developer platform, plus Studio and Stormz as in-development media infrastructure projects.",
+    answer: "Video-monitoring and real-time systems, streaming products, internal operational platforms, and product experiences spanning backend, web, and mobile. Studio and Stormz are in-development media infrastructure projects.",
   },
   {
     id: "faq-5",
