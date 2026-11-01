@@ -9,6 +9,7 @@ import { MarkdownBody } from "@/components/articles/markdown-body";
 import { ReadingProgress } from "@/components/articles/reading-progress";
 import { extractToc } from "@/components/articles/slug";
 import { TableOfContents } from "@/components/articles/toc";
+import { PageviewTracker } from "@/components/analytics/pageview-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-black">
+      <PageviewTracker />
       <ReadingProgress targetId="article-content" />
       <div
         aria-hidden="true"

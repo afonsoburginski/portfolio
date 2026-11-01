@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import {
   Sidebar, SidebarContent, SidebarHeader, SidebarFooter,
@@ -17,7 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
-  LogOut, ChevronsUpDown, ExternalLink,
+  LogOut, ChevronsUpDown, ExternalLink, BarChart3,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationBadge } from "@/components/dashboard/notification-badge";
@@ -32,6 +33,16 @@ export function DashboardSidebar() {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
+  const [canViewAnalytics, setCanViewAnalytics] = useState(false);
+
+  useEffect(() => {
+    setCanViewAnalytics(false);
+    if (!user) return;
+    void fetch("/api/analytics/access", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result: { allowed?: boolean } | null) => setCanViewAnalytics(result?.allowed === true))
+      .catch(() => setCanViewAnalytics(false));
+  }, [user]);
 
   const avatarUrl = user?.image ?? undefined;
   const fullName  = user?.name ?? user?.email ?? "User";
@@ -80,7 +91,7 @@ export function DashboardSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {CLIENT_NAV.map(item => (
+              {(canViewAnalytics ? [...CLIENT_NAV, { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 }] : CLIENT_NAV).map(item => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild

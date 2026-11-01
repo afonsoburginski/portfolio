@@ -1,4 +1,4 @@
-import { pgTable, text, integer, doublePrecision, boolean, timestamp, primaryKey, index } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, doublePrecision, boolean, timestamp, primaryKey, index, date, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // App date columns are stored as ISO-8601 strings (the app writes them via
@@ -245,6 +245,18 @@ export const articles = pgTable("articles", {
   created_at: text("created_at").notNull().default(nowIso()),
   updated_at: text("updated_at").notNull().default(nowIso()),
 }, (table) => [index("articles_status_published_at_idx").on(table.status, table.published_at)]);
+
+// Daily aggregates only: no IP, cookie, user ID, or raw user agent is retained.
+export const analytics_daily_counts = pgTable("analytics_daily_counts", {
+  day: date("day", { mode: "string" }).notNull(),
+  dimension: text("dimension", { enum: ["page", "referrer", "country", "device"] }).notNull(),
+  value: text("value").notNull(),
+  views: integer("views").notNull().default(0),
+  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex("analytics_daily_counts_dimensions_idx").on(table.day, table.dimension, table.value),
+  index("analytics_daily_counts_day_idx").on(table.day),
+]);
 
 export type ArticleRow = typeof articles.$inferSelect;
 

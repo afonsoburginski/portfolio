@@ -25,6 +25,10 @@ function getBreadcrumbs(pathname: string) {
     crumbs[0] = { label: "Overview" };
     return crumbs.slice(0, 1);
   }
+  if (pathname === "/dashboard/analytics") {
+    crumbs.push({ label: "Analytics" });
+    return crumbs;
+  }
   if (pathname.startsWith("/dashboard/requests/") && pathname !== "/dashboard/requests") {
     crumbs.push({ label: "Pedido", href: "/dashboard" });
     crumbs.push({ label: "Detalhes" });

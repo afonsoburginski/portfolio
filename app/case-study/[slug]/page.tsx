@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getProjectBySlug } from "@/lib/dashboard-data";
 import { projectToCaseStudy } from "@/lib/project-to-case-study";
 import { CaseStudyView } from "./case-study-view";
+import { PageviewTracker } from "@/components/analytics/pageview-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -14,5 +15,8 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
     return notFound();
   }
 
-  return <CaseStudyView data={projectToCaseStudy(project)} />;
+  return <>
+    <PageviewTracker />
+    <CaseStudyView data={projectToCaseStudy(project)} />
+  </>;
 }

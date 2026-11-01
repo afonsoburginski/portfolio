@@ -9,6 +9,7 @@ import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { getHomeProjects } from "@/lib/dashboard-data";
 import { getFeedItems } from "@/lib/feed";
+import { PageviewTracker } from "@/components/analytics/pageview-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function Home() {
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
+      <PageviewTracker />
       <div className="relative z-20">
         <Header />
         <Hero />
