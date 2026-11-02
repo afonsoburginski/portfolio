@@ -59,7 +59,7 @@ const remotiveJob = z.object({
 function sourceUrl(raw: string, host: string): string | null {
   try {
     const url = new URL(raw);
-    if (url.protocol !== "https:" || url.hostname !== host || url.username || url.password) return null;
+    if (url.protocol !== "https:" || ![host, `www.${host}`].includes(url.hostname) || url.username || url.password) return null;
     return url.href;
   } catch {
     return null;
@@ -96,7 +96,7 @@ async function searchJobicy(query: string): Promise<CareerJob[]> {
   url.searchParams.set("count", "100");
   // Jobicy's tag filter matches role titles, not full job descriptions.
   const keyword = query.split(/\s+/).find(term => term.length > 3 && !/^(senior|staff|remote)$/i.test(term));
-  if (keyword) url.searchParams.set("tag", keyword);
+  if (keyword) url.searchParams.set("tag", keyword.slice(0, 50));
   const json = await readApi(url, 900);
   if (!json || typeof json !== "object" || !("jobs" in json) || !Array.isArray(json.jobs)) {
     throw new Error("Malformed Jobicy response");
