@@ -57,7 +57,12 @@ export default function CareersPage() {
                   <div>
                     <h2 className="font-medium">{job.title}</h2>
                     <p className="mt-1 text-sm text-neutral-400">{job.company} · {job.location}</p>
-                    <p className="mt-1 text-xs text-neutral-500">{job.provider} {job.salary ? `· ${job.salary}` : ""}</p>
+                    <p className="mt-1 text-xs text-neutral-500">
+                      Fonte: <a className="underline hover:text-white" target="_blank" rel="noopener noreferrer"
+                        href={job.provider === "jobicy" ? "https://jobicy.com" : "https://remotive.com"}>
+                        {job.provider === "jobicy" ? "Jobicy" : "Remotive"}
+                      </a>{job.salary ? ` · ${job.salary}` : ""}
+                    </p>
                   </div>
                   <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer"
                     className="rounded-md border border-neutral-700 px-3 py-2 text-sm hover:bg-neutral-800">
