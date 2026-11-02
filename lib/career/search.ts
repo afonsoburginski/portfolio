@@ -122,18 +122,22 @@ async function searchJobicy(query: string): Promise<CareerJob[]> {
 
 async function searchRemotive(query: string): Promise<CareerJob[]> {
   const url = new URL("https://remotive.com/api/remote-jobs");
-  url.searchParams.set("search", query);
-  url.searchParams.set("limit", "100");
-  // Remotive recommends at most 4 syncs/day. Shared Next cache is 6 hours.
+  // Fetch one shared catalogue instead of a separate request for each user query.
+  // Remotive recommends at most four refreshes per day; filter locally.
   const json = await readApi(url, 21_600);
   if (!json || typeof json !== "object" || !("jobs" in json) || !Array.isArray(json.jobs)) {
     throw new Error("Malformed Remotive response");
   }
   const jobs: CareerJob[] = [];
+  const terms = canonical(query).split(" ").filter(Boolean);
+  const specific = terms.filter(term => !["remote", "senior", "staff", "software", "engineer", "developer"].includes(term));
+  const matches = specific.length ? specific : terms;
   for (const raw of json.jobs) {
     const parsed = remotiveJob.safeParse(raw);
     if (!parsed.success) continue;
     const item = parsed.data;
+    const text = canonical(`${item.title} ${plainText(item.description)}`);
+    if (!matches.some(term => text.includes(term))) continue;
     const link = sourceUrl(item.url, "remotive.com");
     if (!link) continue;
     jobs.push({
@@ -155,6 +159,9 @@ export async function searchCareerJobs(query: string, limit = 30): Promise<JobSe
   if (!normalized) throw new Error("A job search query is required.");
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw new Error("limit must be 1–100.");
   const results = await Promise.allSettled([searchJobicy(normalized), searchRemotive(normalized)]);
+  if (results.every(result => result.status === "rejected")) {
+    throw new Error("All job providers are unavailable.");
+  }
   const ids = ["jobicy", "remotive"];
   const providers = results.map((result, index) => ({
     id: ids[index], ok: result.status === "fulfilled",
