@@ -1,3 +1,4 @@
+import { searchCareerJobs, jobProviders } from "@/lib/career/search";
 import { db } from "@/lib/db";
 import { authenticateMcp } from "@/lib/mcp-auth";
 import { SCOPE_READ, SCOPE_WRITE, resourceMetadataUrl } from "@/lib/oauth/config";
@@ -63,6 +64,11 @@ const rawTools = [
   } } },
   { name: "linkedin_delete_post", description: "Delete one of your LinkedIn posts by URN and remove it from social_posts. Irreversible; confirm with the user first. Requires confirm: true.", inputSchema: { type: "object", required: ["urn", "confirm"], properties: { urn: { type: "string", description: "urn:li:share:<id> or urn:li:ugcPost:<id>" }, confirm: { type: "boolean", const: true } } } },
   { name: "linkedin_list_my_posts", description: "List LinkedIn posts recorded in social_posts. The LinkedIn API cannot read older posts, so only posts created through this MCP or recorded with social_post_record appear.", inputSchema: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 100 } } } },
+  { name: "career_list_providers", description: "List supported job discovery providers and capabilities. LinkedIn and Indeed are not integrated yet.", inputSchema: { type: "object", properties: {} } },
+  { name: "career_search_jobs", description: "Search remote software jobs using Jobicy and Remotive public APIs. Read-only: does not apply. Returns source links, attribution, availability per provider and normalized job data.", inputSchema: { type: "object", required: ["query"], properties: {
+    query: { type: "string", minLength: 1, maxLength: 100, description: "Job title or technical keyword, e.g. Senior Software Engineer" },
+    limit: { type: "integer", minimum: 1, maximum: 100, description: "Maximum number of jobs; default 30" },
+  } } },
 ] as const;
 
 // Tools that change data or publish need mcp:write; everything else needs mcp:read.
@@ -176,6 +182,15 @@ async function publicGithubRepo(raw: unknown) {
 
 async function callTool(name: string, args: Params) {
   switch (name) {
+    case "career_list_providers":
+      return { providers: jobProviders };
+    case "career_search_jobs": {
+      const query = string(args.query, "query")!;
+      if (query.length > 100) throw new ToolInputError("query must be at most 100 characters.");
+      const limit = args.limit === undefined ? 30 : integer(args.limit, "limit");
+      if (limit < 1 || limit > 100) throw new ToolInputError("limit must be between 1 and 100.");
+      return searchCareerJobs(query, limit);
+    }
     case "social_post_record": {
       const date = optional(args.publishedAt, "publishedAt", string) ?? new Date().toISOString();
       if (!Number.isFinite(Date.parse(date))) throw new ToolInputError("Invalid publishedAt.");
